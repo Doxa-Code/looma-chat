@@ -25,7 +25,7 @@ export const stockTool = createTool({
         .index<{ id: string; description: string; manufactory: string }>(
           "products"
         )
-        .namespace(runtimeContext.get("pinecone-namespace"))
+        .namespace(runtimeContext.get("vector-namespace"))
         .query({
           topK: 30,
           vector: embedding,
@@ -80,7 +80,7 @@ export const promotionProductsTool = createTool({
       .index<{ id: string; description: string; manufactory: string }>(
         "products"
       )
-      .namespace(runtimeContext.get("pinecone-namespace"))
+      .namespace(runtimeContext.get("vector-namespace"))
       .query({
         topK: 30,
         vector: embedding,

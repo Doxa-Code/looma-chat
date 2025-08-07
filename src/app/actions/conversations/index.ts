@@ -23,6 +23,7 @@ import { MembershipsRepository } from "@/core/infra/repositories/membership-repo
 import pDebounce from "p-debounce";
 import { NotFound } from "@/core/domain/errors/not-found";
 import { CartsRepository } from "@/core/infra/repositories/carts-repository";
+import { Setting } from "@/core/domain/value-objects/setting";
 
 const usersRepository = UsersRepository.instance();
 const settingsRepository = SettingsRepository.instance();
@@ -71,11 +72,23 @@ function getSendToLoomaDebounced(conversationId: string) {
             workspaceId
           );
 
+          let setting = await settingsRepository.retrieveSettingsByWorkspaceId(
+            workspaceId
+          );
+          if (!setting) {
+            setting = Setting.create();
+          }
           const response = await aiDriver.sendMessage({
             aiUser: loomaUser,
             conversation,
             workspaceId,
             lastCart,
+            attendantName: setting.attendantName,
+            businessName: setting.businessName,
+            locationAvailable: setting.locationAvailable,
+            paymentMethods: setting.paymentMethods,
+            vectorNamespace: setting.vectorNamespace,
+            knowledgeBase: setting.knowledgeBase,
           });
 
           const messageId = await messageDriver.sendMessageText({

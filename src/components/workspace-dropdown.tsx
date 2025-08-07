@@ -55,6 +55,7 @@ export const WorkspaceDropdown = (props: Props) => {
             {workspace?.name
               ?.split(" ")
               ?.map((word) => word[0])
+              ?.filter((_, i) => i < 2)
               ?.join("")}
           </span>
           <div className="grid flex-1 text-left  leading-tight">

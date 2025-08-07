@@ -15,7 +15,8 @@ import {
 } from "../tools/cart-tools";
 import { promotionProductsTool, stockTool } from "../tools/stock-tool";
 import { consultingCepTool } from "../tools/consulting-cep-tool";
-import { knowledgeBaseTool } from "../tools/knowledge-base-tool";
+// TODO: VER ESSA TOOL
+// import { knowledgeBaseTool } from "../tools/knowledge-base-tool";
 
 export const loomaAgent = new Agent({
   name: "Looma Agent",
@@ -32,7 +33,7 @@ export const loomaAgent = new Agent({
     setAddressCartTool,
     setPaymentMethodCartTool,
     promotionProductsTool,
-    knowledgeBaseTool,
+    // knowledgeBaseTool,
     closeCartTool,
     cancelCartTool,
     retrieveClientTool,

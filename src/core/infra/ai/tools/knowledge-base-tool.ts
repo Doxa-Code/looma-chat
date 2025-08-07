@@ -8,9 +8,4 @@ export const knowledgeBaseTool = createVectorQueryTool({
   model: azureEmbeddings.textEmbeddingModel("text-embedding-3-small", {
     dimensions: 1536,
   }),
-  databaseConfig: {
-    pinecone: {
-      namespace: process.env.CLIENT_NAMESPACE,
-    },
-  },
 });

@@ -8,7 +8,15 @@ export class SettingsRepository {
     const db = createConnection();
 
     const [setting] = await db
-      .select({ wabaId: settings.wabaId })
+      .select({
+        attendantName: settings.attendantName,
+        businessName: settings.businessName,
+        wabaId: settings.wabaId,
+        locationAvailable: settings.locationAvailable,
+        paymentMethods: settings.paymentMethods,
+        vectorNamespace: settings.vectorNamespace,
+        knowledgeBase: settings.knowledgeBase,
+      })
       .from(settings)
       .where(eq(settings.workspaceId, workspaceId));
 
@@ -25,7 +33,6 @@ export class SettingsRepository {
     const response = await db
       .select({
         id: settings.id,
-        wabaId: settings.wabaId,
         workspaceId: settings.workspaceId,
       })
       .from(settings)
@@ -38,11 +45,23 @@ export class SettingsRepository {
       .values({
         id: setting?.id || crypto.randomUUID().toString(),
         wabaId: input.wabaId,
+        attendantName: input.attendantName,
+        businessName: input.businessName,
+        locationAvailable: input.locationAvailable,
+        paymentMethods: input.paymentMethods,
+        vectorNamespace: input.vectorNamespace,
+        knowledgeBase: input.knowledgeBase,
         workspaceId: setting?.workspaceId || workspaceId,
       })
       .onConflictDoUpdate({
         set: {
           wabaId: input.wabaId,
+          attendantName: input.attendantName,
+          businessName: input.businessName,
+          locationAvailable: input.locationAvailable,
+          paymentMethods: input.paymentMethods,
+          knowledgeBase: input.knowledgeBase,
+          vectorNamespace: input.vectorNamespace,
         },
         target: settings.id,
       });
@@ -69,7 +88,15 @@ export class SettingsRepository {
     const db = createConnection();
 
     const [setting] = await db
-      .select({ wabaId: settings.wabaId })
+      .select({
+        attendantName: settings.attendantName,
+        businessName: settings.businessName,
+        wabaId: settings.wabaId,
+        locationAvailable: settings.locationAvailable,
+        paymentMethods: settings.paymentMethods,
+        vectorNamespace: settings.vectorNamespace,
+        knowledgeBase: settings.knowledgeBase,
+      })
       .from(settings)
       .where(eq(settings.wabaId, wabaId));
 

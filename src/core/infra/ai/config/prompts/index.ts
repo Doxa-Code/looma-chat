@@ -9,6 +9,7 @@ type Context = {
   paymentMethods: string;
   locationAvailable: string;
   lastCart: Cart | null;
+  knowledgeBase: string;
 };
 
 export type InstructionsProps = {

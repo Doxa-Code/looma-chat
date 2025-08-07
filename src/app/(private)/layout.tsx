@@ -2,12 +2,19 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { getUserAuthenticate } from "../actions/security";
 import { listWorkspaces } from "../actions/users";
+import { MembershipsRepository } from "@/core/infra/repositories/membership-repository";
+
+const membershipsRepository = MembershipsRepository.instance();
 
 export default async function PrivateRootLayout(
   props: React.PropsWithChildren
 ) {
   const [user] = await getUserAuthenticate();
   const [workspaces] = await listWorkspaces({});
+  const membership = await membershipsRepository.retrieveByUserIdAndWorkspaceId(
+    user?.id!,
+    workspaces?.workspace?.id!
+  );
   return (
     <SidebarProvider
       style={
@@ -16,7 +23,11 @@ export default async function PrivateRootLayout(
         } as React.CSSProperties
       }
     >
-      <AppSidebar workspaceSelected={workspaces!} user={user?.raw?.()!} />
+      <AppSidebar
+        permissions={membership?.permissions ?? []}
+        workspaceSelected={workspaces!}
+        user={user?.raw?.()!}
+      />
       <main className="w-full h-screen overflow-hidden flex flex-col bg-[#F9FAFC]">
         {props.children}
       </main>

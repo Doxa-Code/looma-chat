@@ -28,11 +28,25 @@ export const updateSettings = securityProcedure([
   .input(
     z.object({
       wabaId: z.string(),
+      attendantName: z.string(),
+      businessName: z.string(),
+      locationAvailable: z.string(),
+      paymentMethods: z.string(),
+      vectorNamespace: z.string(),
+      knowledgeBase: z.string(),
     })
   )
   .handler(async ({ input, ctx }) => {
     await settingsRepository.upsert(
       ctx.membership.workspaceId,
-      Setting.create(input)
+      Setting.create({
+        wabaId: input.wabaId,
+        attendantName: input.attendantName,
+        businessName: input.businessName,
+        locationAvailable: input.locationAvailable,
+        paymentMethods: input.paymentMethods,
+        vectorNamespace: input.vectorNamespace,
+        knowledgeBase: input.knowledgeBase,
+      })
     );
   });

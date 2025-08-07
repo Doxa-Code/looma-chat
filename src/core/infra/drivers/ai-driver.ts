@@ -9,6 +9,12 @@ type SendMessageProps = {
   aiUser: User;
   workspaceId: string;
   lastCart: Cart | null;
+  attendantName: string;
+  businessName: string;
+  vectorNamespace: string;
+  paymentMethods: string;
+  locationAvailable: string;
+  knowledgeBase: string;
 };
 
 interface AIDriver {
@@ -18,21 +24,26 @@ interface AIDriver {
 export class LoomaAIDriver implements AIDriver {
   async sendMessage(props: SendMessageProps, retry = 0): Promise<string> {
     try {
-      // TODO: colocar essas informações no Setting
       const runtimeContext = new RuntimeContext([
         ["contactName", props.conversation.contact.name],
         ["contactPhone", props.conversation.contact.phone],
-        ["attendantName", "Looma"],
-        ["businessName", "Dromed Pharma"],
-        ["pinecone-namespace", "dromed-pharma-odila"],
+        ["attendantName", props.attendantName],
+        ["businessName", props.businessName],
+        ["vector-namespace", props.vectorNamespace],
         ["conversationId", props.conversation.id],
         ["userId", props.aiUser.id],
         ["workspaceId", props.workspaceId],
+        ["paymentMethods", props.paymentMethods],
+        ["locationAvailable", props.locationAvailable],
+        ["knowledgeBase", props.knowledgeBase],
         [
-          "paymentMethods",
-          "Cartão de crédito, Cartão de débito, Pix ou Dinheiro",
+          "databaseConfig",
+          {
+            pinecone: {
+              namespace: props.vectorNamespace,
+            },
+          },
         ],
-        ["locationAvailable", "Aguas de Lindóia"],
       ]);
 
       const looma = ai.getAgent("loomaAgent");

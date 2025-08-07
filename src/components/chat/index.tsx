@@ -13,6 +13,7 @@ import { ChatHeader } from "./chat-header";
 import { ChatSidebar } from "./chat-sidebar";
 import { ContainerMessages } from "./container-messages";
 import { User } from "@/core/domain/entities/user";
+import { Logo } from "../logo";
 
 type Props = {
   conversations: Conversation.Raw[];
@@ -84,6 +85,8 @@ export function Chat(props: Props) {
     },
   });
 
+  console.log(connected);
+
   useEffect(() => {
     if (conversation?.id) {
       setConversation(conversations.get(conversation.id) ?? null);
@@ -113,6 +116,15 @@ export function Chat(props: Props) {
       }, 100);
     }
   }, [messages]);
+
+  if (!connected) {
+    return (
+      <div className="fixed w-full h-screen top-0 left-0 flex justify-center items-center flex-col bg-white/80 z-50">
+        <Logo className="size-20 motion-preset-stretch " />
+        <span className="animate-pulse">Carregando atendimentos...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-1 w-full border overflow-hidden rounded-md shadow">

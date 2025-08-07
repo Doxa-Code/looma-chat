@@ -33,26 +33,55 @@ import {
   CollapsibleTrigger,
 } from "./ui/collapsible";
 import { WorkspaceDropdown } from "./workspace-dropdown";
+import { PolicyName } from "@/core/domain/services/authorization-service";
 
-const navMain = [
+type Menu = {
+  title: string;
+  url: string;
+  icon: any;
+  active?: boolean;
+  childrens?: {
+    title: string;
+    url: string;
+  }[];
+};
+
+const navMain: (user: User.Raw, permissions: Set<PolicyName>) => Menu[] = (
+  user,
+  permissions
+) => [
   {
     title: "Chat",
     url: "/chat",
     icon: MessageCircle,
-  },
-  {
-    title: "Vendas",
-    url: "/sales",
-    icon: DollarSign,
+    active:
+      user.type === "superuser" ||
+      (
+        [
+          "view:conversations",
+          "view:conversation",
+          "send:message",
+        ] as PolicyName[]
+      ).some((permission) => permissions.has(permission)),
   },
   {
     title: "Produtos",
     url: "/products",
     icon: Box,
+    active:
+      user.type === "superuser" ||
+      (["view:products"] as PolicyName[]).some((permission) =>
+        permissions.has(permission)
+      ),
   },
   {
     title: "Configurações",
     url: "#",
+    active:
+      user.type === "superuser" ||
+      (["manage:settings", "view:settings"] as PolicyName[]).some(
+        (permission) => permissions.has(permission)
+      ),
     childrens: [
       {
         title: "Geral",
@@ -78,6 +107,7 @@ export function AppSidebar(
       workspaces: { id: string; name: string }[];
       workspace: { id: string; name: string };
     };
+    permissions: PolicyName[];
   }
 ) {
   const pathname = usePathname();
@@ -116,8 +146,9 @@ export function AppSidebar(
         <span className="px-6 mb-2 text-muted-foreground uppercase text-xs">
           Menu
         </span>
-        {navMain.map((item) => {
+        {navMain(props.user, new Set(props.permissions)).map((item) => {
           const isActive = Boolean(pathname === item.url);
+          if (!item.active) return <></>;
           return (
             <Collapsible
               key={item.title}

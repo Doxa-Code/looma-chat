@@ -1,11 +1,12 @@
 @import "tailwindcss";
-@plugin "@tailwindcss/forms";
 @import "flowbite/src/themes/default";
-@plugin "flowbite/plugin";
 @source "../node_modules/flowbite";
-@plugin "flowbite-react/plugin/tailwindcss";
 @source "../../.flowbite-react/class-list.json"; 
 @import "tw-animate-css";
+@plugin "@tailwindcss/forms";
+@plugin "flowbite/plugin";
+@plugin "flowbite-react/plugin/tailwindcss";
+@plugin "tailwindcss-motion";
 
 @custom-variant dark (&:where(.dark, .dark *));
 

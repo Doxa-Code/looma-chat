@@ -5,14 +5,18 @@ import * as fs from "node:fs";
 import path from "node:path";
 import { pinecone, pineconeVector } from "../config/vectors/pinecone-vector";
 import { azureEmbeddings } from "../config/llms/azure";
+import { SettingsRepository } from "../../repositories/settings-repository";
 
 const files = ["docs/faq.md", "docs/products.md"];
 
 const indexName = "looma-knowledge-base";
+const settingsRepository = SettingsRepository.instance();
+
+const settings = await settingsRepository.retrieveSettingsByWorkspaceId("");
 
 await pinecone
   .index(indexName)
-  .deleteNamespace(process.env.CLIENT_NAMESPACE ?? "")
+  .deleteNamespace(settings?.vectorNamespace ?? "")
   .catch(() => {});
 
 await pineconeVector.createIndex({

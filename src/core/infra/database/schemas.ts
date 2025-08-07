@@ -27,12 +27,18 @@ export const workspaces = pgTable("workspaces", {
 
 export const settings = pgTable("settings", {
   id: uuid("id").primaryKey().notNull(),
-  wabaId: text("waba_id").notNull(),
+  wabaId: text("waba_id").notNull().default(""),
   workspaceId: uuid("workspace_id")
     .notNull()
     .references(() => workspaces.id, {
       onDelete: "cascade",
     }),
+  attendantName: text("attendant_name").notNull().default(""),
+  businessName: text("business_name").notNull().default(""),
+  locationAvailable: text("location_available").notNull().default(""),
+  paymentMethods: text("payment_methods").notNull().default(""),
+  vectorNamespace: text("vector_namespace").notNull().default(""),
+  knowledgeBase: text("knowledge_base").notNull().default(""),
 });
 
 export const memberships = pgTable("memberships", {

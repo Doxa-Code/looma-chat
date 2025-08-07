@@ -8,6 +8,7 @@ const instructions: Instructions = ({ runtimeContext }) => {
   const currentDateTime = new Date().toLocaleString("pt-BR");
   const contactName = runtimeContext.get("contactName")?.split(" ")?.at(0);
   const lastCart = runtimeContext.get("lastCart");
+  const knowledgeBase = runtimeContext.get("knowledgeBase");
   const isClient = !!lastCart;
 
   const systemPrompt = `
@@ -115,19 +116,16 @@ const instructions: Instructions = ({ runtimeContext }) => {
       - Nunca finalize o pedido sem confirmar com o cliente.
       - Sempre priorize uma experiência humana, sem parecer um robô.
       - Nunca deixe a resposta final vazia.
-      - Antes de pedir qualquer informação, recupere as informações do pedido pra ver o que realmente falta.
+    - Antes de pedir qualquer informação, recupere as informações do pedido pra ver o que realmente falta.
   `;
 
-  const faqPrompt = `
+  const faqPrompt = knowledgeBase
+    ? `
     ## FAQ E BASE DE CONHECIMENTO
-      ### Regras que não pode ser ignoradas:
-      - Se a pergunta não for sobre preço, produto ou uso:
-        - Use a base de conhecimento interna (não invente nada).
-        - Se não encontrar resposta, informe: “Essa informação não está disponível no momento.”
-      - Respeite os seguintes critérios:
-        - Não forneça conselhos médicos.
-        - Não invente informações fora da base.
-  `;
+      ### Instruções que NUNCA podem ser ignoradas:
+      ${knowledgeBase}
+  `
+    : "";
 
   const prompt = `
     ${systemPrompt}

@@ -4,7 +4,6 @@ import { WorkspacesRepository } from "@/core/infra/repositories/workspaces-repos
 export class WorkspaceServices {
   constructor(private readonly workspacesRepository: WorkspacesRepository) {}
 
-  // TODO: VER PRA QUE?
   async create(name: string) {
     const workspace = Workspace.create(name);
     await this.workspacesRepository.upsert(workspace);
