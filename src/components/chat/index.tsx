@@ -85,8 +85,6 @@ export function Chat(props: Props) {
     },
   });
 
-  console.log(connected);
-
   useEffect(() => {
     if (conversation?.id) {
       setConversation(conversations.get(conversation.id) ?? null);

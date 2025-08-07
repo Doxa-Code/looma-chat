@@ -4,6 +4,7 @@ import { pt } from "date-fns/locale/pt";
 import React, { RefObject } from "react";
 import { Badge } from "../ui/badge";
 import { AudioBubble } from "./audio-bubble";
+import { ImageBubble } from "./image-bubble";
 import { MessageLoading } from "./message-loading";
 import { TextBubble } from "./text-bubble";
 
@@ -49,6 +50,12 @@ export const ContainerMessages: React.FC<Props> = (props) => {
                 key={message.id}
                 message={message}
                 channel={props.channel}
+                hiddenAvatar={hiddenAvatar}
+              />
+            ) : message.type === "image" ? (
+              <ImageBubble
+                channel={props.channel}
+                message={message}
                 hiddenAvatar={hiddenAvatar}
               />
             ) : (

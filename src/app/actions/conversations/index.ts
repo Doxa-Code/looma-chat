@@ -184,6 +184,33 @@ export const listenAudio = securityProcedure([
     });
   });
 
+export const retrieveImage = securityProcedure([
+  "view:conversation",
+  "view:conversations",
+])
+  .input(
+    z.object({
+      channel: z.string(),
+      messageId: z.string(),
+    })
+  )
+  .handler(async ({ input }) => {
+    const message = await messagesRepository.retrieve(input.messageId);
+
+    if (!message || message.type !== "image") return;
+
+    const arrayBuffer = await messageDriver.downloadMedia(
+      input.channel,
+      message.content
+    );
+
+    return new Response(new Uint8Array(arrayBuffer), {
+      headers: {
+        "Content-Type": "image/jpeg",
+      },
+    });
+  });
+
 export const sendAudio = securityProcedure(["send:message"])
   .input(
     z.object({
