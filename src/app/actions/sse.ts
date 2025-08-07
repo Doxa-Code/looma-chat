@@ -10,8 +10,12 @@ export const sse = securityProcedure([
   const stream = new ReadableStream({
     async start(controller) {
       const sendEvent = (data: any) => {
-        const message = `data: ${JSON.stringify(data)}\n\n`;
-        controller.enqueue(encoder.encode(message));
+        try {
+          const message = `data: ${JSON.stringify(data)}\n\n`;
+          controller.enqueue(encoder.encode(message));
+        } catch (err) {
+          console.log(err);
+        }
       };
 
       sendEvent({ type: "connected" });

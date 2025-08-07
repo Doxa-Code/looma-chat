@@ -15,6 +15,7 @@ import {
 } from "../tools/cart-tools";
 import { promotionProductsTool, stockTool } from "../tools/stock-tool";
 import { consultingCepTool } from "../tools/consulting-cep-tool";
+import { AzureVoice } from "@mastra/voice-azure";
 // TODO: VER ESSA TOOL
 // import { knowledgeBaseTool } from "../tools/knowledge-base-tool";
 

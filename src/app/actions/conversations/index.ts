@@ -75,12 +75,42 @@ function getSendToLoomaDebounced(conversationId: string) {
           let setting = await settingsRepository.retrieveSettingsByWorkspaceId(
             workspaceId
           );
+
           if (!setting) {
             setting = Setting.create();
           }
+
+          let content = "";
+
+          for (const message of conversation.lastContactMessages) {
+            if (message.type === "audio") {
+              const arrayBuffer = await messageDriver.downloadMedia(
+                conversation.channel,
+                message.content
+              );
+              const transcript = await aiDriver.transcriptAudio({
+                audio: arrayBuffer,
+              });
+              content += `${transcript}\n`;
+              continue;
+            }
+
+            if (message.type === "image") {
+              const arrayBuffer = await messageDriver.downloadMedia(
+                conversation.channel,
+                message.content
+              );
+              const transcript = await aiDriver.analyzerImage({
+                image: arrayBuffer,
+              });
+              content += `${transcript}\n`;
+              continue;
+            }
+            content += message.content;
+          }
+
           const response = await aiDriver.sendMessage({
             aiUser: loomaUser,
-            conversation,
             workspaceId,
             lastCart,
             attendantName: setting.attendantName,
@@ -89,6 +119,9 @@ function getSendToLoomaDebounced(conversationId: string) {
             paymentMethods: setting.paymentMethods,
             vectorNamespace: setting.vectorNamespace,
             knowledgeBase: setting.knowledgeBase,
+            contact: conversation.contact,
+            conversationId: conversation.id,
+            content,
           });
 
           const messageId = await messageDriver.sendMessageText({
@@ -431,12 +464,20 @@ export const receivedMessaging = createServerAction()
             sender: contact,
             type: "text",
           })
-        : Message.create({
+        : messagePayload.type === "audio"
+        ? Message.create({
             id: messagePayload.id,
             createdAt: new Date(messagePayload.timestamp * 1000),
             sender: contact,
             content: messagePayload.audio.id,
             type: "audio",
+          })
+        : Message.create({
+            id: messagePayload.id,
+            createdAt: new Date(messagePayload.timestamp * 1000),
+            sender: contact,
+            content: messagePayload.image.id,
+            type: "image",
           });
 
     if (conversation.messages.some((m) => m.id === message.id)) return;
