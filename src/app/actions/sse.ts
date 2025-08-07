@@ -1,0 +1,50 @@
+import { sseEmitter } from "@/lib/sse";
+import { securityProcedure } from "./procedure";
+
+export const sse = securityProcedure([
+  "view:conversation",
+  "view:conversations",
+]).handler(async ({ request }) => {
+  const encoder = new TextEncoder();
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      const sendEvent = (data: any) => {
+        const message = `data: ${JSON.stringify(data)}\n\n`;
+        controller.enqueue(encoder.encode(message));
+      };
+
+      sendEvent({ type: "connected" });
+
+      const keepAlive = setInterval(() => {
+        sendEvent({ type: "ping" });
+      }, 1000);
+
+      const onMessage = (data: any) => {
+        sendEvent({
+          type: "message",
+          data,
+        });
+      };
+
+      sseEmitter.on("message", onMessage);
+      sseEmitter.on("typing", () => sendEvent({ type: "typing" }));
+      sseEmitter.on("untyping", () => sendEvent({ type: "untyping" }));
+
+      request?.signal.addEventListener("abort", () => {
+        clearInterval(keepAlive);
+        sseEmitter.removeListener("message", onMessage);
+        controller.close();
+      });
+    },
+  });
+
+  return new Response(stream, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+    },
+  });
+});

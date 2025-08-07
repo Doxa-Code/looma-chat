@@ -1,0 +1,9 @@
+onlyBuiltDependencies:
+  - '@tailwindcss/oxide'
+  - bcrypt
+  - canvas
+  - esbuild
+  - ffmpeg-static
+  - ogg
+  - protobufjs
+  - sharp

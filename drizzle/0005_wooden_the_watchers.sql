@@ -1,0 +1,1 @@
+ALTER TABLE "products_on_cart" ALTER COLUMN "description" SET DEFAULT '';

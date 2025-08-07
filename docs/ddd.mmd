@@ -1,0 +1,71 @@
+---
+config:
+  layout: elk
+  look: classic
+  theme: mc
+---
+classDiagram
+direction TB
+    class Order {
+	    responsability: User
+	    client: Client
+	    budget: Budget
+	    status: "open" | "closed"
+      close()
+    }
+    class Conversation {
+	    responsability: User
+	    contact: Contact
+	    sector: Sector
+	    status: "open" | "closed" | "expired"
+      close() 
+    }
+    class User {
+	    sector: Sector
+      permissions: Permissions[]
+    }
+    class Contact {
+    }
+    class Sector {
+      permissions: Permissions[]
+    }
+    class Message {
+	    user: User
+      type: "audio" | "text" | "file"
+    }
+    class Client {
+	    contact: Contact
+    }
+    class Budget {
+	    conversation : Conversation
+	    contact: Contact
+      status: "open" | "won" | "closed"
+    }
+
+    Conversation --> User
+    Conversation --> Contact
+    Conversation --> Sector
+    Message --> Conversation
+    Message --> User
+    Message --> Contact
+    User --> Sector
+    Client --> Contact
+    Budget --> Conversation
+    Budget --> Contact
+    Order --> User
+    Order --> Client
+    Order --> Budget
+
+
+	class Order:::Peach
+	class Conversation:::Peach
+	class User:::Peach
+	class Contact:::Sky
+	class Sector:::Sky
+	class Message:::Peach
+	class Client:::Peach
+	class Budget:::Peach
+
+	classDef Peach :, stroke-width:2px, stroke-dasharray:none, stroke:#FBB35A, fill:#FFEFDB, color:#8F632D
+    
+  classDef Sky :,stroke-width:2px,stroke-dasharray:none,stroke:#374D7C,fill:#E2EBFF,color:#374D7C

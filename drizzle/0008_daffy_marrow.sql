@@ -1,0 +1,2 @@
+ALTER TABLE "clients" ADD COLUMN "workspace_id" uuid;--> statement-breakpoint
+ALTER TABLE "clients" ADD CONSTRAINT "clients_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE no action ON UPDATE no action;
