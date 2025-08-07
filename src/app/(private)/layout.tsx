@@ -7,7 +7,7 @@ export default async function PrivateRootLayout(
   props: React.PropsWithChildren
 ) {
   const [user] = await getUserAuthenticate();
-  const [workspaces] = await listWorkspaces();
+  const [workspaces] = await listWorkspaces({});
   return (
     <SidebarProvider
       style={

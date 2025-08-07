@@ -3,6 +3,7 @@ import { createConnection } from "../database";
 import { memberships, sectors, users } from "../database/schemas";
 import { User } from "@/core/domain/entities/user";
 import { Sector } from "@/core/domain/value-objects/sector";
+import { PolicyName } from "@/core/domain/services/authorization-service";
 
 export class UsersRepository {
   async retrieveUserByEmail(email: string): Promise<User | null> {
@@ -93,7 +94,17 @@ export class UsersRepository {
 
     await db.$client.end();
 
-    return response;
+    return response as {
+      id: string;
+      name: string;
+      email: string;
+      sector: {
+        id: string;
+        name: string;
+      };
+      type: User.Type;
+      permissions: PolicyName[];
+    }[];
   }
 
   async upsert(user: User) {

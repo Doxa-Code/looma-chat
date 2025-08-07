@@ -1,12 +1,12 @@
 import { Membership } from "../entities/membership";
 import { NotAuthorized } from "../errors/not-authorized";
-import { Permission } from "./permissions";
+import { PolicyName } from "./authorization-service";
 
 export namespace MembershipService {
   export interface SetPermissions {
     userMembership: Membership;
     membership: Membership;
-    permissions: Permission[];
+    permissions: PolicyName[];
   }
 }
 export class MembershipService {

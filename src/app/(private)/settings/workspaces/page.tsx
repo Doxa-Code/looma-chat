@@ -6,7 +6,7 @@ import { Divider } from "@/components/ui/divider";
 import { Label } from "@/components/ui/label";
 
 export default async function WorkspacePage() {
-  const [data] = await listWorkspaces();
+  const [data] = await listWorkspaces({});
   return (
     <>
       <header className="pt-6 px-6">

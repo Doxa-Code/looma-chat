@@ -1,6 +1,6 @@
 import { User } from "../entities/user";
 import { NotAuthorized } from "../errors/not-authorized";
-import { Setting, SettingProps } from "../../values-object/setting";
+import { Setting, SettingProps } from "../value-objects/setting";
 
 export namespace SettingsService {
   export interface Update {

@@ -51,7 +51,7 @@ export const FileButton: React.FC<Props> = (props) => {
       });
     },
     onSuccess(data) {
-      props?.onAddMessage?.(Message.create(data));
+      props?.onAddMessage?.(Message.create(data as any));
       setOpenPreview(false);
     },
   });
@@ -85,7 +85,6 @@ export const FileButton: React.FC<Props> = (props) => {
     if (!file) return;
     uploadFileMessageAction.mutate({
       file,
-      message,
       conversationId: props.conversationId ?? "",
     });
   };
@@ -96,7 +95,7 @@ export const FileButton: React.FC<Props> = (props) => {
         <SheetContent side="bottom" className="h-screen">
           <SheetHeader>
             <SheetClose asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
+              <Button variant="ghost" className="rounded-full">
                 <X />
               </Button>
             </SheetClose>
@@ -134,7 +133,6 @@ export const FileButton: React.FC<Props> = (props) => {
                 <Button
                   onClick={handleUpload}
                   className="rounded-full disabled:opacity-50"
-                  size="icon"
                   disabled={uploadFileMessageAction.isPending}
                 >
                   <Spinner
@@ -161,7 +159,6 @@ export const FileButton: React.FC<Props> = (props) => {
       <DropdownMenu>
         <DropdownMenuTrigger className="group" asChild>
           <Button
-            size="icon"
             variant="ghost"
             className="rounded-full shadow-none w-10 h-10 p-2"
             aria-label="Open edit menu"

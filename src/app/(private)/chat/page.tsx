@@ -3,7 +3,7 @@ import { listAllConversations } from "../../actions/conversations";
 import { getUserAuthenticate } from "@/app/actions/security";
 
 export default async function Page() {
-  const [conversations] = await listAllConversations();
+  const [conversations] = await listAllConversations({});
   const [userAuthenticated] = await getUserAuthenticate();
 
   return (

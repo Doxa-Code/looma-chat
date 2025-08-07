@@ -17,4 +17,4 @@ const router = createOpenApiServerActionRouter({
   .get("/messaging", registerMessaging)
   .post("/messaging", receivedMessaging);
 
-export const { GET, POST, PUT, DELETE } = createRouteHandlers(router);
+export const { GET, POST, PUT, DELETE } = createRouteHandlers(router) as any;
