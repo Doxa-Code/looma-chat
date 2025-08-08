@@ -36,13 +36,21 @@ const aiDriver = LoomaAIDriver.instance();
 
 const debouncedMap = new Map<
   string,
-  (conversation: Conversation, workspaceId: string) => Promise<void>
+  (
+    conversation: Conversation,
+    workspaceId: string,
+    settings: Setting
+  ) => Promise<void>
 >();
 
 function getSendToLoomaDebounced(conversationId: string) {
   if (!debouncedMap.has(conversationId)) {
     const fn = pDebounce(
-      async (conversation: Conversation, workspaceId: string) => {
+      async (
+        conversation: Conversation,
+        workspaceId: string,
+        settings: Setting
+      ) => {
         const messages = conversation.lastContactMessages.map((m) => m.content);
         if (!messages.length) return;
         try {
@@ -64,14 +72,6 @@ function getSendToLoomaDebounced(conversationId: string) {
             conversation.contact.phone,
             workspaceId
           );
-
-          let settings = await settingsRepository.retrieveSettingsByWorkspaceId(
-            workspaceId
-          );
-
-          if (!settings) {
-            settings = Setting.create();
-          }
 
           let content = "";
 
@@ -511,7 +511,21 @@ export const receivedMessaging = createServerAction()
 
     sseEmitter.emit("message", conversation.raw());
 
-    await getSendToLoomaDebounced(conversation.id)(conversation, workspaceId);
+    let settings = await settingsRepository.retrieveSettingsByWorkspaceId(
+      workspaceId
+    );
+
+    if (!settings) {
+      settings = Setting.create();
+    }
+
+    if (setting.aiEnabled) {
+      await getSendToLoomaDebounced(conversation.id)(
+        conversation,
+        workspaceId,
+        settings
+      );
+    }
   });
 
 export const markLastMessagesContactAsViewed = securityProcedure([

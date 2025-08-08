@@ -6,6 +6,7 @@ export type SettingProps = {
   paymentMethods: string;
   vectorNamespace: string;
   knowledgeBase: string;
+  aiEnabled: boolean;
 };
 
 export class Setting {
@@ -16,7 +17,8 @@ export class Setting {
     readonly locationAvailable: string,
     readonly paymentMethods: string,
     readonly vectorNamespace: string,
-    readonly knowledgeBase: string
+    readonly knowledgeBase: string,
+    readonly aiEnabled: boolean
   ) {}
 
   raw() {
@@ -28,6 +30,7 @@ export class Setting {
       paymentMethods: this.paymentMethods,
       vectorNamespace: this.vectorNamespace,
       knowledgeBase: this.knowledgeBase,
+      aiEnabled: this.aiEnabled,
     };
   }
 
@@ -39,7 +42,8 @@ export class Setting {
       props?.locationAvailable ?? "",
       props?.paymentMethods ?? "",
       props?.vectorNamespace ?? "",
-      props?.knowledgeBase ?? ""
+      props?.knowledgeBase ?? "",
+      props?.aiEnabled ?? true
     );
   }
 }

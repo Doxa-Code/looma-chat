@@ -35,6 +35,7 @@ export const updateSettings = securityProcedure([
       paymentMethods: z.string(),
       vectorNamespace: z.string(),
       knowledgeBase: z.string(),
+      aiEnabled: z.boolean(),
     })
   )
   .handler(async ({ input, ctx }) => {
@@ -48,6 +49,7 @@ export const updateSettings = securityProcedure([
         paymentMethods: input.paymentMethods,
         vectorNamespace: input.vectorNamespace,
         knowledgeBase: input.knowledgeBase,
+        aiEnabled: input.aiEnabled,
       })
     );
   });

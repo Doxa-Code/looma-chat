@@ -39,6 +39,7 @@ export const settings = pgTable("settings", {
   paymentMethods: text("payment_methods").notNull().default(""),
   vectorNamespace: text("vector_namespace").notNull().default(""),
   knowledgeBase: text("knowledge_base").notNull().default(""),
+  aiEnabled: boolean("ai_enabled").notNull().default(true),
 });
 
 export const memberships = pgTable("memberships", {

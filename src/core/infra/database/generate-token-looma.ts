@@ -6,7 +6,9 @@ const usersRepository = UsersRepository.instance();
 const tokenDriver = JWTTokenDriver.instance();
 
 (async () => {
-  const loomaUser = await usersRepository.retrieveUserByEmail("looma@doxacode.com.br");
+  const loomaUser = await usersRepository.retrieveUserByEmail(
+    "looma@doxacode.com.br"
+  );
   if (!loomaUser) {
     process.exit(0);
   }

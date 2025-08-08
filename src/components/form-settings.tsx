@@ -8,6 +8,7 @@ import { Button } from "./ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { SettingProps } from "@/core/domain/value-objects/setting";
 import { Textarea } from "./ui/textarea";
+import { Switch } from "./ui/switch";
 
 type Props = {
   setting: SettingProps;
@@ -45,6 +46,7 @@ export function FormSetting(props: Props) {
           paymentMethods: form.get("paymentMethods")?.toString() ?? "",
           vectorNamespace: form.get("vectorNamespace")?.toString() ?? "",
           knowledgeBase: form.get("knowledgeBase")?.toString() ?? "",
+          aiEnabled: form.get("aiEnabled")?.toString() === "on",
         };
         mutate(body);
       }}
@@ -95,6 +97,10 @@ export function FormSetting(props: Props) {
           className="w-full"
           placeholder=""
         />
+      </div>
+      <div className="flex flex-col w-full max-w-[300px] gap-1">
+        <Label className="text-sm text-muted-foreground">Habilitar IA?</Label>
+        <Switch name="aiEnabled" defaultChecked={props.setting.aiEnabled} />
       </div>
 
       <div className="flex flex-col w-full gap-1">

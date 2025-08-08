@@ -18,6 +18,7 @@ export class SettingsRepository {
         paymentMethods: settings.paymentMethods,
         vectorNamespace: settings.vectorNamespace,
         knowledgeBase: settings.knowledgeBase,
+        aiEnabled: settings.aiEnabled,
       })
       .from(settings)
       .where(eq(settings.workspaceId, workspaceId));
@@ -53,6 +54,7 @@ export class SettingsRepository {
         paymentMethods: input.paymentMethods,
         vectorNamespace: input.vectorNamespace,
         knowledgeBase: input.knowledgeBase,
+        aiEnabled: input.aiEnabled,
         workspaceId: setting?.workspaceId || workspaceId,
       })
       .onConflictDoUpdate({
@@ -63,6 +65,7 @@ export class SettingsRepository {
           locationAvailable: input.locationAvailable,
           paymentMethods: input.paymentMethods,
           knowledgeBase: input.knowledgeBase,
+          aiEnabled: input.aiEnabled,
           vectorNamespace: input.vectorNamespace,
         },
         target: settings.id,
@@ -98,6 +101,7 @@ export class SettingsRepository {
         paymentMethods: settings.paymentMethods,
         vectorNamespace: settings.vectorNamespace,
         knowledgeBase: settings.knowledgeBase,
+        aiEnabled: settings.aiEnabled,
       })
       .from(settings)
       .where(eq(settings.wabaId, wabaId));

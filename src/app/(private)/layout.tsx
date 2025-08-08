@@ -28,7 +28,7 @@ export default async function PrivateRootLayout(
         workspaceSelected={workspaces!}
         user={user?.raw?.()!}
       />
-      <main className="w-full h-screen overflow-hidden flex flex-col bg-[#F9FAFC]">
+      <main className="w-full h-screen overflow-auto flex flex-col bg-[#F9FAFC]">
         {props.children}
       </main>
     </SidebarProvider>
