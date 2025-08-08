@@ -100,7 +100,7 @@ export function FormSetting(props: Props) {
       </div>
       <div className="flex flex-col w-full max-w-[300px] gap-1">
         <Label className="text-sm text-muted-foreground">Habilitar IA?</Label>
-        <Switch name="aiEnabled" defaultChecked={props.setting.aiEnabled} />
+        <Switch name="aiEnabled" defaultChecked={props.setting?.aiEnabled} />
       </div>
 
       <div className="flex flex-col w-full gap-1">
