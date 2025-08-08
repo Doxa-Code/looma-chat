@@ -89,7 +89,7 @@ export class Conversation {
   get lastContactMessages() {
     const messages: Message[] = [];
     for (const message of this.messages.reverse()) {
-      if (message.sender.type === "attendant") return messages.reverse();
+      if (message.sender?.type === "attendant") return messages.reverse();
       messages.push(message);
     }
     return messages.reverse();
@@ -106,7 +106,7 @@ export class Conversation {
   addMessage(message: Message) {
     this._messages.set(message.id, message);
 
-    if (this.status === "waiting" && message.sender.type === "attendant") {
+    if (this.status === "waiting" && message.sender?.type === "attendant") {
       this.attributeAttendant(
         Attendant.create(message.sender.id, message.sender.name)
       );
@@ -124,7 +124,7 @@ export class Conversation {
 
   markLastMessagesContactAsViewed() {
     const messages = this.messages.filter(
-      (m) => m.status !== "viewed" && m.sender.type === "contact"
+      (m) => m.status !== "viewed" && m.sender?.type === "contact"
     );
     for (const message of messages) {
       message.markAsViewed();

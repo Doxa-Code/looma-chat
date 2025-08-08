@@ -101,7 +101,7 @@ export class Message {
           : props.sender.phone,
         props.sender.name
       ),
-      type: props.type,
+      type: props?.type,
       viewedAt: null,
       internal: props.internal ?? false,
       status: "senting",

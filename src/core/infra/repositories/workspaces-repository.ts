@@ -21,6 +21,8 @@ export class WorkspacesRepository {
   }
 
   async list(userId: string) {
+    if (!userId) return [];
+
     const db = createConnection();
 
     const response = await db

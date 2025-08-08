@@ -89,7 +89,7 @@ export class MetaMessageDriver implements MessageDriver {
     const form = new FormData();
     form.append("file", buffer, {
       filename: data.file.name,
-      contentType: data.file.type || "audio/ogg",
+      contentType: data.file?.type || "audio/ogg",
     });
 
     form.append("messaging_product", "whatsapp");

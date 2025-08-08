@@ -33,7 +33,7 @@ export class ConversationsRepository {
             JSON_AGG(
               JSON_BUILD_OBJECT(
                 'id', ${messages.id},
-                'type', ${messages.type},
+                'type', ${messages?.type},
                 'content', ${messages.content},
                 'sender', JSON_BUILD_OBJECT(
                             'id', ${messages.senderId},
@@ -106,8 +106,8 @@ export class ConversationsRepository {
           createdAt: this.timestampToDate(m.createdAt),
           id: m.id,
           internal: !!m.internal,
-          sender: Sender.create(m.sender!.type, m.sender!.id, m.sender.name),
-          type: m.type,
+          sender: Sender.create(m.sender!?.type, m.sender!.id, m.sender.name),
+          type: m?.type,
           status: m.status,
           viewedAt: m.viewedAt ? this.timestampToDate(m.viewedAt) : null,
         })
@@ -259,8 +259,8 @@ export class ConversationsRepository {
               conversationId: conversation.id,
               internal: m.internal,
               senderName: m.sender.name,
-              senderType: m.sender.type,
-              type: m.type,
+              senderType: m.sender?.type,
+              type: m?.type,
               viewedAt: m.viewedAt ? this.dateToTimestamp(m.viewedAt) : null,
               status: m.status,
             })
@@ -272,8 +272,8 @@ export class ConversationsRepository {
                 conversationId: conversation.id,
                 internal: m.internal,
                 senderName: m.sender.name,
-                senderType: m.sender.type,
-                type: m.type,
+                senderType: m.sender?.type,
+                type: m?.type,
                 viewedAt: m.viewedAt ? this.dateToTimestamp(m.viewedAt) : null,
                 status: m.status,
               },

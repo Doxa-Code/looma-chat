@@ -76,7 +76,7 @@ function getSendToLoomaDebounced(conversationId: string) {
           let content = "";
 
           for (const message of conversation.lastContactMessages) {
-            if (message.type === "audio") {
+            if (message?.type === "audio") {
               const arrayBuffer = await messageDriver.downloadMedia(
                 conversation.channel,
                 message.content
@@ -88,7 +88,7 @@ function getSendToLoomaDebounced(conversationId: string) {
               continue;
             }
 
-            if (message.type === "image") {
+            if (message?.type === "image") {
               const arrayBuffer = await messageDriver.downloadMedia(
                 conversation.channel,
                 message.content
@@ -166,7 +166,7 @@ export const listenAudio = securityProcedure([
   .handler(async ({ input }) => {
     const message = await messagesRepository.retrieve(input.messageId);
 
-    if (!message || message.type !== "audio") return;
+    if (!message || message?.type !== "audio") return;
 
     const arrayBuffer = await messageDriver.downloadMedia(
       input.channel,
@@ -192,7 +192,7 @@ export const retrieveImage = securityProcedure([
   .handler(async ({ input }) => {
     const message = await messagesRepository.retrieve(input.messageId);
 
-    if (!message || message.type !== "image") return;
+    if (!message || message?.type !== "image") return;
 
     const arrayBuffer = await messageDriver.downloadMedia(
       input.channel,
@@ -478,7 +478,7 @@ export const receivedMessaging = createServerAction()
     }
 
     const message =
-      messagePayload.type === "text"
+      messagePayload?.type === "text"
         ? Message.create({
             content: messagePayload.text.body,
             id: messagePayload.id,
@@ -486,7 +486,7 @@ export const receivedMessaging = createServerAction()
             sender: contact,
             type: "text",
           })
-        : messagePayload.type === "audio"
+        : messagePayload?.type === "audio"
         ? Message.create({
             id: messagePayload.id,
             createdAt: new Date(messagePayload.timestamp * 1000),

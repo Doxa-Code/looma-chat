@@ -120,8 +120,8 @@ export const VoiceRecorder: React.FC<Props> = (props) => {
       await ffmpeg.writeFile("input.webm", await fetchFile(blob));
       await ffmpeg.exec(["-i", "input.webm", "-c:a", "libopus", "output.ogg"]);
 
-      const data = await ffmpeg.readFile("output.ogg");
-      const convertedBlob = new Blob([data], { type: "audio/ogg" });
+      const data = (await ffmpeg.readFile("output.ogg")) as BlobPart;
+      const convertedBlob = new Blob([data as any], { type: "audio/ogg" });
 
       const file = new File([convertedBlob], "recording.ogg", {
         type: "audio/ogg",

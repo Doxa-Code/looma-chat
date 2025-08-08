@@ -96,7 +96,7 @@ export function Chat(props: Props) {
 
     if (
       conversation?.messages.some(
-        (m) => m.status !== "viewed" && m.sender.type === "contact"
+        (m) => m.status !== "viewed" && m.sender?.type === "contact"
       )
     ) {
       markLastMessagesContactAsViewedAction.mutate({

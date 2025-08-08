@@ -39,12 +39,12 @@ export function useSSE<T extends { type: string } = any>(props: SSEOptions<T>) {
     es.onmessage = (event) => {
       const parsed = JSON.parse(event.data) as T;
 
-      if (parsed.type === "connected") {
+      if (parsed?.type === "connected") {
         setConnected(true);
         return;
       }
 
-      if (parsed.type === "ping") {
+      if (parsed?.type === "ping") {
         resetHeartbeat();
         return;
       }

@@ -151,10 +151,10 @@ export const upsertUser = securityProcedure(["manage:users", "upsert:users"])
       user = User.create({
         email: input.email,
         name: input.name,
-        type: input.type,
+        type: input?.type,
       });
     } else {
-      user.update({ name: input.name, email: input.email, type: input.type });
+      user.update({ name: input.name, email: input.email, type: input?.type });
     }
 
     const sector = await sectorsRepository.retrieve(input.sectorId);

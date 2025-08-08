@@ -12,7 +12,7 @@ export const TextBubble: React.FC<Props> = (props) => {
     <MessageContainer
       createdAt={props.message.createdAt}
       hiddenAvatar={props.hiddenAvatar}
-      senderType={props.message.sender.type}
+      senderType={props.message.sender?.type}
       status={props.message.status}
       senderName={props.message.sender.name}
     >

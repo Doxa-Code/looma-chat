@@ -16,7 +16,7 @@ export class UsersRepository {
         email: users.email,
         thumbnail: users.thumbnail,
         sector: sectors,
-        type: users.type,
+        type: users?.type,
       })
       .from(users)
       .leftJoin(sectors, eq(users.sectorId, sectors.id))
@@ -34,7 +34,7 @@ export class UsersRepository {
       sector: user.sector
         ? Sector.create(user.sector?.name, user.sector?.id)
         : null,
-      type: user.type,
+      type: user?.type,
     });
   }
 
@@ -50,7 +50,7 @@ export class UsersRepository {
         email: users.email,
         thumbnail: users.thumbnail,
         sector: sectors,
-        type: users.type,
+        type: users?.type,
       })
       .from(users)
       .leftJoin(sectors, eq(users.sectorId, sectors.id))
@@ -68,11 +68,12 @@ export class UsersRepository {
       sector: user.sector
         ? Sector.create(user.sector?.name, user.sector?.id)
         : null,
-      type: user.type,
+      type: user?.type,
     });
   }
 
   async list(workspaceId: string) {
+    if (!workspaceId) return [];
     const db = createConnection();
 
     const response = await db
@@ -84,7 +85,7 @@ export class UsersRepository {
           id: sectors.id,
           name: sectors.name,
         },
-        type: users.type,
+        type: users?.type,
         permissions: memberships.permissions,
       })
       .from(memberships)
@@ -116,14 +117,14 @@ export class UsersRepository {
         id: user.id,
         email: user.email,
         name: user.name,
-        type: user.type,
+        type: user?.type,
         sectorId: user.sector?.id ?? null,
       })
       .onConflictDoUpdate({
         set: {
           email: user.email,
           name: user.name,
-          type: user.type,
+          type: user?.type,
           sectorId: user.sector?.id ?? null,
         },
         target: users.id,
@@ -183,7 +184,7 @@ export class UsersRepository {
         email: users.email,
         thumbnail: users.thumbnail,
         sector: sectors,
-        type: users.type,
+        type: users?.type,
       })
       .from(memberships)
       .innerJoin(users, eq(users.id, memberships.userId))
@@ -207,7 +208,7 @@ export class UsersRepository {
       sector: user.sector
         ? Sector.create(user.sector?.name, user.sector?.id)
         : null,
-      type: user.type,
+      type: user?.type,
     });
   }
 

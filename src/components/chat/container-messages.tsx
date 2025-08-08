@@ -45,14 +45,14 @@ export const ContainerMessages: React.FC<Props> = (props) => {
                 })}
               </Badge>
             </div>
-            {message.type === "audio" ? (
+            {message?.type === "audio" ? (
               <AudioBubble
                 key={message.id}
                 message={message}
                 channel={props.channel}
                 hiddenAvatar={hiddenAvatar}
               />
-            ) : message.type === "image" ? (
+            ) : message?.type === "image" ? (
               <ImageBubble
                 channel={props.channel}
                 message={message}

@@ -69,7 +69,7 @@ const addToRemoveQueue = (toastId: string) => {
 };
 
 export const reducer = (state: State, action: Action): State => {
-  switch (action.type) {
+  switch (action?.type) {
     case "ADD_TOAST":
       return {
         ...state,
@@ -127,7 +127,7 @@ let memoryState: State = { toasts: [] };
 
 // Updated with https://github.com/shadcn-ui/ui/pull/1038/files
 function dispatch(action: Action) {
-  if (action.type === "ADD_TOAST") {
+  if (action?.type === "ADD_TOAST") {
     const toastExists = memoryState.toasts.some(
       (t) => t.id === action.toast.id
     );

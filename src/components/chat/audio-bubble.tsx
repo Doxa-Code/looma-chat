@@ -14,7 +14,7 @@ type Props = {
 };
 
 export const AudioBubble: React.FC<Props> = (props) => {
-  if (props.message.type !== "audio") return <></>;
+  if (props.message?.type !== "audio") return <></>;
 
   let animationPlayerFrameId: number;
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -194,13 +194,13 @@ export const AudioBubble: React.FC<Props> = (props) => {
   return (
     <MessageContainer
       createdAt={props.message.createdAt}
-      senderType={props.message.sender.type}
+      senderType={props.message.sender?.type}
       status={props.message.status}
       hiddenAvatar={props.hiddenAvatar}
       senderName={props.message.sender.name}
     >
       <div
-        data-sender={props.message.sender.type}
+        data-sender={props.message.sender?.type}
         className="group flex w-screen max-w-[250px] px-4 pt-5 flex-col items-start gap-3"
       >
         <div

@@ -26,6 +26,8 @@ export class MembershipsRepository {
     await db.$client.end();
   }
   async retrieveByUserIdAndWorkspaceId(userId: string, workspaceId: string) {
+    if (!userId || !workspaceId) return null;
+
     const db = createConnection();
 
     const [membership] = await db

@@ -5,6 +5,8 @@ import { Setting } from "@/core/domain/value-objects/setting";
 
 export class SettingsRepository {
   async retrieveSettingsByWorkspaceId(workspaceId: string) {
+    if (!workspaceId) return null;
+
     const db = createConnection();
 
     const [setting] = await db

@@ -18,6 +18,7 @@ export const retrieveSettings = securityProcedure([
     const newSettings = Setting.create();
     return newSettings.raw();
   }
+
   return settings.raw();
 });
 

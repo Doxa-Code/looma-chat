@@ -328,7 +328,7 @@ export default function TableUsers(props: Props) {
                   email: row.original.email,
                   name: row.original.name,
                   id: row.original.id,
-                  type: row.original.type,
+                  type: row.original?.type,
                   sectorId: row.original.sector?.id,
                 });
                 setRowSelection({});

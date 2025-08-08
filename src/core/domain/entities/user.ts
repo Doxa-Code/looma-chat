@@ -51,7 +51,7 @@ export class User {
   update(input: { email?: string; name?: string; type: User.Type }) {
     this.email = input.email ?? this.email;
     this.name = input.name ?? this.name;
-    this.type = input.type ?? this.type;
+    this.type = input?.type ?? this.type;
   }
 
   isSuperUser() {
@@ -82,7 +82,7 @@ export class User {
       name: props.name,
       sector: null,
       thumbnail: null,
-      type: props.type ?? "user",
+      type: props?.type ?? "user",
     });
   }
 }

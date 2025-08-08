@@ -75,7 +75,7 @@ export const ChatSidebar: React.FC<Props> = (props) => {
                   <span
                     data-unviewed={
                       c.lastMessage?.status !== "viewed" &&
-                      c.lastMessage?.sender.type === "contact"
+                      c.lastMessage?.sender?.type === "contact"
                     }
                     className="line-clamp-1 truncate whitespace-normal data-[unviewed=true]:font-bold text-muted-foreground text-xs"
                   >

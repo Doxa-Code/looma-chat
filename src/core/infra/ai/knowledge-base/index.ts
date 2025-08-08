@@ -32,7 +32,6 @@ await Promise.all(
       strategy: "markdown",
       size: 400,
       overlap: 50,
-      separators: ["\n\n", "\n", ".", "!", "?", ",", " ", ""],
     });
     const { embeddings } = await embedMany({
       model: azureEmbeddings.textEmbeddingModel("text-embedding-3-small", {
@@ -62,7 +61,6 @@ await Promise.all(
       strategy: "markdown",
       size: 1200,
       overlap: 250,
-      separators: ["\n\n", "\n", ".", "!", "?", ",", " ", ""],
     });
     const { embeddings } = await embedMany({
       model: azureEmbeddings.textEmbeddingModel("text-embedding-3-small", {

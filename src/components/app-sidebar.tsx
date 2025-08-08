@@ -55,7 +55,7 @@ const navMain: (user: User.Raw, permissions: Set<PolicyName>) => Menu[] = (
     url: "/chat",
     icon: MessageCircle,
     active:
-      user.type === "superuser" ||
+      user?.type === "superuser" ||
       (
         [
           "view:conversations",
@@ -69,7 +69,7 @@ const navMain: (user: User.Raw, permissions: Set<PolicyName>) => Menu[] = (
     url: "/products",
     icon: Box,
     active:
-      user.type === "superuser" ||
+      user?.type === "superuser" ||
       (["view:products"] as PolicyName[]).some((permission) =>
         permissions.has(permission)
       ),
@@ -78,7 +78,7 @@ const navMain: (user: User.Raw, permissions: Set<PolicyName>) => Menu[] = (
     title: "Configurações",
     url: "#",
     active:
-      user.type === "superuser" ||
+      user?.type === "superuser" ||
       (["manage:settings", "view:settings"] as PolicyName[]).some(
         (permission) => permissions.has(permission)
       ),

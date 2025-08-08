@@ -8,7 +8,6 @@ type ListProps = {
   pageSize: number;
   workspaceId: string;
   searchTerm?: string;
-  userId: string;
 };
 
 export class ProductsRepository {
@@ -63,7 +62,12 @@ export class ProductsRepository {
   async list(
     props: ListProps
   ): Promise<{ products: Product.Props[]; total: number }> {
-    const { page = 1, pageSize = 20, workspaceId, searchTerm, userId } = props;
+    const { page = 1, pageSize = 20, workspaceId, searchTerm } = props;
+    if (!workspaceId)
+      return {
+        products: [],
+        total: 0,
+      };
 
     const db = createConnection();
 

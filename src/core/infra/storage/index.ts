@@ -25,7 +25,7 @@ export const sendFile = async (file: File, salt: string) => {
     Bucket: bucketName,
     Key: keyName,
     Body: buffer,
-    ContentType: file.type,
+    ContentType: file?.type,
   });
 
   await s3Client.send(command);

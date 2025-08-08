@@ -33,9 +33,9 @@ export class MessagesRepository {
         conversationId: oldMessage.conversationId,
         internal: message.internal,
         senderName: message.sender.name,
-        senderType: message.sender.type,
+        senderType: message.sender?.type,
         status: message.status,
-        type: message.type,
+        type: message?.type,
         viewedAt: message.viewedAt
           ? this.dateToTimestamp(message.viewedAt)
           : null,
@@ -48,9 +48,9 @@ export class MessagesRepository {
           conversationId: oldMessage.conversationId,
           internal: message.internal,
           senderName: message.sender.name,
-          senderType: message.sender.type,
+          senderType: message.sender?.type,
           status: message.status,
-          type: message.type,
+          type: message?.type,
           viewedAt: message.viewedAt
             ? this.dateToTimestamp(message.viewedAt)
             : null,
@@ -84,7 +84,7 @@ export class MessagesRepository {
         message.senderId,
         message.senderName
       ),
-      type: message.type as Message.Type,
+      type: message?.type as Message.Type,
       status: message.status,
       viewedAt: message.viewedAt
         ? this.timestampToDate(message.viewedAt)

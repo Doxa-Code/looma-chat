@@ -152,7 +152,7 @@ export function RegisterUserDrawer(props: Props) {
                       immutableUser.set("type", value).asMutable({ deep: true })
                     );
                   }}
-                  value={user.type}
+                  value={user?.type}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o tipo" />

@@ -37,7 +37,6 @@ export const listAllProducts = securityProcedure(["view:products"])
       pageSize: input.size,
       workspaceId: ctx.membership.workspaceId,
       searchTerm: input.searchTerm,
-      userId: ctx.user.id,
     });
 
     return {
