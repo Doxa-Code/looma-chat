@@ -2,6 +2,10 @@ import { Mastra } from "@mastra/core/mastra";
 import { pineconeVector } from "./config/vectors/pinecone-vector";
 import { PinoLogger } from "@mastra/loggers";
 import { loomaAgent } from "./agents/looma-agent";
+import {
+  OpenInferenceOTLPTraceExporter,
+  isOpenInferenceSpan,
+} from "@arizeai/openinference-mastra";
 
 export const mastra = new Mastra({
   agents: {
@@ -11,21 +15,21 @@ export const mastra = new Mastra({
     pinecone: pineconeVector,
   },
   telemetry: {
-    enabled: false,
+    serviceName: "LoomaAI",
+    enabled: true,
+    export: {
+      type: "custom",
+      exporter: new OpenInferenceOTLPTraceExporter({
+        url: process.env.PHOENIX_COLLECTOR_ENDPOINT,
+        headers: {
+          Authorization: `Bearer ${process.env.PHOENIX_API_KEY}`,
+        },
+        spanFilter: isOpenInferenceSpan,
+      }),
+    },
   },
   logger: new PinoLogger({
-    level: "debug",
-    formatters: {
-      log(object: any) {
-        if (object?.result?.text) {
-          return {
-            ai: object?.result?.text,
-          };
-        }
-        return {
-          toolResults: object?.toolResults,
-        };
-      },
-    },
+    level: "info",
+    name: "LoomaAI",
   }),
 });

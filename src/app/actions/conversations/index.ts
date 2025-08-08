@@ -60,24 +60,17 @@ function getSendToLoomaDebounced(conversationId: string) {
             await MembershipsRepository.instance().upsert(membership);
           }
 
-          sseEmitter.emit("typing");
-
-          await messageDriver.sendTyping({
-            lastMessageId: conversation.lastContactMessages.at(-1)?.id!,
-            channel: conversation.channel,
-          });
-
           const lastCart = await cartsRepository.retrieveLastCartByContactPhone(
             conversation.contact.phone,
             workspaceId
           );
 
-          let setting = await settingsRepository.retrieveSettingsByWorkspaceId(
+          let settings = await settingsRepository.retrieveSettingsByWorkspaceId(
             workspaceId
           );
 
-          if (!setting) {
-            setting = Setting.create();
+          if (!settings) {
+            settings = Setting.create();
           }
 
           let content = "";
@@ -109,19 +102,21 @@ function getSendToLoomaDebounced(conversationId: string) {
             content += message.content;
           }
 
+          sseEmitter.emit("typing");
+
+          await messageDriver.sendTyping({
+            lastMessageId: conversation.lastContactMessages.at(-1)?.id!,
+            channel: conversation.channel,
+          });
+
           const response = await aiDriver.sendMessage({
             aiUser: loomaUser,
             workspaceId,
             lastCart,
-            attendantName: setting.attendantName,
-            businessName: setting.businessName,
-            locationAvailable: setting.locationAvailable,
-            paymentMethods: setting.paymentMethods,
-            vectorNamespace: setting.vectorNamespace,
-            knowledgeBase: setting.knowledgeBase,
             contact: conversation.contact,
             conversationId: conversation.id,
             content,
+            settings,
           });
 
           const messageId = await messageDriver.sendMessageText({

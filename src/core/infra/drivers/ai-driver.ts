@@ -1,27 +1,26 @@
 import { Cart } from "@/core/domain/entities/cart";
-import { Conversation } from "@/core/domain/entities/conversation";
 import { User } from "@/core/domain/entities/user";
+import { Contact } from "@/core/domain/value-objects/contact";
 import { RuntimeContext } from "@mastra/core/runtime-context";
-import { mastra as ai } from "../ai";
 import axios from "axios";
 import FormData from "form-data";
 import { setTimeout } from "node:timers/promises";
-import { Contact } from "@/core/domain/value-objects/contact";
+import { mastra as ai } from "../ai";
 import { azure } from "../ai/config/llms/azure";
+import { Setting } from "@/core/domain/value-objects/setting";
+import { Span, trace } from "@opentelemetry/api";
+import { SemanticConventions } from "@arizeai/openinference-semantic-conventions";
+import { context } from "@opentelemetry/api";
+import { setSession } from "@arizeai/openinference-core";
 
 type SendMessageProps = {
   aiUser: User;
   workspaceId: string;
   lastCart: Cart | null;
-  attendantName: string;
-  businessName: string;
-  vectorNamespace: string;
-  paymentMethods: string;
-  locationAvailable: string;
-  knowledgeBase: string;
   contact: Contact;
   conversationId: string;
   content: string;
+  settings: Setting;
 };
 
 type TranscriptAudioProps = {
@@ -40,53 +39,64 @@ interface AIDriver {
 
 export class LoomaAIDriver implements AIDriver {
   async sendMessage(props: SendMessageProps, retry = 0): Promise<string> {
-    try {
-      const runtimeContext = new RuntimeContext([
-        ["contactName", props.contact.name],
-        ["contactPhone", props.contact.phone],
-        ["attendantName", props.attendantName],
-        ["businessName", props.businessName],
-        ["vector-namespace", props.vectorNamespace],
-        ["conversationId", props.conversationId],
-        ["userId", props.aiUser.id],
-        ["workspaceId", props.workspaceId],
-        ["paymentMethods", props.paymentMethods],
-        ["locationAvailable", props.locationAvailable],
-        ["knowledgeBase", props.knowledgeBase],
-        [
-          "databaseConfig",
-          {
-            pinecone: {
-              namespace: props.vectorNamespace,
+    const looma = ai.getAgent("loomaAgent");
+    const tracer = trace.getTracer("agent");
+
+    return tracer.startActiveSpan("agent", async (span: Span) => {
+      span.setAttribute(SemanticConventions.OPENINFERENCE_SPAN_KIND, "agent");
+      span.setAttribute(SemanticConventions.SESSION_ID, props.conversationId);
+      span.setAttribute(SemanticConventions.INPUT_VALUE, props.content);
+      try {
+        const runtimeContext = new RuntimeContext([
+          ["contactName", props.contact.name],
+          ["contactPhone", props.contact.phone],
+          ["conversationId", props.conversationId],
+          ["userId", props.aiUser.id],
+          ["workspaceId", props.workspaceId],
+          ["settings", props.settings],
+          [
+            "databaseConfig",
+            {
+              pinecone: {
+                namespace: props.settings.vectorNamespace,
+              },
             },
-          },
-        ],
-      ]);
+          ],
+        ]);
+        return context.with(
+          setSession(context.active(), { sessionId: props.conversationId }),
+          async () => {
+            const response = await looma.generate(props.content, {
+              runtimeContext,
+              maxSteps: 999,
+              memory: {
+                resource: props.contact.phone,
+                thread: {
+                  id: props.conversationId,
+                  resourceId: props.contact.phone,
+                },
+              },
+              telemetry: {
+                isEnabled: true,
+                recordInputs: true,
+                recordOutputs: true,
+              },
+            });
 
-      const looma = ai.getAgent("loomaAgent");
-
-      const response = await looma.generate(props.content, {
-        runtimeContext,
-        maxSteps: 999,
-        memory: {
-          resource: props.contact.phone,
-          thread: {
-            id: props.conversationId,
-            resourceId: props.contact.phone,
-          },
-        },
-      });
-
-      const result = response.text;
-
-      return result;
-    } catch (err) {
-      console.log(err);
-      if (retry > 2) {
-        return "";
+            const result = response.text;
+            span.setAttribute(SemanticConventions.OUTPUT_VALUE, result);
+            span.end();
+            return result;
+          }
+        );
+      } catch (err: any) {
+        span.recordException(err);
+        if (retry > 2) {
+          return "";
+        }
+        return await this.sendMessage(props, retry + 1);
       }
-      return await this.sendMessage(props, retry + 1);
-    }
+    });
   }
 
   async transcriptAudio(props: TranscriptAudioProps): Promise<string> {
