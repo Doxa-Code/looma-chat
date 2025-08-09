@@ -15,14 +15,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { User } from "@/core/domain/entities/user";
-import {
-  Box,
-  ChevronRight,
-  CogIcon,
-  DollarSign,
-  Dot,
-  MessageCircle,
-} from "lucide-react";
+import { PolicyName } from "@/core/domain/services/authorization-service";
+import { Box, ChevronRight, CogIcon, Dot, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -33,7 +27,6 @@ import {
   CollapsibleTrigger,
 } from "./ui/collapsible";
 import { WorkspaceDropdown } from "./workspace-dropdown";
-import { PolicyName } from "@/core/domain/services/authorization-service";
 
 type Menu = {
   title: string;
@@ -163,6 +156,7 @@ export function AppSidebar(
                 >
                   <Link
                     className="w-full select-none cursor-pointer"
+                    prefetch
                     href={item.url}
                   >
                     <CollapsibleTrigger className="flex items-center w-full gap-3">
@@ -183,7 +177,7 @@ export function AppSidebar(
                       {item.childrens?.map((item) => {
                         const isActive = Boolean(pathname === item.url);
                         return (
-                          <Link key={item.title} href={item.url}>
+                          <Link prefetch key={item.title} href={item.url}>
                             <SidebarMenuItem>
                               <SidebarMenuButton
                                 isActive={isActive}

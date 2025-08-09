@@ -1,5 +1,6 @@
 "use client";
 
+import { GlobalLoader } from "@/components/global-loader";
 import { Toaster } from "@/components/toaster";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
@@ -11,6 +12,7 @@ export function Providers({ children }: React.PropsWithChildren) {
     <QueryClientProvider client={client}>
       {children}
       <Toaster />
+      <GlobalLoader />
     </QueryClientProvider>
   );
 }
