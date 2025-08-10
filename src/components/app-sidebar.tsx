@@ -140,6 +140,10 @@ export function AppSidebar(
           Menu
         </span>
         {navMain(props.user, new Set(props.permissions)).map((item) => {
+          const isDefaultOpen = item.childrens?.length
+            ? item.childrens.some((c) => Boolean(pathname === c.url))
+            : false;
+
           const isActive = Boolean(pathname === item.url);
           if (!item.active) return <></>;
           return (
@@ -147,6 +151,7 @@ export function AppSidebar(
               key={item.title}
               title={item.title}
               className="group/collapsible"
+              defaultOpen={isDefaultOpen}
             >
               <SidebarGroup className="px-4">
                 <SidebarGroupLabel
