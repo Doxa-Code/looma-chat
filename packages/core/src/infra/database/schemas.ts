@@ -28,6 +28,7 @@ export const workspaces = pgTable("workspaces", {
 export const settings = pgTable("settings", {
   id: uuid("id").primaryKey().notNull(),
   wabaId: text("waba_id").notNull().default(""),
+  phoneId: text("phone_id").notNull().default(""),
   workspaceId: uuid("workspace_id")
     .notNull()
     .references(() => workspaces.id, {

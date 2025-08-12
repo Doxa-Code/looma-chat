@@ -3,8 +3,10 @@ import { Setting } from "@looma/core/domain/value-objects/setting";
 import { SettingsRepository } from "@looma/core/infra/repositories/settings-repository";
 import z from "zod";
 import { securityProcedure } from "../procedure";
+import { MetaMessageDriver } from "@looma/core/infra/drivers/message-driver";
 
 const settingsRepository = SettingsRepository.instance();
+const messaging = MetaMessageDriver.instance();
 
 export const retrieveSettings = securityProcedure([
   "manage:settings",
@@ -22,6 +24,17 @@ export const retrieveSettings = securityProcedure([
   return settings.raw();
 });
 
+export const listPhonesId = securityProcedure([
+  "manage:settings",
+  "update:settings",
+]).handler(async ({ ctx }) => {
+  const setting = await settingsRepository.retrieveSettingsByWorkspaceId(
+    ctx.membership.workspaceId
+  );
+  if (!setting || !setting.wabaId) return [];
+  return await messaging.listPhonesId(setting.wabaId);
+});
+
 export const updateSettings = securityProcedure([
   "manage:settings",
   "update:settings",
@@ -29,6 +42,7 @@ export const updateSettings = securityProcedure([
   .input(
     z.object({
       wabaId: z.string(),
+      phoneId: z.string(),
       attendantName: z.string(),
       businessName: z.string(),
       locationAvailable: z.string(),
@@ -43,6 +57,7 @@ export const updateSettings = securityProcedure([
       ctx.membership.workspaceId,
       Setting.create({
         wabaId: input.wabaId,
+        phoneId: input.phoneId,
         attendantName: input.attendantName,
         businessName: input.businessName,
         locationAvailable: input.locationAvailable,

@@ -1,5 +1,6 @@
 export type SettingProps = {
   wabaId: string;
+  phoneId: string;
   attendantName: string;
   businessName: string;
   locationAvailable: string;
@@ -12,6 +13,7 @@ export type SettingProps = {
 export class Setting {
   constructor(
     readonly wabaId: string,
+    readonly phoneId: string,
     readonly attendantName: string,
     readonly businessName: string,
     readonly locationAvailable: string,
@@ -24,6 +26,7 @@ export class Setting {
   raw() {
     return {
       wabaId: this.wabaId,
+      phoneId: this.phoneId,
       attendantName: this.attendantName,
       businessName: this.businessName,
       locationAvailable: this.locationAvailable,
@@ -37,6 +40,7 @@ export class Setting {
   static create(props?: SettingProps) {
     return new Setting(
       props?.wabaId ?? "",
+      props?.phoneId ?? "",
       props?.attendantName ?? "Looma AI",
       props?.businessName ?? "",
       props?.locationAvailable ?? "",

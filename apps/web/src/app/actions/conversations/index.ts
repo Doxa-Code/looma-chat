@@ -444,7 +444,10 @@ export const receivedMessaging = createServerAction()
       ],
     } = entry;
 
-    const setting = await settingsRepository.retrieveSettingByWabaId(wabaId);
+    const setting = await settingsRepository.retrieveSettingByWabaIdAndPhoneId(
+      wabaId,
+      phoneId
+    );
 
     if (!setting) return;
 

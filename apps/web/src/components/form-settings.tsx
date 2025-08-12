@@ -1,7 +1,10 @@
 "use client";
 
-import { updateSettings } from "@/app/actions/settings";
-import { useServerActionMutation } from "@/hooks/server-action-hooks";
+import { listPhonesId, updateSettings } from "@/app/actions/settings";
+import {
+  useServerActionMutation,
+  useServerActionQuery,
+} from "@/hooks/server-action-hooks";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -9,9 +12,11 @@ import { useToast } from "@/hooks/use-toast";
 import { SettingProps } from "@looma/core/domain/value-objects/setting";
 import { Textarea } from "./ui/textarea";
 import { Switch } from "./ui/switch";
+import { SelectNative } from "./ui/select-native";
 
 type Props = {
   setting: SettingProps;
+  phones: { id: string; phone: string }[];
 };
 
 export function FormSetting(props: Props) {
@@ -40,6 +45,7 @@ export function FormSetting(props: Props) {
         const form = new FormData(e.currentTarget);
         const body = {
           wabaId: form.get("wabaId")?.toString() ?? "",
+          phoneId: form.get("phoneId")?.toString() ?? "",
           attendantName: form.get("attendantName")?.toString() ?? "",
           businessName: form.get("businessName")?.toString() ?? "",
           locationAvailable: form.get("locationAvailable")?.toString() ?? "",
@@ -48,6 +54,7 @@ export function FormSetting(props: Props) {
           knowledgeBase: form.get("knowledgeBase")?.toString() ?? "",
           aiEnabled: form.get("aiEnabled")?.toString() === "on",
         };
+        console.log(body);
         mutate(body);
       }}
       className="flex flex-wrap shadow rounded bg-white p-6 gap-4"
@@ -85,6 +92,18 @@ export function FormSetting(props: Props) {
           className="w-full"
           placeholder=""
         />
+      </div>
+
+      <div className="flex flex-col w-full max-w-[300px] gap-1">
+        <Label className="text-sm text-muted-foreground">Telefone</Label>
+        <SelectNative defaultValue={props.setting.phoneId} name="phoneId">
+          <option value="">Selecione</option>
+          {(props.phones ?? []).map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.phone}
+            </option>
+          ))}
+        </SelectNative>
       </div>
 
       <div className="flex flex-col w-full max-w-[300px] gap-1">

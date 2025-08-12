@@ -26,6 +26,7 @@ interface MessageDriver {
   }>;
   sendTyping(data: TypingProps): Promise<void>;
   downloadMedia(channel: string, mediaId: string): Promise<ArrayBuffer>;
+  listPhonesId(wabaId: string): Promise<{ id: string; phone: string }[]>;
 }
 
 export class MetaMessageDriver implements MessageDriver {
@@ -35,6 +36,18 @@ export class MetaMessageDriver implements MessageDriver {
       Authorization: `Bearer ${process.env.META_TOKEN}`,
     },
   });
+
+  async listPhonesId(wabaId: string): Promise<{ id: string; phone: string }[]> {
+    try {
+      const response = await this.client.get(`/${wabaId}/phone_numbers`);
+      return response.data.data.map((p: any) => ({
+        id: p.id,
+        phone: `${p.display_phone_number} - ${p.verified_name}`,
+      }));
+    } catch {
+      return [];
+    }
+  }
 
   async downloadMedia(channel: string, mediaId: string): Promise<ArrayBuffer> {
     const mediaRetrieved = await this.client.get<{ url: string }>(

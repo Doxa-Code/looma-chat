@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import { settings } from "../database/schemas";
 import { Setting } from "@looma/core/domain/value-objects/setting";
@@ -11,6 +11,7 @@ export class SettingsRepository {
 
     const [setting] = await db
       .select({
+        phoneId: settings.phoneId,
         attendantName: settings.attendantName,
         businessName: settings.businessName,
         wabaId: settings.wabaId,
@@ -47,6 +48,7 @@ export class SettingsRepository {
       .insert(settings)
       .values({
         id: setting?.id || crypto.randomUUID().toString(),
+        phoneId: input.phoneId,
         wabaId: input.wabaId,
         attendantName: input.attendantName,
         businessName: input.businessName,
@@ -60,6 +62,7 @@ export class SettingsRepository {
       .onConflictDoUpdate({
         set: {
           wabaId: input.wabaId,
+          phoneId: input.phoneId,
           attendantName: input.attendantName,
           businessName: input.businessName,
           locationAvailable: input.locationAvailable,
@@ -89,12 +92,13 @@ export class SettingsRepository {
     return setting.workspaceId;
   }
 
-  async retrieveSettingByWabaId(wabaId: string) {
+  async retrieveSettingByWabaIdAndPhoneId(wabaId: string, phoneId: string) {
     const db = createDatabaseConnection();
 
     const [setting] = await db
       .select({
         attendantName: settings.attendantName,
+        phoneId: settings.phoneId,
         businessName: settings.businessName,
         wabaId: settings.wabaId,
         locationAvailable: settings.locationAvailable,
@@ -104,7 +108,7 @@ export class SettingsRepository {
         aiEnabled: settings.aiEnabled,
       })
       .from(settings)
-      .where(eq(settings.wabaId, wabaId));
+      .where(and(eq(settings.wabaId, wabaId), eq(settings.phoneId, phoneId)));
 
     await db.$client.end();
 
