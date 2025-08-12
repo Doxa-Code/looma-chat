@@ -1,0 +1,12 @@
+{
+  "extends": "@looma/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "strictPropertyInitialization": false,
+    "outDir": "./dist",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.test.ts", "src/**/*.mock.ts"]
+}

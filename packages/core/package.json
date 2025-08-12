@@ -1,0 +1,48 @@
+{
+  "name": "@looma/core",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "dev": "pnpm run check && tsup --silent --config tsup.config.ts",
+    "db:migrate": "pnpm exec drizzle-kit migrate",
+    "db:generate": "pnpm exec drizzle-kit generate",
+    "db:seed": "pnpm exec tsx ./src/core/infra/database/seed.ts",
+    "db:generate:token": "pnpm exec tsx ./src/core/infra/database/generate-token-looma.ts"
+  },
+  "exports": {
+    "./*": {
+      "types": "./src/*.ts",
+      "default": "./dist/*.mjs"
+    }
+  },
+  "dependencies": {
+    "@opendocsg/pdf2md": "^0.2.1",
+    "@opentelemetry/exporter-trace-otlp-proto": "^0.203.0",
+    "@opentelemetry/instrumentation": "^0.203.0",
+    "@opentelemetry/resources": "^2.0.1",
+    "@opentelemetry/sdk-trace-base": "^2.0.1",
+    "@opentelemetry/sdk-trace-node": "^2.0.1",
+    "@opentelemetry/semantic-conventions": "^1.36.0",
+    "@pinecone-database/pinecone": "^6.1.2",
+    "ai": "^4.3.19",
+    "amqplib": "^0.10.8",
+    "axios": "^1.10.0",
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.0.1",
+    "drizzle-orm": "^0.44.2",
+    "form-data": "^4.0.4",
+    "jsonwebtoken": "^9.0.2",
+    "postgres": "^3.4.7",
+    "tsup": "^8.5.0",
+    "zod": "3"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-s3": "^3.842.0",
+    "@aws-sdk/s3-request-presigner": "^3.842.0",
+    "@looma/typescript-config": "workspace:*",
+    "@types/amqplib": "^0.10.7",
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^20.19.10",
+    "drizzle-kit": "^0.31.4"
+  }
+}

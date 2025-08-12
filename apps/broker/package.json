@@ -1,0 +1,13 @@
+{
+  "name": "@looma/broker",
+  "scripts": {
+    "send:event:broker": "sh send-event.sh",
+    "dev:broker": "sst dev"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.152"
+  },
+  "dependencies": {
+    "zod": "^4.0.17"
+  }
+}
