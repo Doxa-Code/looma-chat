@@ -1,10 +1,10 @@
-import { Cart } from "@/domain/entities/cart";
-import { CartProduct } from "@/domain/entities/cart-product";
-import { Client } from "@/domain/entities/client";
-import { Address } from "@/domain/value-objects/address";
-import { Attendant } from "@/domain/value-objects/attendant";
-import { Contact } from "@/domain/value-objects/contact";
-import { Status } from "@/domain/value-objects/status";
+import { Cart } from "@looma/core/domain/entities/cart";
+import { CartProduct } from "@looma/core/domain/entities/cart-product";
+import { Client } from "@looma/core/domain/entities/client";
+import { Address } from "@looma/core/domain/value-objects/address";
+import { Attendant } from "@looma/core/domain/value-objects/attendant";
+import { Contact } from "@looma/core/domain/value-objects/contact";
+import { Status } from "@looma/core/domain/value-objects/status";
 import { and, eq, or, sql } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import {

@@ -1,5 +1,5 @@
-import { Workspace } from "@/domain/value-objects/workspace";
-import { WorkspacesRepository } from "@/infra/repositories/workspaces-repository";
+import { Workspace } from "@looma/core/domain/value-objects/workspace";
+import { WorkspacesRepository } from "@looma/core/infra/repositories/workspaces-repository";
 
 export class WorkspaceServices {
   constructor(private readonly workspacesRepository: WorkspacesRepository) {}

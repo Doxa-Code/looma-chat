@@ -1,9 +1,9 @@
-import { Conversation } from "@/domain/entities/conversation";
-import { Message } from "@/domain/entities/message";
-import { Attendant } from "@/domain/value-objects/attendant";
-import { Contact } from "@/domain/value-objects/contact";
-import { Sector } from "@/domain/value-objects/sector";
-import { Sender } from "@/domain/value-objects/sender";
+import { Conversation } from "@looma/core/domain/entities/conversation";
+import { Message } from "@looma/core/domain/entities/message";
+import { Attendant } from "@looma/core/domain/value-objects/attendant";
+import { Contact } from "@looma/core/domain/value-objects/contact";
+import { Sector } from "@looma/core/domain/value-objects/sector";
+import { Sender } from "@looma/core/domain/value-objects/sender";
 import { eq, or, sql } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import {

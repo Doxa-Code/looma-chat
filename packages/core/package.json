@@ -1,5 +1,5 @@
 {
-  "name": "@looma/core",
+  "name": "@looma/core/",
   "scripts": {
     "check": "tsc --noEmit",
     "dev": "pnpm run check && tsup --silent --config tsup.config.ts",

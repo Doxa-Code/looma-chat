@@ -1,4 +1,4 @@
-import { Cart } from "@/entities/cart";
+import { Cart } from "@looma/core/entities/cart";
 import { Contact } from "../value-objects/contact";
 import { Attendant } from "../value-objects/attendant";
 import { Product } from "../entities/product";

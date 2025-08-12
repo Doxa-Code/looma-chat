@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import { settings } from "../database/schemas";
-import { Setting } from "@/domain/value-objects/setting";
+import { Setting } from "@looma/core/domain/value-objects/setting";
 
 export class SettingsRepository {
   async retrieveSettingsByWorkspaceId(workspaceId: string) {

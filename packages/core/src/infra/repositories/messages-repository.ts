@@ -1,5 +1,5 @@
-import { Message } from "@/domain/entities/message";
-import { Sender, SenderType } from "@/domain/value-objects/sender";
+import { Message } from "@looma/core/domain/entities/message";
+import { Sender, SenderType } from "@looma/core/domain/value-objects/sender";
 import { eq } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import { messages } from "../database/schemas";

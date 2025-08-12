@@ -1,5 +1,5 @@
-import { Membership } from "@/domain/entities/membership";
-import { PolicyName } from "@/domain/services/authorization-service";
+import { Membership } from "@looma/core/domain/entities/membership";
+import { PolicyName } from "@looma/core/domain/services/authorization-service";
 import { and, eq } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import { memberships } from "../database/schemas";

@@ -1,4 +1,4 @@
-import { Sector, SectorRaw } from "@/domain/value-objects/sector";
+import { Sector, SectorRaw } from "@looma/core/domain/value-objects/sector";
 import { eq } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import { sectors } from "../database/schemas";

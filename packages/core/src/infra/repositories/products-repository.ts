@@ -1,4 +1,4 @@
-import { Product } from "@/domain/value-objects/product";
+import { Product } from "@looma/core/domain/value-objects/product";
 import { and, asc, eq, ilike, inArray, isNotNull } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import { products } from "../database/schemas";

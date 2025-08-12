@@ -1,6 +1,6 @@
 import "dotenv/config";
-import { UsersRepository } from "@/infra/repositories/users-repository";
-import { JWTTokenDriver } from "@/infra/drivers/token-driver";
+import { UsersRepository } from "@looma/core/infra/repositories/users-repository";
+import { JWTTokenDriver } from "@looma/core/infra/drivers/token-driver";
 
 const usersRepository = UsersRepository.instance();
 const tokenDriver = JWTTokenDriver.instance();

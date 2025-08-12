@@ -1,4 +1,4 @@
-import { Contact } from "@/domain/value-objects/contact";
+import { Contact } from "@looma/core/domain/value-objects/contact";
 import { eq } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import { contacts } from "../database/schemas";

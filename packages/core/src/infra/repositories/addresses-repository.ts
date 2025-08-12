@@ -1,6 +1,6 @@
 import { createDatabaseConnection } from "../database";
 import { addresses } from "../database/schemas";
-import { Address } from "@/domain/value-objects/address";
+import { Address } from "@looma/core/domain/value-objects/address";
 
 export class AddressesRepository {
   async upsertAddress(address: Address): Promise<boolean> {

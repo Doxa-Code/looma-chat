@@ -1,9 +1,9 @@
-import { Client } from "@/domain/entities/client";
+import { Client } from "@looma/core/domain/entities/client";
 import { createDatabaseConnection } from "../database";
 import { addresses, clients, contacts } from "../database/schemas";
 import { eq } from "drizzle-orm";
-import { Address } from "@/domain/value-objects/address";
-import { Contact } from "@/domain/value-objects/contact";
+import { Address } from "@looma/core/domain/value-objects/address";
+import { Contact } from "@looma/core/domain/value-objects/contact";
 
 export class ClientsRepository {
   async retrieveByPhone(phone: string): Promise<Client | null> {

@@ -1,7 +1,7 @@
-import { Membership } from "@/domain/entities/membership";
-import { User } from "@/domain/entities/user";
-import { Sector } from "@/domain/value-objects/sector";
-import { Workspace } from "@/domain/value-objects/workspace";
+import { Membership } from "@looma/core/domain/entities/membership";
+import { User } from "@looma/core/domain/entities/user";
+import { Sector } from "@looma/core/domain/value-objects/sector";
+import { Workspace } from "@looma/core/domain/value-objects/workspace";
 import bcrypt from "bcrypt";
 import "dotenv/config";
 import { MembershipsRepository } from "../repositories/membership-repository";
