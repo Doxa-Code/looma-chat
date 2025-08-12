@@ -129,7 +129,7 @@ export const addresses = pgTable("addresses", {
 export const products = pgTable("products", {
   id: text("id").primaryKey().notNull(),
   description: text("description").notNull(),
-  code: text("code").notNull(),
+  code: text("code"),
   manufactory: text("manufactory").notNull(),
   price: integer("price").notNull().default(0),
   stock: integer("stock").notNull().default(0),

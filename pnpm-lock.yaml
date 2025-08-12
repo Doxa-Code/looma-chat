@@ -20,10 +20,16 @@ importers:
 
   apps/broker:
     dependencies:
+      '@looma/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       zod:
         specifier: ^4.0.17
         version: 4.0.17
     devDependencies:
+      '@looma/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
       '@types/aws-lambda':
         specifier: ^8.10.152
         version: 8.10.152

@@ -9,7 +9,9 @@ export default $config({
       home: "aws",
       providers: {
         aws: {
-          profile: "loomaai",
+          accessKey: process.env.AWS_ACCESS_KEY_ID,
+          region: process.env.AWS_DEFAULT_REGION,
+          secretKey: process.env.AWS_SECRET_ACCESS_KEY,
         },
       },
     };
@@ -19,7 +21,7 @@ export default $config({
       fifo: true,
     });
 
-    queue.subscribe("src/looma-broker.handler");
+    queue.subscribe("functions/looma-broker.handler");
 
     return {
       queue: queue.url,

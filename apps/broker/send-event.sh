@@ -1,5 +1,5 @@
 aws --profile loomaai sqs send-message \
-  --queue-url https://sqs.us-east-1.amazonaws.com/557130579131/loomabroker-fernandosouza-LoomaBrokerQueue.fifo \
-  --message-body '{"id":"123","nome":"Cliente Teste","alteradoEm":"2025-08-11T18:00:00Z"}' \
-  --message-group-id "teste" \
+  --queue-url https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-LoomaBrokerQueue.fifo \
+  --message-body '{"workspaceId":"123", "product": { "id": "1", "description": "Produto", "code": null, "manufactory": "Manufactory", "price": 1, "stock": 2, "promotionPrice": null, "promotionStart": null, "promotionEnd": null } }' \
+  --message-group-id "321" \
   --message-deduplication-id "$(uuidgen)"

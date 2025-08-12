@@ -1,0 +1,8 @@
+{
+  "extends": "@looma/typescript-config/base.json",
+  "compilerOptions": {
+    "paths": {
+      "@looma/core/*": ["../../packages/core/src/*"]
+    }
+  }
+}

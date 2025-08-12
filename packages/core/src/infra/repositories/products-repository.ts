@@ -11,6 +11,24 @@ type ListProps = {
 };
 
 export class ProductsRepository {
+  async upsert(product: Product, workspaceId: string) {
+    const db = createDatabaseConnection();
+    await db
+      .insert(products)
+      .values({
+        ...product.raw(),
+        workspaceId,
+      })
+      .onConflictDoUpdate({
+        target: products.id,
+        set: {
+          ...product.raw(),
+          workspaceId,
+        },
+      });
+    await db.$client.end();
+  }
+
   async listByIds(
     ids: string[],
     workspaceId: string

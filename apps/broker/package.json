@@ -2,13 +2,16 @@
   "name": "@looma/broker",
   "scripts": {
     "send:event:broker": "sh send-event.sh",
-    "dev:broker": "sst dev",
-    "remove:broker": "sst remove"
+    "dev:broker": "sst dev --stage=development",
+    "deploy:broker": "sst deploy --stage=production",
+    "remove:broker": "sst remove --stage=development"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.152"
+    "@types/aws-lambda": "^8.10.152",
+    "@looma/typescript-config": "workspace:*"
   },
   "dependencies": {
+    "@looma/core": "workspace:*",
     "zod": "^4.0.17"
   }
 }
