@@ -1,9 +1,7 @@
 {
-  "extends": "@looma/typescript-config/nextjs.json",
   "compilerOptions": {
-    "strictPropertyInitialization": false,
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": ["dom", "dom.iterable", "ES2017"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -15,7 +13,6 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "types": ["vitest/globals"],
     "plugins": [
       {
         "name": "next"

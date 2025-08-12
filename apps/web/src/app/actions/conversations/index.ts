@@ -467,9 +467,8 @@ export const receivedMessaging = createServerAction()
 
     if (!workspaceId) return;
 
-    let conversation = await conversationsRepository.retrieveByContactPhone(
-      contact.phone
-    );
+    let conversation: Conversation | null =
+      await conversationsRepository.retrieveByContactPhone(contact.phone);
 
     if (!conversation) {
       conversation = Conversation.create(contact, phoneId);

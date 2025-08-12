@@ -5,7 +5,7 @@ import * as fs from "node:fs";
 import path from "node:path";
 import { pinecone, pineconeVector } from "../config/vectors/pinecone-vector";
 import { azureEmbeddings } from "../config/llms/azure";
-import { SettingsRepository } from "../../repositories/settings-repository";
+import { SettingsRepository } from "@looma/core/infra/repositories/settings-repository";
 
 const files = ["docs/faq.md", "docs/products.md"];
 

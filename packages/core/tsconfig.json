@@ -1,5 +1,5 @@
 {
-  "extends": "@looma/typescript-config/nextjs.json",
+  "extends": "@looma/typescript-config/base.json",
   "compilerOptions": {
     "strictPropertyInitialization": false,
     "outDir": "./dist",

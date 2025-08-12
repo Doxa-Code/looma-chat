@@ -34,14 +34,14 @@ export const stockTool = createTool({
           includeMetadata: true,
         });
 
-      const vectorProducts = response.matches.map((m: any) => m.metadata);
+      const vectorProducts = response.matches.map((m) => m.metadata);
 
       if (!vectorProducts.length) return [];
 
       const productsRepository = ProductsRepository.instance();
 
       const products = await productsRepository.listByIds(
-        vectorProducts.map((i: any) => i?.id ?? ""),
+        vectorProducts.map((i) => i?.id ?? ""),
         runtimeContext.get("workspaceId")
       );
 
@@ -91,14 +91,14 @@ export const promotionProductsTool = createTool({
         includeMetadata: true,
       });
 
-    const vectorProducts = response.matches.map((m: any) => m.metadata);
+    const vectorProducts = response.matches.map((m) => m.metadata);
 
     if (!vectorProducts.length) return [];
 
     const productsRepository = ProductsRepository.instance();
 
     const products = await productsRepository.listByIds(
-      vectorProducts.map((i: any) => i?.id ?? ""),
+      vectorProducts.map((i) => i?.id ?? ""),
       runtimeContext.get("workspaceId")
     );
 

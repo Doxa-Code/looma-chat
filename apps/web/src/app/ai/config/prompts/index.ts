@@ -1,5 +1,5 @@
-import { Cart } from "@/domain/entities/cart";
-import { Setting } from "@/domain/value-objects/setting";
+import { Cart } from "@looma/core/domain/entities/cart";
+import { Setting } from "@looma/core/domain/value-objects/setting";
 import { RuntimeContext } from "@mastra/core/runtime-context";
 import { SystemPromptLeaf } from "./system-prompt-leaf";
 import { InitialPromptLeaf } from "./initial-prompt-leaf";
