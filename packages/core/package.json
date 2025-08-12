@@ -1,17 +1,15 @@
 {
   "name": "@looma/core",
   "scripts": {
-    "check": "tsc --noEmit",
-    "dev": "pnpm run check && tsup --silent --config tsup.config.ts",
     "db:migrate": "pnpm exec drizzle-kit migrate",
     "db:generate": "pnpm exec drizzle-kit generate",
-    "db:seed": "pnpm exec tsx ./src/core/infra/database/seed.ts",
-    "db:generate:token": "pnpm exec tsx ./src/core/infra/database/generate-token-looma.ts"
+    "db:seed": "pnpm exec tsx ./src/infra/database/seed.ts",
+    "db:generate:token": "pnpm exec tsx ./src/infra/database/generate-token-looma.ts"
   },
   "exports": {
     "./*": {
-      "types": "./dist/*.mts",
-      "default": "./dist/*.mjs"
+      "import": "./src/*.ts",
+      "require": "./src/*.ts"
     }
   },
   "dependencies": {
@@ -24,7 +22,6 @@
     "form-data": "^4.0.4",
     "jsonwebtoken": "^9.0.2",
     "postgres": "^3.4.7",
-    "tsup": "^8.5.0",
     "vitest": "^3.2.4",
     "zod": "3"
   },
