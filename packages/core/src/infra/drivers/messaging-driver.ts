@@ -1,7 +1,6 @@
-import * as amqp from "amqplib";
-
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 type SendDataToQueueProps = {
-  queueName: string;
+  queueName: "carts";
   data: unknown;
   workspaceId: string;
 };
@@ -10,69 +9,30 @@ interface MessagingDriver {
   sendDataToQueue(data: SendDataToQueueProps): Promise<boolean>;
 }
 
-export class RabbitMqMessagingDriver implements MessagingDriver {
-  private connection: amqp.ChannelModel;
-  private channel: amqp.Channel;
+export class SQSMessagingDriver implements MessagingDriver {
+  private readonly queue = new Map<"carts", string>([
+    [
+      "carts",
+      "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-UpsertCartQueue.fifo",
+    ],
+  ]);
+  async sendDataToQueue(data: SendDataToQueueProps): Promise<boolean> {
+    if (!this.queue.has(data.queueName)) return false;
 
-  private constructor() {}
+    const sqsClient = new SQSClient();
 
+    const params = {
+      QueueUrl: this.queue.get(data.queueName),
+      MessageBody: JSON.stringify(data.data),
+      MessageGroupId: "defaultGroup",
+    };
+
+    const command = new SendMessageCommand(params);
+    await sqsClient.send(command);
+
+    return true;
+  }
   static instance() {
-    return new RabbitMqMessagingDriver();
-  }
-
-  private async connect() {
-    try {
-      this.connection = await amqp.connect(
-        process.env.RABBITMQ_URL || "amqp://localhost"
-      );
-
-      this.channel = await this.connection.createChannel();
-      console.log("Conectado ao RabbitMQ");
-
-      this.connection.on("error", async (err) => {
-        console.error("Erro na conexão com RabbitMQ:", err);
-        await this.connect();
-      });
-    } catch (error) {
-      console.error("Erro ao conectar no RabbitMQ:", error);
-      throw error;
-    }
-  }
-
-  async closeConnection() {
-    try {
-      await this.channel?.close?.();
-      await this.connection?.close?.();
-      console.log("Conexão com RabbitMQ fechada.");
-    } catch (error) {
-      console.error("Erro ao fechar conexão com RabbitMQ:", error);
-    }
-  }
-
-  async sendDataToQueue({
-    queueName,
-    data,
-    workspaceId,
-  }: SendDataToQueueProps): Promise<boolean> {
-    try {
-      await this.connect();
-      if (!this.channel) {
-        await this?.connect?.();
-      }
-      await this.channel.assertQueue(queueName, { durable: true });
-      this.channel.sendToQueue(
-        queueName,
-        Buffer.from(JSON.stringify({ data, workspaceId })),
-        {
-          persistent: true,
-        }
-      );
-      return true;
-    } catch (error) {
-      console.error("Erro ao enviar mensagem para RabbitMQ:", error);
-      return false;
-    } finally {
-      await this.closeConnection();
-    }
+    return new SQSMessagingDriver();
   }
 }

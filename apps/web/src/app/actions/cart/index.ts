@@ -4,7 +4,6 @@ import { CartProduct } from "@looma/core/domain/entities/cart-product";
 import { Client } from "@looma/core/domain/entities/client";
 import { NotFound } from "@looma/core/domain/errors/not-found";
 import { Address } from "@looma/core/domain/value-objects/address";
-import { RabbitMqMessagingDriver } from "@looma/core/infra/drivers/messaging-driver";
 import { CartsRepository } from "@looma/core/infra/repositories/carts-repository";
 import { ClientsRepository } from "@looma/core/infra/repositories/clients-repository";
 import { ConversationsRepository } from "@looma/core/infra/repositories/conversations-repository";
@@ -12,12 +11,15 @@ import { ProductsRepository } from "@looma/core/infra/repositories/products-repo
 import z from "zod";
 import { securityProcedure } from "./../procedure";
 import { PaymentMethod } from "@looma/core/domain/value-objects/payment-method";
+import { SQSMessagingDriver } from "@looma/core/infra/drivers/messaging-driver";
+import { messages } from "@looma/core/infra/database/schemas";
 
 const conversationsRepository = ConversationsRepository.instance();
 const cartsRepository = CartsRepository.instance();
 const productsRepository = ProductsRepository.instance();
 const clientsRepository = ClientsRepository.instance();
-const rabbitMq = RabbitMqMessagingDriver.instance();
+
+const messaging = SQSMessagingDriver.instance();
 
 export const retrieveOpenCart = securityProcedure(["manage:cart"])
   .input(
@@ -92,8 +94,8 @@ export const upsertProductOnCart = securityProcedure(["manage:cart"])
     await cartsRepository.upsert(cart, ctx.membership.workspaceId);
 
     if (cart.status.is("order")) {
-      await rabbitMq.sendDataToQueue({
-        queueName: "looma-carts",
+      await messaging.sendDataToQueue({
+        queueName: "carts",
         data: cart.raw(),
         workspaceId: ctx.membership.workspaceId,
       });
@@ -159,8 +161,8 @@ export const orderCart = securityProcedure(["manage:cart"])
 
     await cartsRepository.upsert(cart, ctx.membership.workspaceId);
 
-    rabbitMq.sendDataToQueue({
-      queueName: "looma-carts",
+    await messaging.sendDataToQueue({
+      queueName: "carts",
       data: cart.raw(),
       workspaceId: ctx.membership.workspaceId,
     });
@@ -187,26 +189,6 @@ export const expireCart = securityProcedure(["manage:cart"])
     return;
   });
 
-export const finishCart = securityProcedure(["manage:cart"])
-  .input(
-    z.object({
-      conversationId: z.string(),
-    })
-  )
-  .handler(async ({ input, ctx }) => {
-    const cart = await cartsRepository.retrieveOpenCartByConversationId(
-      input.conversationId,
-      ctx.membership.workspaceId
-    );
-
-    if (!cart) throw NotFound.instance("Cart");
-
-    cart.finish();
-
-    await cartsRepository.upsert(cart, ctx.membership.workspaceId);
-    return;
-  });
-
 export const cancelCart = securityProcedure(["manage:cart"])
   .input(
     z.object({
@@ -228,8 +210,8 @@ export const cancelCart = securityProcedure(["manage:cart"])
     await cartsRepository.upsert(cart, ctx.membership.workspaceId);
 
     if (isOrder) {
-      rabbitMq.sendDataToQueue({
-        queueName: "looma-carts",
+      await messaging.sendDataToQueue({
+        queueName: "carts",
         data: cart.raw(),
         workspaceId: ctx.membership.workspaceId,
       });

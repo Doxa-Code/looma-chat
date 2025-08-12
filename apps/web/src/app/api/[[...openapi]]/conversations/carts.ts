@@ -4,7 +4,6 @@ import {
   removeProductFromCart,
   orderCart,
   expireCart,
-  finishCart,
   cancelCart,
   setCartAddress,
   setPaymentMethod,
@@ -21,5 +20,4 @@ export const cartsRouter = createOpenApiServerActionRouter({
   .put("/paymentMethod", setPaymentMethod)
   .put("/order", orderCart)
   .put("/expire", expireCart)
-  .put("/finish", finishCart)
   .put("/cancel", cancelCart);
