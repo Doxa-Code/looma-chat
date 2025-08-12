@@ -2,7 +2,8 @@
   "name": "@looma/broker",
   "scripts": {
     "send:event:broker": "sh send-event.sh",
-    "dev:broker": "sst dev"
+    "dev:broker": "sst dev",
+    "remove:broker": "sst remove"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.152"

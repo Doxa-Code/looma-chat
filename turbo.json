@@ -21,6 +21,10 @@
       "cache": false,
       "persistent": true
     },
+    "remove:broker": {
+      "cache": false,
+      "persistent": true
+    },
     "send:event:broker": {
       "cache": false,
       "persistent": true
