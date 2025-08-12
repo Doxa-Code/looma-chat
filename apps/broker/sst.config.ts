@@ -17,14 +17,31 @@ export default $config({
     };
   },
   async run() {
-    const queue = new sst.aws.Queue("LoomaBroker", {
+    const productsQueue = new sst.aws.Queue("ProductsBroker", {
+      fifo: true,
+    });
+    productsQueue.subscribe("functions/products-broker.handler");
+
+    const clientsQueue = new sst.aws.Queue("ClientsBroker", {
+      fifo: true,
+    });
+    clientsQueue.subscribe("functions/clients-broker.handler");
+
+    const upsertCart = new sst.aws.Queue("UpsertCart", {
       fifo: true,
     });
 
-    queue.subscribe("functions/looma-broker.handler");
+    const finishCart = new sst.aws.Queue("FinishCart", {
+      fifo: true,
+    });
+
+    finishCart.subscribe("functions/finish-cart.handler");
 
     return {
-      queue: queue.url,
+      productsQueue: productsQueue.url,
+      clientsQueue: clientsQueue.url,
+      upsertCart: upsertCart.url,
+      finishCart: finishCart.url,
     };
   },
 });

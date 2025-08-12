@@ -427,6 +427,140 @@ export class CartsRepository {
     });
   }
 
+  async retrieve(id: string): Promise<Cart | null> {
+    const db = createDatabaseConnection();
+
+    const [client] = await db
+      .select({
+        id: clients.id,
+        address: {
+          id: addresses.id,
+          street: addresses.street,
+          number: addresses.number,
+          neighborhood: addresses.neighborhood,
+          city: addresses.city,
+          state: addresses.state,
+          zipCode: addresses.zipCode,
+          country: addresses.country,
+          note: addresses.note,
+        },
+        contact: {
+          phone: contacts.phone,
+          name: contacts.name,
+        },
+      })
+      .from(clients)
+      .leftJoin(addresses, eq(clients.addressId, addresses.id))
+      .leftJoin(contacts, eq(clients.contactPhone, contacts.phone))
+      .leftJoin(
+        conversations,
+        eq(clients.contactPhone, conversations.contactPhone)
+      )
+      .leftJoin(carts, eq(carts.conversationId, conversations.id))
+      .where(eq(carts.id, id));
+
+    if (!client) return null;
+
+    const [cart] = await db
+      .select({
+        id: carts.id,
+        attendant: {
+          id: users.id,
+          name: users.name,
+        },
+        address: {
+          id: addresses.id,
+          street: addresses.street,
+          number: addresses.number,
+          neighborhood: addresses.neighborhood,
+          city: addresses.city,
+          state: addresses.state,
+          zipCode: addresses.zipCode,
+          country: addresses.country,
+          note: addresses.note,
+        },
+        status: carts.status,
+        createdAt: carts.createdAt,
+        orderedAt: carts.orderedAt,
+        expiredAt: carts.expiredAt,
+        finishedAt: carts.finishedAt,
+        canceledAt: carts.canceledAt,
+        paymentMethod: carts.paymentMethod,
+        paymentChange: carts.paymentChange,
+        products: sql`
+                COALESCE(
+                  JSON_AGG(
+                    JSON_BUILD_OBJECT(
+                      'id', ${productsOnCart.productId},
+                      'description', ${productsOnCart.description},
+                      'price', ${productsOnCart.price},
+                      'realPrice', ${productsOnCart.realPrice},
+                      'quantity', ${productsOnCart.quantity}
+                    )
+                  )
+                FILTER (WHERE ${productsOnCart.id} IS NOT NULL), '[]')::json
+              `.as("products"),
+      })
+      .from(carts)
+      .innerJoin(users, eq(carts.attendantId, users.id))
+      .innerJoin(addresses, eq(addresses.id, carts.addressId))
+      .leftJoin(productsOnCart, eq(carts.id, productsOnCart.cartId))
+      .where(eq(carts.id, id))
+      .groupBy(
+        carts.id,
+        users.id,
+        users.name,
+        addresses.id,
+        addresses.street,
+        addresses.number,
+        addresses.neighborhood,
+        addresses.city,
+        addresses.state,
+        addresses.zipCode,
+        addresses.country,
+        addresses.note,
+        carts.status
+      );
+
+    await db.$client.end();
+
+    if (!cart) return null;
+
+    return Cart.instance({
+      address: Address.create(cart.address),
+      attendant: Attendant.create(cart.attendant.id, cart.attendant.name),
+      client: Client.instance({
+        address: Address.create(client.address!),
+        contact: Contact.create(client.contact!.phone, client.contact?.name),
+        id: client.id,
+      }),
+      id: cart.id,
+      products: (cart.products as CartProduct.Props[]).map((p) =>
+        CartProduct.instance({
+          id: p.id,
+          description: p.description,
+          price: p.price / 100,
+          realPrice: p.realPrice / 100,
+          quantity: p.quantity,
+        })
+      ),
+      status: Status.create(cart.status),
+      createdAt: this.timestampToDate(cart.createdAt),
+      orderedAt: cart.orderedAt ? this.timestampToDate(cart.orderedAt) : null,
+      expiredAt: cart.expiredAt ? this.timestampToDate(cart.expiredAt) : null,
+      finishedAt: cart.finishedAt
+        ? this.timestampToDate(cart.finishedAt)
+        : null,
+      canceledAt: cart.canceledAt
+        ? this.timestampToDate(cart.canceledAt)
+        : null,
+      paymentMethod: cart.paymentMethod
+        ? PaymentMethod.create(cart.paymentMethod as PaymentMethodValue)
+        : null,
+      paymentChange: cart.paymentChange ? cart.paymentChange / 100 : null,
+    });
+  }
+
   async removeProductFromCart(
     productId: string,
     cartId: string

@@ -201,7 +201,7 @@ export const finishCart = securityProcedure(["manage:cart"])
 
     if (!cart) throw NotFound.instance("Cart");
 
-    cart.finishCart();
+    cart.finish();
 
     await cartsRepository.upsert(cart, ctx.membership.workspaceId);
     return;

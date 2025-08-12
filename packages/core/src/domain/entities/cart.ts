@@ -121,7 +121,7 @@ export class Cart {
     this.expiredAt = new Date();
   }
 
-  finishCart() {
+  finish() {
     this.status = Status.create("finished");
     this.finishedAt = new Date();
   }
