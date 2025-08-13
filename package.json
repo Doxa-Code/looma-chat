@@ -4,6 +4,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "build:service": "sh apps/service/build.sh",
     "dev:broker": "turbo run dev:broker",
     "deploy:broker": "turbo run deploy:broker",
     "remove:broker": "turbo run remove:broker",

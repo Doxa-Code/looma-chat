@@ -26,6 +26,10 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
     const result = await productValidate.safeParseAsync(body);
 
     if (!result.success) {
+      console.log({
+        error: result.error,
+        body: record.body,
+      });
       return;
     }
 
