@@ -7,6 +7,7 @@
     "dev:broker": "turbo run dev:broker",
     "deploy:broker": "turbo run deploy:broker",
     "remove:broker": "turbo run remove:broker",
+    "deploy:remove:broker": "turbo run deploy:remove:broker",
     "send:event:broker": "turbo run send:event:broker",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",

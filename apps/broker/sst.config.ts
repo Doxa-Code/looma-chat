@@ -20,12 +20,21 @@ export default $config({
     const productsQueue = new sst.aws.Queue("ProductsBroker", {
       fifo: true,
     });
-    productsQueue.subscribe("functions/products-broker.handler");
+
+    productsQueue.subscribe("functions/products-broker.handler", {
+      environment: {
+        DATABASE_URL: process.env.DATABASE_URL,
+      },
+    });
 
     const clientsQueue = new sst.aws.Queue("ClientsBroker", {
       fifo: true,
     });
-    clientsQueue.subscribe("functions/clients-broker.handler");
+    clientsQueue.subscribe("functions/clients-broker.handler", {
+      environment: {
+        DATABASE_URL: process.env.DATABASE_URL,
+      },
+    });
 
     const upsertCart = new sst.aws.Queue("UpsertCart", {
       fifo: true,
@@ -35,7 +44,11 @@ export default $config({
       fifo: true,
     });
 
-    finishCart.subscribe("functions/finish-cart.handler");
+    finishCart.subscribe("functions/finish-cart.handler", {
+      environment: {
+        DATABASE_URL: process.env.DATABASE_URL,
+      },
+    });
 
     return {
       productsQueue: productsQueue.url,

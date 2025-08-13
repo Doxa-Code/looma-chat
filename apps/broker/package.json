@@ -4,7 +4,8 @@
     "send:event:broker": "sh send-event.sh",
     "dev:broker": "sst dev --stage=development",
     "deploy:broker": "sst deploy --stage=production",
-    "remove:broker": "sst remove --stage=development"
+    "remove:broker": "sst remove --stage=development",
+    "deploy:remove:broker": "sst remove --stage=production"
   },
   "devDependencies": {
     "@looma/typescript-config": "workspace:*",
