@@ -11,7 +11,6 @@ export class SectorsRepository {
       .select()
       .from(sectors)
       .where(eq(sectors.id, sectorId));
-    await db.$client.end();
 
     if (!sector) return null;
 
@@ -24,7 +23,6 @@ export class SectorsRepository {
       .select()
       .from(sectors)
       .where(eq(sectors.workspaceId, workspaceId));
-    await db.$client.end();
 
     return response.map((sector) => ({ id: sector.id, name: sector.name }));
   }
@@ -44,7 +42,6 @@ export class SectorsRepository {
         },
         target: sectors.id,
       });
-    await db.$client.end();
   }
 
   static instance() {

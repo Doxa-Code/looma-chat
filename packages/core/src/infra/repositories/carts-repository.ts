@@ -136,8 +136,6 @@ export class CartsRepository {
         })
       );
     });
-
-    await db.$client.end();
   }
 
   async retrieveOpenCartByConversationId(
@@ -246,8 +244,6 @@ export class CartsRepository {
         addresses.note,
         carts.status
       );
-
-    await db.$client.end();
 
     if (!cart) return null;
 
@@ -388,8 +384,6 @@ export class CartsRepository {
         carts.status
       );
 
-    await db.$client.end();
-
     if (!cart) return null;
 
     return Cart.instance({
@@ -522,8 +516,6 @@ export class CartsRepository {
         carts.status
       );
 
-    await db.$client.end();
-
     if (!cart) return null;
 
     return Cart.instance({
@@ -575,8 +567,6 @@ export class CartsRepository {
           eq(productsOnCart.cartId, cartId)
         )
       );
-
-    await db.$client.end();
 
     return true;
   }

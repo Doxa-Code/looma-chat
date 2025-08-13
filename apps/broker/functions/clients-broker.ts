@@ -39,7 +39,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
     const body = JSON.parse(record.body) as Client.Props;
     const result = await clientValidate.safeParseAsync(body);
 
-    if (!result.success) {
+    if (!result.success || !result?.data?.client?.contact?.phone) {
       console.log({
         error: result.error,
         body: JSON.stringify(body, null, 2),
@@ -57,6 +57,8 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
         result.data.client.contact.name
       ),
     });
+
+    console.log(client.contact.name, " adicionada!");
 
     await clientsRepository.upsert(
       client,

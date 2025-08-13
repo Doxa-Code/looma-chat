@@ -23,7 +23,6 @@ export class MembershipsRepository {
         },
         target: memberships.id,
       });
-    await db.$client.end();
   }
   async retrieveByUserIdAndWorkspaceId(userId: string, workspaceId: string) {
     if (!userId || !workspaceId) return null;
@@ -44,8 +43,6 @@ export class MembershipsRepository {
           eq(memberships.workspaceId, workspaceId)
         )
       );
-
-    await db.$client.end();
 
     if (!membership) return null;
 
@@ -69,8 +66,6 @@ export class MembershipsRepository {
       })
       .from(memberships)
       .where(eq(memberships.userId, userId));
-
-    await db.$client.end();
 
     if (!membership) return null;
 

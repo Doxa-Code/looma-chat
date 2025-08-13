@@ -139,8 +139,6 @@ export class ConversationsRepository {
       eq(conversations.id, id)
     );
 
-    await db.$client.end();
-
     if (!conversation) return null;
 
     return this.toConversation(conversation);
@@ -157,8 +155,6 @@ export class ConversationsRepository {
       eq(conversations.id, id)
     );
 
-    await db.$client.end();
-
     if (!conversation) return null;
 
     return conversation;
@@ -172,8 +168,6 @@ export class ConversationsRepository {
     const [conversation] = await this.fullQuery(db).where(
       eq(conversations.contactPhone, phone)
     );
-
-    await db.$client.end();
 
     if (!conversation) return null;
 
@@ -197,8 +191,6 @@ export class ConversationsRepository {
         : eq(conversations.attendantId, attendantId)
     );
 
-    await db.$client.end();
-
     return list.map((c) => this.toConversation(c));
   }
 
@@ -209,8 +201,6 @@ export class ConversationsRepository {
     const list = await this.fullQuery(db).where(
       eq(conversations.workspaceId, workspaceId)
     );
-
-    await db.$client.end();
 
     return list.map((c) => this.toConversation(c));
   }
@@ -282,8 +272,6 @@ export class ConversationsRepository {
         })
       );
     });
-
-    await db.$client.end();
   }
 
   static instance() {

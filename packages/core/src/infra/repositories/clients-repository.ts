@@ -32,8 +32,6 @@ export class ClientsRepository {
       .leftJoin(addresses, eq(addresses.id, clients.addressId))
       .where(eq(clients.contactPhone, phone));
 
-    await db.$client.end();
-
     if (!client) return null;
 
     return Client.instance({
@@ -43,15 +41,24 @@ export class ClientsRepository {
     });
   }
 
-  async upsert(client: Client, workspaceId: string, partnerId?: string) {
+  async upsert(input: Client, workspaceId: string, partnerId?: string) {
     const db = createDatabaseConnection();
+
+    const client = partnerId
+      ? ((
+          await db
+            .select({ id: clients.id, address: addresses, contact: contacts })
+            .from(clients)
+            .innerJoin(contacts, eq(contacts.phone, clients.contactPhone))
+            .leftJoin(addresses, eq(addresses.id, clients.addressId))
+            .where(eq(clients.partnerId, partnerId))
+        )?.[0] ?? input)
+      : input;
 
     const [address] = await db
       .select({ addressId: clients.addressId })
       .from(clients)
-      .where(
-        partnerId ? eq(clients.partnerId, partnerId) : eq(clients.id, client.id)
-      );
+      .where(eq(clients.id, client.id));
 
     await db.transaction(async (tx) => {
       const [addressCreated] = await tx
@@ -111,12 +118,11 @@ export class ClientsRepository {
             contactPhone: contactCreated?.[0]?.phone,
             workspaceId,
           },
-          target: partnerId ? clients.partnerId : clients.id,
+          target: clients.id,
         })
         .returning();
     });
 
-    await db.$client.end();
     return;
   }
 

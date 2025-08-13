@@ -26,7 +26,6 @@ export class ProductsRepository {
           workspaceId,
         },
       });
-    await db.$client.end();
   }
 
   async listByIds(
@@ -42,8 +41,6 @@ export class ProductsRepository {
         and(inArray(products.id, ids), eq(products.workspaceId, workspaceId))
       );
 
-    await db.$client.end();
-
     return list.map((item) => ({
       ...item,
       price: item.price / 100,
@@ -57,8 +54,6 @@ export class ProductsRepository {
       .select()
       .from(products)
       .where(eq(products.id, id));
-
-    await db.$client.end();
 
     if (!product) return null;
 
@@ -122,8 +117,6 @@ export class ProductsRepository {
 
     const total = Math.ceil(totalRows / pageSize);
 
-    await db.$client.end();
-
     return {
       products: response.map((item) => ({
         ...item,
@@ -150,8 +143,6 @@ export class ProductsRepository {
           isNotNull(products.promotionEnd)
         )
       );
-
-    await db.$client.end();
 
     return list.map((item) => ({
       ...item,

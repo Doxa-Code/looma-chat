@@ -58,8 +58,6 @@ export class MessagesRepository {
         target: messages.id,
       });
 
-    await db.$client.end();
-
     return oldMessage.conversationId!;
   }
 
@@ -69,8 +67,6 @@ export class MessagesRepository {
       .select()
       .from(messages)
       .where(eq(messages.id, messageId));
-
-    await db.$client.end();
 
     if (!message) return null;
 

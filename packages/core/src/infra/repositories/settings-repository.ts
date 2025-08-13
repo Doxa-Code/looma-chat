@@ -24,8 +24,6 @@ export class SettingsRepository {
       .from(settings)
       .where(eq(settings.workspaceId, workspaceId));
 
-    await db.$client.end();
-
     if (!setting) return null;
 
     return Setting.create(setting);
@@ -73,8 +71,6 @@ export class SettingsRepository {
         },
         target: settings.id,
       });
-
-    await db.$client.end();
   }
 
   async retrieveWorkspaceIdByWabaId(wabaId: string) {
@@ -84,8 +80,6 @@ export class SettingsRepository {
       .select({ workspaceId: settings.workspaceId })
       .from(settings)
       .where(eq(settings.wabaId, wabaId));
-
-    await db.$client.end();
 
     if (!setting) return null;
 
@@ -109,8 +103,6 @@ export class SettingsRepository {
       })
       .from(settings)
       .where(and(eq(settings.wabaId, wabaId), eq(settings.phoneId, phoneId)));
-
-    await db.$client.end();
 
     if (!setting) return null;
 

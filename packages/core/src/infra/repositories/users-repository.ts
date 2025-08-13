@@ -22,8 +22,6 @@ export class UsersRepository {
       .leftJoin(sectors, eq(users.sectorId, sectors.id))
       .where(eq(users.email, email));
 
-    await db.$client.end();
-
     if (!user) return null;
 
     return User.instance({
@@ -55,8 +53,6 @@ export class UsersRepository {
       .from(users)
       .leftJoin(sectors, eq(users.sectorId, sectors.id))
       .where(eq(users.id, id));
-
-    await db.$client.end();
 
     if (!user) return null;
 
@@ -93,8 +89,6 @@ export class UsersRepository {
       .leftJoin(sectors, eq(users.sectorId, sectors.id))
       .where(eq(memberships.workspaceId, workspaceId));
 
-    await db.$client.end();
-
     return response as {
       id: string;
       name: string;
@@ -129,8 +123,6 @@ export class UsersRepository {
         },
         target: users.id,
       });
-
-    await db.$client.end();
   }
 
   async retrievePassword(userId: string) {
@@ -143,8 +135,6 @@ export class UsersRepository {
       .from(users)
       .where(eq(users.id, userId));
 
-    await db.$client.end();
-
     if (!user) return null;
 
     return user.password;
@@ -156,7 +146,6 @@ export class UsersRepository {
       await tx.delete(memberships).where(eq(memberships.userId, userId));
       await tx.delete(users).where(eq(users.id, userId));
     });
-    await db.$client.end();
   }
 
   async setPassword(userId: string, password: string) {
@@ -171,7 +160,6 @@ export class UsersRepository {
         set: { password },
         target: users.id,
       });
-    await db.$client.end();
   }
 
   async retrieveLoomaUser(workspaceId: string) {
@@ -195,8 +183,6 @@ export class UsersRepository {
           eq(memberships.workspaceId, workspaceId)
         )
       );
-
-    await db.$client.end();
 
     if (!user) return null;
 

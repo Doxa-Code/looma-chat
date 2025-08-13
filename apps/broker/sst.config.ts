@@ -10,7 +10,7 @@ export default $config({
       providers: {
         aws: {
           accessKey: process.env.AWS_ACCESS_KEY_ID,
-          region: process.env.AWS_DEFAULT_REGION as sst.aws.Region,
+          region: process.env.AWS_DEFAULT_REGION as any,
           secretKey: process.env.AWS_SECRET_ACCESS_KEY,
         },
       },
@@ -21,18 +21,21 @@ export default $config({
       fifo: true,
     });
 
-    productsQueue.subscribe("functions/products-broker.handler", {
+    productsQueue.subscribe({
+      handler: "functions/products-broker.handler",
       environment: {
-        DATABASE_URL: process.env.DATABASE_URL,
+        DATABASE_URL: process.env.DATABASE_URL!,
       },
     });
 
     const clientsQueue = new sst.aws.Queue("ClientsBroker", {
       fifo: true,
     });
-    clientsQueue.subscribe("functions/clients-broker.handler", {
+
+    clientsQueue.subscribe({
+      handler: "functions/clients-broker.handler",
       environment: {
-        DATABASE_URL: process.env.DATABASE_URL,
+        DATABASE_URL: process.env.DATABASE_URL!,
       },
     });
 
@@ -44,9 +47,10 @@ export default $config({
       fifo: true,
     });
 
-    finishCart.subscribe("functions/finish-cart.handler", {
+    finishCart.subscribe({
+      handler: "functions/finish-cart.handler",
       environment: {
-        DATABASE_URL: process.env.DATABASE_URL,
+        DATABASE_URL: process.env.DATABASE_URL!,
       },
     });
 

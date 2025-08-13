@@ -13,7 +13,7 @@ export class ContactsRepository {
       })
       .from(contacts)
       .where(eq(contacts.phone, phone));
-    await db.$client.end();
+
     const contact = response?.[0];
     if (!contact) return null;
     return Contact.create(contact.phone, contact.name);
@@ -33,7 +33,6 @@ export class ContactsRepository {
         },
         target: contacts.phone,
       });
-    await db.$client.end();
   }
   static instance() {
     return new ContactsRepository();

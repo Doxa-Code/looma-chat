@@ -13,8 +13,6 @@ export class WorkspacesRepository {
       .leftJoin(workspaces, eq(workspaces.id, memberships.workspaceId))
       .where(eq(memberships.userId, userId));
 
-    await db.$client.end();
-
     if (!workspace) return null;
 
     return { id: workspace.id, name: workspace.name };
@@ -30,8 +28,6 @@ export class WorkspacesRepository {
       .from(memberships)
       .leftJoin(workspaces, eq(workspaces.id, memberships.workspaceId))
       .where(eq(memberships.userId, userId));
-
-    await db.$client.end();
 
     return response.map((workspace) => ({
       id: workspace.id!,
@@ -53,7 +49,6 @@ export class WorkspacesRepository {
         },
         target: workspaces.id,
       });
-    await db.$client.end();
   }
 
   static instance() {

@@ -15,8 +15,6 @@ export class AddressesRepository {
       })
       .returning();
 
-    await db.$client.end();
-
     return savedAddress.length > 0;
   }
 

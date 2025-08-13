@@ -4,5 +4,6 @@
     "paths": {
       "@looma/core/*": ["../../packages/core/src/*"]
     }
-  }
+  },
+  "include": ["functions/*.ts"]
 }
