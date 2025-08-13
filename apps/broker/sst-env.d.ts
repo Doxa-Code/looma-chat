@@ -5,6 +5,22 @@
 
 declare module "sst" {
   export interface Resource {
+    "ClientsBroker": {
+      "type": "sst.aws.Queue"
+      "url": string
+    }
+    "FinishCart": {
+      "type": "sst.aws.Queue"
+      "url": string
+    }
+    "ProductsBroker": {
+      "type": "sst.aws.Queue"
+      "url": string
+    }
+    "UpsertCart": {
+      "type": "sst.aws.Queue"
+      "url": string
+    }
   }
 }
 /// <reference path="sst-env.d.ts" />

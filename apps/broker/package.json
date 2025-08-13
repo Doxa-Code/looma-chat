@@ -7,8 +7,9 @@
     "remove:broker": "sst remove --stage=development"
   },
   "devDependencies": {
+    "@looma/typescript-config": "workspace:*",
     "@types/aws-lambda": "^8.10.152",
-    "@looma/typescript-config": "workspace:*"
+    "sst": "^3.17.10"
   },
   "dependencies": {
     "@looma/core": "workspace:*",

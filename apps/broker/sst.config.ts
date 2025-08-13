@@ -10,7 +10,7 @@ export default $config({
       providers: {
         aws: {
           accessKey: process.env.AWS_ACCESS_KEY_ID,
-          region: process.env.AWS_DEFAULT_REGION,
+          region: process.env.AWS_DEFAULT_REGION as sst.aws.Region,
           secretKey: process.env.AWS_SECRET_ACCESS_KEY,
         },
       },
