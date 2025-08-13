@@ -96,7 +96,7 @@ export function FormSetting(props: Props) {
 
       <div className="flex flex-col w-full max-w-[300px] gap-1">
         <Label className="text-sm text-muted-foreground">Telefone</Label>
-        <SelectNative defaultValue={props.setting.phoneId} name="phoneId">
+        <SelectNative defaultValue={props.setting?.phoneId} name="phoneId">
           <option value="">Selecione</option>
           {(props.phones ?? []).map((p) => (
             <option key={p.id} value={p.id}>
