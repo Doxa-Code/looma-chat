@@ -7,6 +7,7 @@ import z from "zod";
 
 const clientValidate = z.object({
   workspaceId: z.string(),
+  partnerId: z.string(),
   client: z.object({
     id: z.string(),
     contact: z.object({
@@ -15,13 +16,13 @@ const clientValidate = z.object({
     }),
     address: z
       .object({
-        street: z.string(),
-        number: z.string(),
-        neighborhood: z.string(),
-        city: z.string(),
-        state: z.string(),
-        zipCode: z.string(),
-        country: z.string(),
+        street: z.string().optional(),
+        number: z.string().optional(),
+        neighborhood: z.string().optional(),
+        city: z.string().optional(),
+        state: z.string().optional(),
+        zipCode: z.string().optional(),
+        country: z.string().optional(),
         note: z.string().nullable(),
       })
       .nullable(),
@@ -36,6 +37,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
     const result = await clientValidate.safeParseAsync(body);
 
     if (!result.success) {
+      console.log(result);
       return;
     }
 
@@ -50,6 +52,10 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       ),
     });
 
-    await clientsRepository.upsert(client, result.data.workspaceId);
+    await clientsRepository.upsert(
+      client,
+      result.data.workspaceId,
+      result.data.partnerId
+    );
   }
 };

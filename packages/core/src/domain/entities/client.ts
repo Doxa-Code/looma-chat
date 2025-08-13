@@ -40,7 +40,7 @@ export class Client {
 
   setAddress(address: Address) {
     this.address = address;
-  }  
+  }
 
   static instance(props: Client.Props) {
     return new Client(props);

@@ -1,12 +1,12 @@
 export type AddressRaw = {
   id?: string;
-  street: string;
-  number: string;
-  neighborhood: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
+  street?: string;
+  number?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  country?: string;
   note: string | null;
 };
 export class Address {

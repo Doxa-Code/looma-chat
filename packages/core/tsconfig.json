@@ -1,9 +1,6 @@
 {
   "extends": "@looma/typescript-config/base.json",
   "compilerOptions": {
-    "strictPropertyInitialization": false,
-    "rootDir": "."
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.test.ts", "src/**/*.mock.ts"]
+    "strictPropertyInitialization": false
+  }
 }

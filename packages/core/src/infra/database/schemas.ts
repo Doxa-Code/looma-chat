@@ -108,6 +108,7 @@ export const messages = pgTable("messages", {
 
 export const clients = pgTable("clients", {
   id: uuid("id").primaryKey().notNull(),
+  partnerId: text("partner_id"),
   contactPhone: varchar("contact_phone", { length: 15 }).references(
     () => contacts.phone
   ),

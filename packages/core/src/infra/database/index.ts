@@ -1,11 +1,15 @@
 import "dotenv/config";
-import { drizzle, PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { Sql } from "postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 
-export const createDatabaseConnection = (): PostgresJsDatabase<
-  Record<string, never>
-> & {
-  $client: Sql<{}>;
-} => {
-  return drizzle(process.env.DATABASE_URL ?? "");
+let sql: ReturnType<typeof postgres> | null = null;
+let db: ReturnType<typeof drizzle> | null = null;
+
+export const createDatabaseConnection = () => {
+  if (!sql) {
+    sql = postgres(process.env.DATABASE_URL!, { max: 1 });
+    db = drizzle(sql);
+    db.$client = sql;
+  }
+  return db!;
 };

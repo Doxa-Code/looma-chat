@@ -43,13 +43,15 @@ export class ClientsRepository {
     });
   }
 
-  async upsert(client: Client, workspaceId: string) {
+  async upsert(client: Client, workspaceId: string, partnerId?: string) {
     const db = createDatabaseConnection();
 
     const [address] = await db
       .select({ addressId: clients.addressId })
       .from(clients)
-      .where(eq(clients.id, client.id));
+      .where(
+        partnerId ? eq(clients.partnerId, partnerId) : eq(clients.id, client.id)
+      );
 
     await db.transaction(async (tx) => {
       const [addressCreated] = await tx
@@ -100,6 +102,7 @@ export class ClientsRepository {
           id: client.id,
           addressId: addressCreated?.id,
           contactPhone: contactCreated?.[0]?.phone,
+          partnerId,
           workspaceId,
         })
         .onConflictDoUpdate({
@@ -108,7 +111,7 @@ export class ClientsRepository {
             contactPhone: contactCreated?.[0]?.phone,
             workspaceId,
           },
-          target: clients.id,
+          target: partnerId ? clients.partnerId : clients.id,
         })
         .returning();
     });
