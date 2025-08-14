@@ -2,6 +2,7 @@ import { Product } from "@looma/core/domain/value-objects/product";
 import { and, asc, eq, ilike, inArray, isNotNull } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import { products } from "../database/schemas";
+import { count } from "drizzle-orm";
 
 type ListProps = {
   page: number;
@@ -86,23 +87,8 @@ export class ProductsRepository {
 
     const offset = page > 0 ? (page - 1) * pageSize : 0;
 
-    const response = await db
-      .select()
-      .from(products)
-      .where(
-        searchTerm
-          ? and(
-              eq(products.workspaceId, workspaceId),
-              ilike(products.description, `%${searchTerm}%`)
-            )
-          : eq(products.workspaceId, workspaceId)
-      )
-      .orderBy(asc(products.description))
-      .limit(pageSize)
-      .offset(offset);
-
-    const totalRows = (
-      await db
+    const [response, [counter]] = await Promise.all([
+      db
         .select()
         .from(products)
         .where(
@@ -113,7 +99,25 @@ export class ProductsRepository {
               )
             : eq(products.workspaceId, workspaceId)
         )
-    ).length;
+        .orderBy(asc(products.description))
+        .limit(pageSize)
+        .offset(offset),
+      db
+        .select({
+          count: count(products.id),
+        })
+        .from(products)
+        .where(
+          searchTerm
+            ? and(
+                eq(products.workspaceId, workspaceId),
+                ilike(products.description, `%${searchTerm}%`)
+              )
+            : eq(products.workspaceId, workspaceId)
+        ),
+    ]);
+
+    const totalRows = counter?.count ?? 1;
 
     const total = Math.ceil(totalRows / pageSize);
 
