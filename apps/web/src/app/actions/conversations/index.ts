@@ -33,6 +33,7 @@ const messagesRepository = MessagesRepository.instance();
 const cartsRepository = CartsRepository.instance();
 const messageDriver = MetaMessageDriver.instance();
 const aiDriver = LoomaAIDriver.instance();
+const membershipsRepository = MembershipsRepository.instance();
 
 const debouncedMap = new Map<
   string,
@@ -54,7 +55,9 @@ function getSendToLoomaDebounced(conversationId: string) {
         const messages = conversation.lastContactMessages.map((m) => m.content);
         if (!messages.length) return;
         try {
-          let loomaUser = await usersRepository.retrieveLoomaUser(workspaceId);
+          let loomaUser = await usersRepository.retrieveUserByEmail(
+            "looma@doxacode.com.br"
+          );
 
           if (!loomaUser) {
             loomaUser = User.create({
@@ -62,10 +65,19 @@ function getSendToLoomaDebounced(conversationId: string) {
               name: "Looma AI",
               type: "system",
             });
-            const membership = Membership.create(workspaceId, loomaUser.id);
-            membership.setPermissions(["manage:carts", "view:products"]);
             await usersRepository.upsert(loomaUser);
-            await MembershipsRepository.instance().upsert(membership);
+          }
+
+          let membership =
+            await membershipsRepository.retrieveByUserIdAndWorkspaceId(
+              loomaUser.id,
+              workspaceId
+            );
+
+          if (!membership) {
+            membership = Membership.create(workspaceId, loomaUser.id);
+            membership.setPermissions(["manage:carts", "view:products"]);
+            await membershipsRepository.upsert(membership);
           }
 
           const lastCart = await cartsRepository.retrieveLastCartByContactPhone(
@@ -448,12 +460,6 @@ export const receivedMessaging = createServerAction()
       wabaId,
       phoneId
     );
-
-    console.log({
-      setting,
-      wabaId,
-      phoneId,
-    });
 
     if (!setting) return;
 
