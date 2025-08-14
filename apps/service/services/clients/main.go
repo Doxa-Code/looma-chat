@@ -99,10 +99,11 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 
 					jsonPayload, err := utils.BuildClientPayloadJSON(rowMap, os.Getenv("WORKSPACE_ID"))
 					if err != nil {
-						log.Fatalf("Erro: %v", err)
+						logger.SendLog("error", fmt.Sprintf("Erro: %v", err))
+					} else {
+						log.Println(string(jsonPayload))
+						utils.SendMessage(string(jsonPayload), "clientsQueue", logger)
 					}
-					log.Println(string(jsonPayload))
-					utils.SendMessage(string(jsonPayload), "clientsQueue", logger)
 				}
 			}
 		}

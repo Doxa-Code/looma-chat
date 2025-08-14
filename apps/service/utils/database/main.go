@@ -23,6 +23,7 @@ func Connect(isService bool) error {
 	var err error
 	DB, err = sql.Open("mysql", os.Getenv("DB_URL"))
 	if err != nil {
+		logger.SendLog("error", os.Getenv("DB_URL"))
 		logger.SendLog("fatal", fmt.Sprintf("Erro ao conectar ao MySQL: %v", err))
 		return err
 	}

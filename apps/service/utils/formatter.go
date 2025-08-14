@@ -64,18 +64,18 @@ func BuildProductPayloadJSON(product map[string]interface{}, workspaceId string)
 	}
 
 	// Price
-	if v2, ok := product["preco2"].(int64); ok && v2 != 0.0 {
-		payload.Product.Price = v2
-	} else if v, ok := product["preco"].(int64); ok && v != 0.0 {
-		payload.Product.Price = v
+	if v2, ok := product["preco2"].(float64); ok && v2 != 0.0 {
+		payload.Product.Price = int64(v2 * 100)
+	} else if v, ok := product["preco"].(float64); ok && v != 0.0 {
+		payload.Product.Price = int64(v * 100)
 	} else {
 		return nil, fmt.Errorf("campo 'price' inválido ou ausente")
 	}
 
 	// Stock
-	if v, ok := product["qtd_estoque_atual"].(int64); ok {
+	if v, ok := product["qtd_estoque_atual"].(float64); ok {
 		payload.Product.Stock = int(v)
-	} else if v, ok := product["qtd_estoque_atual"].(int); ok {
+	} else if v, ok := product["qtd_estoque_atual"].(int64); ok {
 		payload.Product.Stock = int(v)
 	} else {
 		return nil, fmt.Errorf("campo 'stock' inválido ou ausente")
@@ -86,7 +86,8 @@ func BuildProductPayloadJSON(product map[string]interface{}, workspaceId string)
 		payload.Product.Code = &v
 	}
 	if v, ok := product["vlr_promocao"].(int64); ok {
-		payload.Product.PromotionPrice = &v
+		val := int64(v * 100)
+		payload.Product.PromotionPrice = &val
 	}
 	if v, ok := product["validade_promocao"].(time.Time); ok {
 		payload.Product.PromotionEnd = &v

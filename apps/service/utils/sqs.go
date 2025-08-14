@@ -37,7 +37,6 @@ func createClient(queueName string, logger *Logger) (*sqs.Client, string, contex
 }
 
 func SendMessage(payload string, queueName string, logger *Logger) {
-
 	clientSQS, queueURL, ctx := createClient(queueName, logger)
 
 	dedupID := uuid.New().String()
