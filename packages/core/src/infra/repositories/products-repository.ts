@@ -20,7 +20,7 @@ export class ProductsRepository {
         workspaceId,
       })
       .onConflictDoUpdate({
-        target: products.id,
+        target: [products.id, products.workspaceId],
         set: {
           ...product.raw(),
           workspaceId,
