@@ -70,7 +70,7 @@ const navMain: (user: User.Raw, permissions: Set<PolicyName>) => Menu[] = (
     icon: ListOrdered,
     active:
       user?.type === "superuser" ||
-      (["manage:orders", "view:orders", "create:order"] as PolicyName[]).some(
+      (["manage:carts", "view:carts", "create:cart"] as PolicyName[]).some(
         (permission) => permissions.has(permission)
       ),
   },

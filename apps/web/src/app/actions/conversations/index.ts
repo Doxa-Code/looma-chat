@@ -63,7 +63,7 @@ function getSendToLoomaDebounced(conversationId: string) {
               type: "system",
             });
             const membership = Membership.create(workspaceId, loomaUser.id);
-            membership.setPermissions(["manage:cart", "view:products"]);
+            membership.setPermissions(["manage:carts", "view:products"]);
             await usersRepository.upsert(loomaUser);
             await MembershipsRepository.instance().upsert(membership);
           }
@@ -335,7 +335,7 @@ export const registerMessaging = createServerAction()
   });
 
 export const showCart = securityProcedure([
-  "manage:cart",
+  "manage:carts",
   "send:message",
   "view:conversation",
   "view:conversations",

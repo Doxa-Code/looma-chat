@@ -9,7 +9,7 @@ import { AddressesRepository } from "@looma/core/infra/repositories/addresses-re
 const clientsRepository = ClientsRepository.instance();
 const addressesRepository = AddressesRepository.instance();
 
-export const changeClientAddress = securityProcedure(["manage:cart"])
+export const changeClientAddress = securityProcedure(["manage:carts"])
   .input(
     z.object({
       phone: z.string(),
@@ -40,7 +40,7 @@ export const changeClientAddress = securityProcedure(["manage:cart"])
     return;
   });
 
-export const retrieveClient = securityProcedure(["manage:cart"])
+export const retrieveClient = securityProcedure(["manage:carts"])
   .input(
     z.object({
       phone: z.string(),
