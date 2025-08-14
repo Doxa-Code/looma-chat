@@ -73,19 +73,6 @@ export class SettingsRepository {
       });
   }
 
-  async retrieveWorkspaceIdByWabaId(wabaId: string, phoneId: string) {
-    const db = createDatabaseConnection();
-
-    const [setting] = await db
-      .select({ workspaceId: settings.workspaceId })
-      .from(settings)
-      .where(and(eq(settings.wabaId, wabaId), eq(settings.phoneId, phoneId)));
-
-    if (!setting) return null;
-
-    return setting.workspaceId;
-  }
-
   async retrieveSettingByWabaIdAndPhoneId(wabaId: string, phoneId: string) {
     const db = createDatabaseConnection();
 
@@ -100,13 +87,17 @@ export class SettingsRepository {
         vectorNamespace: settings.vectorNamespace,
         knowledgeBase: settings.knowledgeBase,
         aiEnabled: settings.aiEnabled,
+        workspaceId: settings.workspaceId,
       })
       .from(settings)
       .where(and(eq(settings.wabaId, wabaId), eq(settings.phoneId, phoneId)));
 
     if (!setting) return null;
 
-    return Setting.create(setting);
+    return {
+      setting: Setting.create(setting),
+      workspaceId: setting.workspaceId,
+    };
   }
 
   static instance() {

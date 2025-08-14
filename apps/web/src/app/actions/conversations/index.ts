@@ -456,12 +456,16 @@ export const receivedMessaging = createServerAction()
       ],
     } = entry;
 
-    const setting = await settingsRepository.retrieveSettingByWabaIdAndPhoneId(
-      wabaId,
-      phoneId
-    );
+    const responseSetting =
+      await settingsRepository.retrieveSettingByWabaIdAndPhoneId(
+        wabaId,
+        phoneId
+      );
 
-    if (!setting) return;
+    const setting = responseSetting?.setting;
+    const workspaceId = responseSetting?.workspaceId;
+
+    if (!setting || !workspaceId) return;
 
     const contactProfile = contacts?.at(0);
 
@@ -476,13 +480,6 @@ export const receivedMessaging = createServerAction()
       );
       await contactsRepository.upsert(contact);
     }
-
-    const workspaceId = await settingsRepository.retrieveWorkspaceIdByWabaId(
-      wabaId,
-      phoneId
-    );
-
-    if (!workspaceId) return;
 
     let conversation: Conversation | null =
       await conversationsRepository.retrieveByContactPhone(
