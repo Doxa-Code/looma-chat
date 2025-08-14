@@ -7,7 +7,7 @@ let db: ReturnType<typeof drizzle> | null = null;
 
 export const createDatabaseConnection = () => {
   if (!sql) {
-    sql = postgres(process.env.DATABASE_URL!, { max: 5, idle_timeout: 30 });
+    sql = postgres(process.env.DATABASE_URL!, { max: 1, idle_timeout: 3 });
     db = drizzle(sql);
     db.$client = sql;
   }

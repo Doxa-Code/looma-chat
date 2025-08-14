@@ -20,10 +20,10 @@ const productValidate = z.object({
   }),
 });
 
-const productsRepository = ProductsRepository.instance();
-const settingsRepository = SettingsRepository.instance();
-
 export const handler: SQSHandler = async (event: SQSEvent) => {
+  const productsRepository = ProductsRepository.instance();
+  const settingsRepository = SettingsRepository.instance();
+
   for (const record of event.Records) {
     const body = JSON.parse(record.body) as Product.Props;
     const result = await productValidate.safeParseAsync(body);
