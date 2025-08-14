@@ -73,13 +73,13 @@ export class SettingsRepository {
       });
   }
 
-  async retrieveWorkspaceIdByWabaId(wabaId: string) {
+  async retrieveWorkspaceIdByWabaId(wabaId: string, phoneId: string) {
     const db = createDatabaseConnection();
 
     const [setting] = await db
       .select({ workspaceId: settings.workspaceId })
       .from(settings)
-      .where(eq(settings.wabaId, wabaId));
+      .where(and(eq(settings.wabaId, wabaId), eq(settings.phoneId, phoneId)));
 
     if (!setting) return null;
 

@@ -16,7 +16,7 @@ import { SectorsRepository } from "@looma/core/infra/repositories/sectors-respos
 import { UsersRepository } from "@looma/core/infra/repositories/users-repository";
 import { WorkspacesRepository } from "@looma/core/infra/repositories/workspaces-repository";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect, RedirectType } from "next/navigation";
 import { z } from "zod";
 import { createServerAction } from "zsa";
 import { securityProcedure } from "../procedure";
@@ -56,12 +56,13 @@ export const changeWorkspace = securityProcedure()
   .input(
     z.object({
       workspaceId: z.string(),
+      pathname: z.string(),
     })
   )
   .handler(async ({ input }) => {
     const cookieStore = await cookies();
     cookieStore.set(COOKIE_WORKSPACE_NAME, input.workspaceId);
-    revalidatePath("/", "layout");
+    revalidatePath(input.pathname, "layout");
   });
 
 export const listWorkspaces = securityProcedure()

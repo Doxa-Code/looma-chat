@@ -7,14 +7,23 @@ export const sse = securityProcedure([
 ]).handler(async ({ request }) => {
   const encoder = new TextEncoder();
 
+  let isOpen = true;
+
   const stream = new ReadableStream({
+    cancel() {
+      isOpen = false;
+    },
     async start(controller) {
       const sendEvent = (data: any) => {
         try {
           const message = `data: ${JSON.stringify(data)}\n\n`;
           controller.enqueue(encoder.encode(message));
-        } catch (err) {
-          console.log(err);
+        } catch {
+          isOpen = false;
+          console.log("Stream fechada, não é possível enviar mais eventos.");
+          try {
+            controller.close();
+          } catch {}
         }
       };
 

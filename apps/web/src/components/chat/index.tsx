@@ -18,6 +18,7 @@ import { Logo } from "../logo";
 type Props = {
   conversations: Conversation.Raw[];
   userAuthenticated: User.Raw;
+  channel: string;
 };
 
 export function Chat(props: Props) {
@@ -56,7 +57,8 @@ export function Chat(props: Props) {
 
       const newConversation = message as Conversation.Raw;
 
-      if (!newConversation.id) return;
+      if (!newConversation.id || newConversation.channel !== props.channel)
+        return;
 
       setConversations((conversations) => {
         conversations.set(newConversation.id, {

@@ -62,14 +62,16 @@ export class MetaMessageDriver implements MessageDriver {
   }
 
   async sendTyping(data: TypingProps): Promise<void> {
-    await this.client.post(`/${data.channel}/messages`, {
-      messaging_product: "whatsapp",
-      status: "read",
-      message_id: data.lastMessageId,
-      typing_indicator: {
-        type: "text",
-      },
-    });
+    await this.client
+      .post(`/${data.channel}/messages`, {
+        messaging_product: "whatsapp",
+        status: "read",
+        message_id: data.lastMessageId,
+        typing_indicator: {
+          type: "text",
+        },
+      })
+      .catch((err) => console.log(JSON.stringify(err, null, 2)));
   }
 
   async sendMessageText(data: SendMessageTextProps): Promise<string> {

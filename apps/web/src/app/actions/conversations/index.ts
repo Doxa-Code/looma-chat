@@ -449,6 +449,12 @@ export const receivedMessaging = createServerAction()
       phoneId
     );
 
+    console.log({
+      setting,
+      wabaId,
+      phoneId,
+    });
+
     if (!setting) return;
 
     const contactProfile = contacts?.at(0);
@@ -465,17 +471,24 @@ export const receivedMessaging = createServerAction()
       await contactsRepository.upsert(contact);
     }
 
-    const workspaceId =
-      await settingsRepository.retrieveWorkspaceIdByWabaId(wabaId);
+    const workspaceId = await settingsRepository.retrieveWorkspaceIdByWabaId(
+      wabaId,
+      phoneId
+    );
 
     if (!workspaceId) return;
 
     let conversation: Conversation | null =
-      await conversationsRepository.retrieveByContactPhone(contact.phone);
+      await conversationsRepository.retrieveByContactPhone(
+        contact.phone,
+        phoneId
+      );
 
     if (!conversation) {
       conversation = Conversation.create(contact, phoneId);
     }
+
+    conversation.setChannel(phoneId);
 
     const message =
       messagePayload?.type === "text"

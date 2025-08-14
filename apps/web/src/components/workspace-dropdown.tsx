@@ -79,7 +79,10 @@ export const WorkspaceDropdown = (props: Props) => {
               className="flex items-center justify-between"
               key={w.id}
               onClick={() =>
-                changeWorkspaceAction.mutate({ workspaceId: w.id })
+                changeWorkspaceAction.mutate({
+                  workspaceId: w.id,
+                  pathname: window.location.pathname,
+                })
               }
             >
               <span className="text-xs">{w.name}</span>

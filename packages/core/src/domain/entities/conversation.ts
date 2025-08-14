@@ -99,8 +99,12 @@ export class Conversation {
     return this.messages.at(-1)?.type === "audio"
       ? "Audio"
       : this.messages.at(-1)?.type === "image"
-      ? "Imagem"
-      : this.messages.at(-1)?.content;
+        ? "Imagem"
+        : this.messages.at(-1)?.content;
+  }
+
+  setChannel(channel: string) {
+    this.channel = channel;
   }
 
   addMessage(message: Message) {

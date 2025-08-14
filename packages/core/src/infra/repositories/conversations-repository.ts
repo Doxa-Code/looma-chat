@@ -13,6 +13,7 @@ import {
   sectors,
   users,
 } from "../database/schemas";
+import { and } from "drizzle-orm";
 
 export class ConversationsRepository {
   private fullQuery(db: any) {
@@ -160,13 +161,19 @@ export class ConversationsRepository {
     return conversation;
   }
 
-  async retrieveByContactPhone(phone: string): Promise<Conversation | null> {
-    if (!phone) return null;
+  async retrieveByContactPhone(
+    phone: string,
+    channel: string
+  ): Promise<Conversation | null> {
+    if (!phone || !channel) return null;
 
     const db = createDatabaseConnection();
 
     const [conversation] = await this.fullQuery(db).where(
-      eq(conversations.contactPhone, phone)
+      and(
+        eq(conversations.contactPhone, phone),
+        eq(conversations.channel, channel)
+      )
     );
 
     if (!conversation) return null;

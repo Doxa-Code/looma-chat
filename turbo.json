@@ -33,6 +33,10 @@
       "cache": false,
       "persistent": true
     },
+    "db:generate:token": {
+      "cache": false,
+      "persistent": true
+    },
     "send:event:broker": {
       "cache": false,
       "persistent": true
