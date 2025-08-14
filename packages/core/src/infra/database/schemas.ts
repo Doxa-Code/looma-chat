@@ -1,3 +1,4 @@
+import { primaryKey } from "drizzle-orm/pg-core";
 import {
   boolean,
   integer,
@@ -128,18 +129,22 @@ export const addresses = pgTable("addresses", {
   note: text("note"),
 });
 
-export const products = pgTable("products", {
-  id: text("id").primaryKey().notNull(),
-  description: text("description").notNull(),
-  code: text("code"),
-  manufactory: text("manufactory").notNull(),
-  price: integer("price").notNull().default(0),
-  stock: integer("stock").notNull().default(0),
-  promotionPrice: integer("promotion_price").default(0),
-  promotionStart: timestamp("promotion_start"),
-  promotionEnd: timestamp("promotion_end"),
-  workspaceId: uuid("workspace_id").references(() => workspaces.id),
-});
+export const products = pgTable(
+  "products",
+  {
+    id: text("id").notNull(),
+    description: text("description").notNull(),
+    code: text("code"),
+    manufactory: text("manufactory").notNull(),
+    price: integer("price").notNull().default(0),
+    stock: integer("stock").notNull().default(0),
+    promotionPrice: integer("promotion_price").default(0),
+    promotionStart: timestamp("promotion_start"),
+    promotionEnd: timestamp("promotion_end"),
+    workspaceId: uuid("workspace_id").references(() => workspaces.id),
+  },
+  (table) => [primaryKey({ columns: [table.id, table.workspaceId] })]
+);
 
 export const productsOnCart = pgTable("products_on_cart", {
   id: uuid("id").primaryKey().notNull(),
