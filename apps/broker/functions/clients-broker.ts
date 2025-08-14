@@ -39,11 +39,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
     const body = JSON.parse(record.body) as Client.Props;
     const result = await clientValidate.safeParseAsync(body);
 
-    if (
-      !result.success ||
-      !result?.data?.client?.contact?.phone ||
-      result?.data?.client?.contact?.phone !== "<nil>"
-    ) {
+    if (!result.success) {
       console.log({
         error: result.error,
         body: JSON.stringify(body, null, 2),
