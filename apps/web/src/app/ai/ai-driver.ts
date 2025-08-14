@@ -85,6 +85,49 @@ export class LoomaAIDriver implements AIDriver {
 
             const result = response.text;
             span.setAttribute(SemanticConventions.OUTPUT_VALUE, result);
+            span.setAttribute(
+              SemanticConventions.LLM_TOKEN_COUNT_COMPLETION,
+              (response?.response?.body as any)?.usage?.completion_tokens
+            );
+            span.setAttribute(
+              SemanticConventions.LLM_TOKEN_COUNT_COMPLETION_DETAILS,
+              (response?.response?.body as any)?.usage
+                ?.completion_tokens_details
+            );
+            span.setAttribute(
+              SemanticConventions.LLM_TOKEN_COUNT_PROMPT,
+              (response?.response?.body as any)?.usage?.prompt_tokens
+            );
+            span.setAttribute(
+              SemanticConventions.LLM_TOKEN_COUNT_PROMPT_DETAILS,
+              (response?.response?.body as any)?.usage?.prompt_tokens_details
+            );
+            span.setAttribute(
+              SemanticConventions.LLM_TOKEN_COUNT_TOTAL,
+              (response?.response?.body as any)?.usage?.total_tokens
+            );
+            span.setAttribute(
+              SemanticConventions.LLM_MODEL_NAME,
+              response?.response?.modelId
+            );
+            response.toolCalls.map((t: any) => {
+              span.setAttribute(
+                SemanticConventions.TOOL_CALL_FUNCTION_ARGUMENTS_JSON,
+                t.args
+              );
+              span.setAttribute(
+                SemanticConventions.TOOL_CALL_FUNCTION_NAME,
+                t.toolName
+              );
+              span.setAttribute(SemanticConventions.TOOL_CALL_ID, t.toolCallId);
+            });
+            response.response.messages.map((m: any) => {
+              span.setAttribute(
+                SemanticConventions.MESSAGE_CONTENT,
+                m.content as any
+              );
+              span.setAttribute(SemanticConventions.MESSAGE_ROLE, m.role);
+            });
             span.end();
             return result;
           }
