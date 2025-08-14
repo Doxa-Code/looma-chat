@@ -84,7 +84,9 @@ export function FormSetting(props: Props) {
       </div>
 
       <div className="flex flex-col w-full max-w-[300px] gap-1">
-        <Label className="text-sm text-muted-foreground">Waba ID</Label>
+        <Label className="text-sm text-muted-foreground">
+          ID do Whatsapp Bussiness
+        </Label>
         <Input
           defaultValue={props.setting?.wabaId}
           maxLength={17}

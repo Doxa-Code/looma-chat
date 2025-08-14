@@ -39,6 +39,10 @@ export class AuthorizationService {
       return membership.hasPermission(actions);
     }
 
+    if (!actions.length) {
+      return true;
+    }
+
     return actions
       .map((action) => membership.hasPermission(action))
       .some((allow) => allow);

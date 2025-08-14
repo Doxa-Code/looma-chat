@@ -54,7 +54,8 @@ export const securityProcedure = (permissions?: PolicyName[]) =>
         membership
       );
 
-      if (!isAllowed) throw NotAuthorized.throw();
+      if (!isAllowed && !!permissions?.length) throw NotAuthorized.throw();
+
       return { user, membership };
     })
     .createServerAction();
