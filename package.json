@@ -16,7 +16,8 @@
     "db:migrate": "turbo run db:migrate",
     "db:generate": "turbo run db:generate",
     "db:seed": "turbo run db:seed",
-    "db:generate:token": "turbo run db:generate:token"
+    "db:generate:token": "turbo run db:generate:token",
+    "mastra:dev": "turbo run mastra:dev"
   },
   "devDependencies": {
     "prettier": "^3.6.2",

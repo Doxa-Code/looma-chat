@@ -5,6 +5,7 @@ import { azureEmbeddings } from "../config/llms/azure";
 import { pinecone } from "../config/vectors/pinecone-vector";
 import { saveMessageOnThread } from "../utils";
 import { ProductsRepository } from "@looma/core/infra/repositories/products-repository";
+import { Setting } from "@looma/core/domain/value-objects/setting";
 
 export const stockTool = createTool({
   id: "stock-tool",
@@ -21,13 +22,15 @@ export const stockTool = createTool({
         value: context.query,
       });
 
+      const setting = runtimeContext.get("settings") as Setting;
+
       const response = await pinecone
         .index<{
           id: string;
           description: string;
           manufactory: string;
         }>("products")
-        .namespace(runtimeContext.get("vector-namespace"))
+        .namespace(setting.vectorNamespace)
         .query({
           topK: 30,
           vector: embedding,
@@ -78,13 +81,15 @@ export const promotionProductsTool = createTool({
       value: context.query,
     });
 
+    const setting = runtimeContext.get("settings") as Setting;
+
     const response = await pinecone
       .index<{
         id: string;
         description: string;
         manufactory: string;
       }>("products")
-      .namespace(runtimeContext.get("vector-namespace"))
+      .namespace(setting.vectorNamespace)
       .query({
         topK: 30,
         vector: embedding,

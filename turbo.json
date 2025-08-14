@@ -33,6 +33,10 @@
       "cache": false,
       "persistent": true
     },
+    "mastra:dev": {
+      "cache": false,
+      "persistent": false
+    },
     "db:generate:token": {
       "cache": false,
       "persistent": true

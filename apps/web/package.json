@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest",
-    "mastra:dev": "pnpx mastra dev --dir src/core/infra/ai",
-    "postinstall": "flowbite-react patch"
+    "postinstall": "flowbite-react patch",
+    "mastra:dev": "pnpx mastra dev --dir src/app/ai"
   },
   "dependencies": {
     "@opentelemetry/exporter-trace-otlp-proto": "^0.203.0",
