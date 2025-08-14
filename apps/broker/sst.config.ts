@@ -17,15 +17,20 @@ export default $config({
     };
   },
   async run() {
+    const environment = {
+      AZURE_API_KEY: process.env.AZURE_API_KEY!,
+      AZURE_ENDPOINT: process.env.AZURE_ENDPOINT!,
+      PINECONE_API_KEY: process.env.PINECONE_API_KEY!,
+      DATABASE_URL: process.env.DATABASE_URL!,
+    };
+
     const productsQueue = new sst.aws.Queue("ProductsBroker", {
       fifo: true,
     });
 
     productsQueue.subscribe({
       handler: "functions/products-broker.handler",
-      environment: {
-        DATABASE_URL: process.env.DATABASE_URL!,
-      },
+      environment,
     });
 
     const clientsQueue = new sst.aws.Queue("ClientsBroker", {
@@ -34,9 +39,7 @@ export default $config({
 
     clientsQueue.subscribe({
       handler: "functions/clients-broker.handler",
-      environment: {
-        DATABASE_URL: process.env.DATABASE_URL!,
-      },
+      environment,
     });
 
     const upsertCart = new sst.aws.Queue("UpsertCart", {
@@ -49,9 +52,7 @@ export default $config({
 
     finishCart.subscribe({
       handler: "functions/finish-cart.handler",
-      environment: {
-        DATABASE_URL: process.env.DATABASE_URL!,
-      },
+      environment,
     });
 
     return {
