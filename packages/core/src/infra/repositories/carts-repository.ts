@@ -1,10 +1,5 @@
 import { Cart } from "@looma/core/domain/entities/cart";
 import { CartProduct } from "@looma/core/domain/entities/cart-product";
-import { Client } from "@looma/core/domain/entities/client";
-import { Address } from "@looma/core/domain/value-objects/address";
-import { Attendant } from "@looma/core/domain/value-objects/attendant";
-import { Contact } from "@looma/core/domain/value-objects/contact";
-import { Status } from "@looma/core/domain/value-objects/status";
 import { and, eq, or, sql } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import {
@@ -16,11 +11,7 @@ import {
   productsOnCart,
   users,
 } from "../database/schemas";
-import {
-  PaymentMethod,
-  PaymentMethodValue,
-} from "./../../domain/value-objects/payment-method";
-import { StatusValue } from "../../../dist/domain/value-objects/status.mjs";
+import { PaymentMethodValue } from "../../domain/value-objects/payment-method";
 
 export class CartsRepository {
   private timestampToDate(timestamp: number) {
