@@ -21,7 +21,18 @@ const clientsRepository = ClientsRepository.instance();
 
 const messaging = SQSMessagingDriver.instance();
 
-export const retrieveOpenCart = securityProcedure(["manage:cart"])
+export const listCarts = securityProcedure([
+  "view:carts",
+  "manage:carts",
+]).handler(async ({ ctx }) => {
+  const carts = await cartsRepository.list(ctx.membership.workspaceId);
+  return carts;
+});
+
+export const retrieveOpenCart = securityProcedure([
+  "manage:carts",
+  "view:carts",
+])
   .input(
     z.object({
       conversationId: z.string(),
@@ -44,7 +55,7 @@ export const retrieveOpenCart = securityProcedure(["manage:cart"])
     return cart.raw();
   });
 
-export const upsertProductOnCart = securityProcedure(["manage:cart"])
+export const upsertProductOnCart = securityProcedure(["manage:carts"])
   .input(
     z.object({
       productId: z.string(),
@@ -104,7 +115,7 @@ export const upsertProductOnCart = securityProcedure(["manage:cart"])
     return cart.raw();
   });
 
-export const removeProductFromCart = securityProcedure(["manage:cart"])
+export const removeProductFromCart = securityProcedure(["manage:carts"])
   .input(
     z.object({
       productId: z.string(),
@@ -128,7 +139,7 @@ export const removeProductFromCart = securityProcedure(["manage:cart"])
     return;
   });
 
-export const orderCart = securityProcedure(["manage:cart"])
+export const orderCart = securityProcedure(["manage:carts"])
   .input(
     z.object({
       conversationId: z.string(),
@@ -169,7 +180,7 @@ export const orderCart = securityProcedure(["manage:cart"])
     return cart.raw();
   });
 
-export const expireCart = securityProcedure(["manage:cart"])
+export const expireCart = securityProcedure(["manage:carts"])
   .input(
     z.object({
       conversationId: z.string(),
@@ -189,7 +200,7 @@ export const expireCart = securityProcedure(["manage:cart"])
     return;
   });
 
-export const cancelCart = securityProcedure(["manage:cart"])
+export const cancelCart = securityProcedure(["manage:carts"])
   .input(
     z.object({
       conversationId: z.string(),
@@ -219,7 +230,7 @@ export const cancelCart = securityProcedure(["manage:cart"])
     return;
   });
 
-export const setCartAddress = securityProcedure(["manage:cart"])
+export const setCartAddress = securityProcedure(["manage:carts"])
   .input(
     z.object({
       conversationId: z.string(),
@@ -276,7 +287,7 @@ export const setCartAddress = securityProcedure(["manage:cart"])
     await cartsRepository.upsert(cart, ctx.membership.workspaceId);
   });
 
-export const setPaymentMethod = securityProcedure(["manage:cart"])
+export const setPaymentMethod = securityProcedure(["manage:carts"])
   .input(
     z.object({
       conversationId: z.string(),

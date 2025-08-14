@@ -22,11 +22,13 @@ export const permissions = {
   "upsert:permissions": "Permite gerenciar as permissões dos usuários",
   "upsert:workspaces": "Permite gerenciar as áreas de trabalho",
   "view:products": "Permite listar todos os produtos no estoque",
-  "manage:cart": "Permite gerenciar os carrinhos",
   "view:conversation":
     "Permite visualizar atendimentos abertos para o setor do usuário, sem atendente atribuído ou atendimentos atribuídos ao próprio usuário",
   "view:conversations": "Permite visualizar todos os atendimentos",
   "send:message": "Permite enviar mensagens",
+  "manage:carts": "Permite gerenciar todos os carrinhos",
+  "view:carts": "Permite visualizar todos os carrinhos",
+  "create:cart": "Permite criar carrinho",
 } as const;
 
 export type PolicyName = keyof typeof permissions;

@@ -38,12 +38,24 @@ export class Client {
     this.address = props.address;
   }
 
+  raw(): Client.Raw {
+    return {
+      id: this.id,
+      contact: this.contact.raw(),
+      address: this.address?.raw?.() ?? null,
+    };
+  }
+
   setAddress(address: Address) {
     this.address = address;
   }
 
-  static instance(props: Client.Props) {
-    return new Client(props);
+  static instance(props: Client.Raw) {
+    return new Client({
+      address: props.address ? Address.create(props.address) : null,
+      contact: Contact.create(props.contact.phone, props.contact.name),
+      id: props.id,
+    });
   }
 
   static create(contact: Contact) {

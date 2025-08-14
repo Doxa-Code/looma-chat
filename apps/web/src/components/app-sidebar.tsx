@@ -16,7 +16,14 @@ import {
 } from "@/components/ui/sidebar";
 import { User } from "@looma/core/domain/entities/user";
 import { PolicyName } from "@looma/core/domain/services/authorization-service";
-import { Box, ChevronRight, CogIcon, Dot, MessageCircle } from "lucide-react";
+import {
+  Box,
+  ChevronRight,
+  CogIcon,
+  Dot,
+  ListOrdered,
+  MessageCircle,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -56,6 +63,16 @@ const navMain: (user: User.Raw, permissions: Set<PolicyName>) => Menu[] = (
           "send:message",
         ] as PolicyName[]
       ).some((permission) => permissions.has(permission)),
+  },
+  {
+    title: "Pedidos",
+    url: "/orders",
+    icon: ListOrdered,
+    active:
+      user?.type === "superuser" ||
+      (["manage:orders", "view:orders", "create:order"] as PolicyName[]).some(
+        (permission) => permissions.has(permission)
+      ),
   },
   {
     title: "Produtos",

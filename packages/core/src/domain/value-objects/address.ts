@@ -100,6 +100,6 @@ export class Address {
   }
 
   fullAddress(): string {
-    return `${this.street}, ${this.number}, ${this.neighborhood}, ${this.city} - ${this.state}, ${this.zipCode}, ${this.country}`;
+    return `${this.street}, ${this.number ? `${this.number},` : ""} ${this.neighborhood}, ${this.city} - ${this.state}, ${this.zipCode}`;
   }
 }

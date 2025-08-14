@@ -39,6 +39,16 @@ export class CartProduct {
     this.quantity = props.quantity;
   }
 
+  raw() {
+    return {
+      id: this.id,
+      description: this.description,
+      price: this.price,
+      realPrice: this.realPrice,
+      quantity: this.quantity,
+    };
+  }
+
   get total() {
     return this.price * this.quantity;
   }

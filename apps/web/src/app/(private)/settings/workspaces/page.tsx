@@ -2,11 +2,9 @@ import { listWorkspaces } from "@/app/actions/users";
 import { ButtonCopyIdWorkspace } from "@/components/button-copy-id-workspace";
 import { RegisterWorkspace } from "@/components/register-workspace";
 import { TitlePage } from "@/components/title-page";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Divider } from "@/components/ui/divider";
 import { Label } from "@/components/ui/label";
-import { Copy } from "lucide-react";
 
 export default async function WorkspacePage() {
   const [data] = await listWorkspaces({});

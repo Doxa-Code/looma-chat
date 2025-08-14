@@ -4,7 +4,7 @@ export type StatusValue =
   | "expired"
   | "budget"
   | "order"
-  | "canceled"
+  | "cancelled"
   | "shipped"
   | "finished";
 
@@ -30,7 +30,7 @@ export class Status {
   get formatted() {
     const formatteds = new Map<StatusValue, string>([
       ["budget", "Em orçamento"],
-      ["canceled", "Pedido cancelado"],
+      ["cancelled", "Pedido cancelado"],
       ["expired", "Pedido expirado"],
       ["finished", "Venda concluída"],
       ["shipped", "Pedido expedido"],

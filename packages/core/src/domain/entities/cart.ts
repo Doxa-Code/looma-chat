@@ -127,7 +127,7 @@ export class Cart {
   }
 
   cancelCart() {
-    this.status = Status.create("canceled");
+    this.status = Status.create("cancelled");
     this.canceledAt = new Date();
   }
 
@@ -212,17 +212,33 @@ ${this.status.formatted}
     });
   }
 
-  static instance(props: Cart.Props) {
-    return new Cart(props);
+  static instance(props: Cart.Raw) {
+    return new Cart({
+      address: props.address ? Address.create(props.address) : null,
+      attendant: Attendant.create(props.attendant.id, props.attendant.name),
+      canceledAt: props.canceledAt,
+      client: Client.instance(props.client),
+      createdAt: props.createdAt,
+      expiredAt: props.expiredAt,
+      finishedAt: props.finishedAt,
+      id: props.id,
+      orderedAt: props.orderedAt,
+      paymentChange: props.paymentChange,
+      paymentMethod: props.paymentMethod
+        ? PaymentMethod.create(props.paymentMethod)
+        : null,
+      products: props.products.map((p) => CartProduct.instance(p)),
+      status: Status.create(props.status),
+    });
   }
 
   raw(): Cart.Raw {
     return {
       id: this.id,
-      client: this.client,
-      attendant: this.attendant,
-      products: this.products,
-      address: this.address ? this.address.raw() : null,
+      client: this.client.raw(),
+      attendant: this.attendant.raw(),
+      products: this.products.map((p) => p.raw()),
+      address: this.address?.raw?.() ?? null,
       status: this.status.raw(),
       createdAt: this.createdAt,
       orderedAt: this.orderedAt,
