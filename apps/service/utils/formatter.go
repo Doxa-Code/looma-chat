@@ -57,40 +57,41 @@ func BuildProductPayloadJSON(product map[string]interface{}, workspaceId string)
 	payload := ProductPayload{
 		WorkspaceId: workspaceId,
 		Product: Product{
-			ID:          fmt.Sprintf("%v", product["id"]),
-			Description: fmt.Sprintf("%v", product["description"]),
-			Manufactory: fmt.Sprintf("%v", product["manufactory"]),
+			ID:          fmt.Sprintf("%v", product["codigo"]),
+			Description: fmt.Sprintf("%v", product["descricao"]),
+			Manufactory: fmt.Sprintf("%v", product["marca"]),
 		},
 	}
 
 	// Price
-	if v, ok := product["price"].(int64); ok {
+	if v2, ok := product["preco2"].(int64); ok && v2 != 0.0 {
+		payload.Product.Price = v2
+	} else if v, ok := product["preco"].(int64); ok && v != 0.0 {
 		payload.Product.Price = v
 	} else {
 		return nil, fmt.Errorf("campo 'price' inválido ou ausente")
 	}
 
 	// Stock
-	if v, ok := product["stock"].(int64); ok {
+	if v, ok := product["qtd_estoque_atual"].(int64); ok {
 		payload.Product.Stock = int(v)
-	} else if v, ok := product["stock"].(int); ok {
+	} else if v, ok := product["qtd_estoque_atual"].(int); ok {
 		payload.Product.Stock = int(v)
 	} else {
 		return nil, fmt.Errorf("campo 'stock' inválido ou ausente")
 	}
 
 	// Nullable fields
-	if v, ok := product["code"].(string); ok && v != "" {
+	if v, ok := product["codigo_barra"].(string); ok && v != "" {
 		payload.Product.Code = &v
 	}
-	if v, ok := product["promotionPrice"].(int64); ok {
+	if v, ok := product["vlr_promocao"].(int64); ok {
 		payload.Product.PromotionPrice = &v
 	}
-	if v, ok := product["promotionStart"].(time.Time); ok {
-		payload.Product.PromotionStart = &v
-	}
-	if v, ok := product["promotionEnd"].(time.Time); ok {
+	if v, ok := product["validade_promocao"].(time.Time); ok {
 		payload.Product.PromotionEnd = &v
+		now := time.Now()
+		payload.Product.PromotionStart = &now
 	}
 
 	jsonBytes, err := json.Marshal(payload)

@@ -98,6 +98,7 @@ export const upsertProductOnCart = securityProcedure(["manage:cart"])
         queueName: "carts",
         data: cart.raw(),
         workspaceId: ctx.membership.workspaceId,
+        operation: "upsertProduct"
       });
     }
 
@@ -124,6 +125,15 @@ export const removeProductFromCart = securityProcedure(["manage:cart"])
     if (!product) throw NotFound.instance("Product");
 
     await cartsRepository.removeProductFromCart(input.productId, cart.id);
+
+    if (cart.status.is("order")) {
+      await messaging.sendDataToQueue({
+        queueName: "carts",
+        data: cart.raw(),
+        workspaceId: ctx.membership.workspaceId,
+        operation: "removeProduct"
+      });
+    }
 
     return;
   });
@@ -165,6 +175,7 @@ export const orderCart = securityProcedure(["manage:cart"])
       queueName: "carts",
       data: cart.raw(),
       workspaceId: ctx.membership.workspaceId,
+      operation: "orderCart"
     });
     return cart.raw();
   });
@@ -214,6 +225,7 @@ export const cancelCart = securityProcedure(["manage:cart"])
         queueName: "carts",
         data: cart.raw(),
         workspaceId: ctx.membership.workspaceId,
+        operation: "cancelCart"
       });
     }
     return;

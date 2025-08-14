@@ -1,18 +1,16 @@
 package carts
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
-	"github.com/rabbitmq/amqp091-go"
 
 	"looma-service/utils"
+	"looma-service/utils/database"
 )
 
 func mapCartToPedido(data interface{}) (Pedido, error) {
@@ -51,13 +49,13 @@ func mapCartToPedido(data interface{}) (Pedido, error) {
 	}, nil
 }
 
-func salvarPedido(db *sql.DB, pedido Pedido) error {
-	_, err := db.Exec(`
-		CALL sp_inserir_cabecalho_pedido(
-			$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,
-			$13,$14,$15,$16,$17,$18,$19,$20,$21,$22
-		)
-	`,
+func salvarPedido(pedido Pedido) error {
+	query := `CALL sp_inserir_cabecalho_pedido(
+		?,?,?,?,?,?,?,?,?,?,?,?,
+			?,?,?,?,?,?,?,?,?,?
+		);`
+
+	params := []interface{}{
 		pedido.IdPedido,
 		pedido.IdCliente,
 		pedido.ClienteCPF,
@@ -79,17 +77,19 @@ func salvarPedido(db *sql.DB, pedido Pedido) error {
 		pedido.ValorProdutos,
 		pedido.ValorTaxaEntrega,
 		pedido.ValorTotal,
-		"DOXACODE")
+		"DOXACODE"}
+
+	_, err := database.RunProcedure(query, params)
 	return err
 }
 
-func processOrderCart(data interface{}, db *sql.DB) error {
+func processOrderCart(data interface{}) error {
 	pedido, err := mapCartToPedido(data)
 	if err != nil {
 		return fmt.Errorf("erro ao mapear pedido: %w", err)
 	}
 
-	if err := salvarPedido(db, pedido); err != nil {
+	if err := salvarPedido(pedido); err != nil {
 		return fmt.Errorf("erro ao salvar pedido: %w", err)
 	}
 
@@ -97,22 +97,23 @@ func processOrderCart(data interface{}, db *sql.DB) error {
 	return nil
 }
 
-func adicionarProduto(db *sql.DB, produto Product, cartId string) error {
-	_, err := db.Exec(`
-		CALL sp_inserir_itens_pedido(
-			$1, $2, $3, $4, $5, $6
-		);
-	`,
+func adicionarProduto(produto Product, cartId string) error {
+	query := `CALL sp_inserir_itens_pedido(
+			?, ?, ?, ?, ?, ?
+		);`
+	params := []interface{}{
 		cartId,
 		produto.Id,
 		produto.Quantity,
 		produto.Price,
-		float64(produto.Quantity)*float64(produto.Price),
-		"DOXACODE")
+		float64(produto.Quantity) * float64(produto.Price),
+		"DOXACODE",
+	}
+	_, err := database.RunProcedure(query, params)
 	return err
 }
 
-func processUpsertProduct(data interface{}, db *sql.DB) error {
+func processUpsertProduct(data interface{}) error {
 	var payload UpsertProductPayload
 
 	bytes, _ := json.Marshal(data)
@@ -123,9 +124,9 @@ func processUpsertProduct(data interface{}, db *sql.DB) error {
 	cartId := payload.Id
 	product := payload.CartProduct
 
-	adicionarProduto(db, product, cartId)
+	adicionarProduto(product, cartId)
 
-	if err := adicionarProduto(db, product, cartId); err != nil {
+	if err := adicionarProduto(product, cartId); err != nil {
 		return fmt.Errorf("erro ao adicionar produto: %w", err)
 	}
 
@@ -134,19 +135,20 @@ func processUpsertProduct(data interface{}, db *sql.DB) error {
 	return nil
 }
 
-func removerProduto(db *sql.DB, produtoId string, cartId string) error {
-	_, err := db.Exec(`
-		CALL sp_deletar_item_pedido(
-			$1, $2, $3
-		);
-	`,
+func removerProduto(produtoId string, cartId string) error {
+	query := `CALL sp_deletar_item_pedido(
+			?, ?, ?
+		);`
+	params := []interface{}{
 		cartId,
 		produtoId,
-		"DOXACODE")
+		"DOXACODE",
+	}
+	_, err := database.RunProcedure(query, params)
 	return err
 }
 
-func processRemoveProduct(data interface{}, db *sql.DB) error {
+func processRemoveProduct(data interface{}) error {
 	var payload RemoveProductPayload
 	bytes, _ := json.Marshal(data)
 	if err := json.Unmarshal(bytes, &payload); err != nil {
@@ -156,7 +158,7 @@ func processRemoveProduct(data interface{}, db *sql.DB) error {
 	cartId := payload.Id
 	productId := payload.ProductId
 
-	if err := removerProduto(db, productId, cartId); err != nil {
+	if err := removerProduto(productId, cartId); err != nil {
 		return fmt.Errorf("erro ao remover produto: %w", err)
 	}
 
@@ -165,19 +167,20 @@ func processRemoveProduct(data interface{}, db *sql.DB) error {
 	return nil
 }
 
-func cancelarCarrinho(db *sql.DB, cartId string) error {
-	_, err := db.Exec(`
-		CALL sp_cancelar_pedido(
-			$1, $2, $3
-		);
-	`,
+func cancelarCarrinho(cartId string) error {
+	query := `CALL sp_cancelar_pedido(
+			?, ?, ?
+		);`
+	params := []interface{}{
 		cartId,
 		"Cliente desistiu do pedido",
-		"DOXACODE")
+		"DOXACODE",
+	}
+	_, err := database.RunProcedure(query, params)
 	return err
 }
 
-func processCancelCart(data interface{}, db *sql.DB) error {
+func processCancelCart(data interface{}) error {
 	var payload CancelCartPayload
 	bytes, _ := json.Marshal(data)
 	if err := json.Unmarshal(bytes, &payload); err != nil {
@@ -186,7 +189,7 @@ func processCancelCart(data interface{}, db *sql.DB) error {
 
 	cartId := payload.Id
 
-	if err := cancelarCarrinho(db, cartId); err != nil {
+	if err := cancelarCarrinho(cartId); err != nil {
 		return fmt.Errorf("erro ao remover produto: %w", err)
 	}
 
@@ -196,172 +199,57 @@ func processCancelCart(data interface{}, db *sql.DB) error {
 }
 
 func StartBroker(stop <-chan struct{}) {
-	if err := godotenv.Load(); err != nil {
-		log.Println("Nenhum arquivo .env encontrado, usando variáveis do sistema")
-	}
-
 	logger := &utils.Logger{
 		Lw: &utils.LokiWriter{
 			Job: os.Getenv("QUEUE_NAME") + "-products-watcher"},
 		IsService: false}
 
-	rabbitURL := os.Getenv("RABBIT_URL")
-	workspaceFilter := os.Getenv("WORKSPACE_ID")
-	mainQueue := "looma-carts"
-	retryQueue := "looma-carts-retry"
-	exchange := "looma-exchange"
+	queueName := "upsertCart"
 
-	dbURL := os.Getenv("DB_URL")
-	db, err := sql.Open("mysql", dbURL)
-	if err != nil {
-		log.Fatalf("Erro ao conectar no banco: %v", err)
-	}
-	defer db.Close()
+	logger.SendLog("info", "Serviço iniciado. Aguardando mensagens SQS...")
 
-	conn, err := amqp091.Dial(rabbitURL)
-	if err != nil {
-		log.Fatalf("Erro ao conectar no RabbitMQ: %v", err)
-	}
-	defer conn.Close()
+	for {
+		select {
+		case <-stop:
+			logger.SendLog("warning", "Parando o serviço conforme solicitado")
+			return
+		default:
 
-	ch, err := conn.Channel()
-	if err != nil {
-		log.Fatalf("Erro ao abrir canal: %v", err)
-	}
-	defer ch.Close()
+			rmessages, clientSQS, queueURL, ctx, err := utils.ReceiveMessage(queueName, logger)
 
-	if err := ch.ExchangeDeclare(
-		exchange,
-		"direct",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	); err != nil {
-		log.Fatalf("Erro ao declarar exchange: %v", err)
-	}
+			if err != nil {
+				logger.SendLog("error", fmt.Sprintf("Erro ao receber mensagem: %v", err))
+				continue
+			}
 
-	// Declarar fila principal com DLX configurado para fila de retry
-	_, err = ch.QueueDeclare(
-		mainQueue,
-		true,
-		false,
-		false,
-		false,
-		amqp091.Table{
-			"x-dead-letter-exchange":    exchange,
-			"x-dead-letter-routing-key": retryQueue,
-		},
-	)
-	if err != nil {
-		log.Fatalf("Erro ao declarar fila principal: %v", err)
-	}
-
-	// Bind fila principal na exchange
-	if err := ch.QueueBind(mainQueue, mainQueue, exchange, false, nil); err != nil {
-		log.Fatalf("Erro no bind da fila principal: %v", err)
-	}
-
-	// Declarar fila retry com TTL e DLX apontando para fila principal
-	_, err = ch.QueueDeclare(
-		retryQueue,
-		true,
-		false,
-		false,
-		false,
-		amqp091.Table{
-			"x-message-ttl":             int32(30000), // 30 segundos de espera na retry queue
-			"x-dead-letter-exchange":    exchange,
-			"x-dead-letter-routing-key": mainQueue,
-		},
-	)
-	if err != nil {
-		log.Fatalf("Erro ao declarar fila retry: %v", err)
-	}
-
-	// Bind fila retry na exchange
-	if err := ch.QueueBind(retryQueue, retryQueue, exchange, false, nil); err != nil {
-		log.Fatalf("Erro no bind da fila retry: %v", err)
-	}
-
-	msgs, err := ch.Consume(
-		mainQueue,
-		"",
-		false, // autoAck false para controlar ack/nack manualmente
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		log.Fatalf("Erro ao iniciar consumo: %v", err)
-	}
-
-	log.Printf("Serviço iniciado. Aguardando mensagens para workspaceId = %s ...", workspaceFilter)
-
-	done := make(chan struct{})
-
-	go func() {
-		for {
-			select {
-			case payload, ok := <-msgs:
-				if !ok {
-					log.Println("Canal de mensagens fechado.")
-					close(done)
-					return
-				}
-
+			for _, message := range rmessages {
 				var msg CartMessage
-				if err := json.Unmarshal(payload.Body, &msg); err != nil {
-					log.Printf("Erro ao decodificar mensagem: %v", err)
-					payload.Nack(false, false)
+				if err := json.Unmarshal([]byte(*message.Body), &msg); err != nil {
+					logger.SendLog("error", fmt.Sprintf("Erro ao decodificar mensagem: %v", err))
 					continue
 				}
 
-				if msg.WorkspaceId == workspaceFilter {
-					var cart Cart
-					dataBytes, _ := json.Marshal(msg.Data)
-					if err := json.Unmarshal(dataBytes, &cart); err != nil {
-						log.Printf("Erro ao decodificar carrinho: %v", err)
-						payload.Nack(false, false)
-						continue
-					}
-
-					log.Printf("Carrinho: %s, Operation: %s", cart.Id, msg.Operation)
-
-					var errProcess error
-					switch msg.Operation {
-					case "orderCart":
-						errProcess = processOrderCart(msg.Data, db)
-					case "upsertProduct":
-						errProcess = processUpsertProduct(msg.Data, db)
-					case "removeProduct":
-						errProcess = processRemoveProduct(msg.Data, db)
-					case "cancelCart":
-						errProcess = processCancelCart(msg.Data, db)
-					default:
-						log.Printf("Operação desconhecida recebida: %s", msg.Operation)
-						errProcess = fmt.Errorf("operação inválida: %s", msg.Operation)
-					}
-
-					if errProcess != nil {
-						log.Printf("Erro no processamento da operação %s: %v", msg.Operation, errProcess)
-						payload.Nack(false, false)
-						continue
-					}
-
-					payload.Ack(false)
-				} else {
-					log.Printf("Mensagem ignorada (workspaceId diferente): %s", msg.WorkspaceId)
+				var errProcess error
+				switch msg.Operation {
+				case "orderCart":
+					errProcess = processOrderCart(msg.Data)
+				case "upsertProduct":
+					errProcess = processUpsertProduct(msg.Data)
+				case "removeProduct":
+					errProcess = processRemoveProduct(msg.Data)
+				case "cancelCart":
+					errProcess = processCancelCart(msg.Data)
+				default:
+					logger.SendLog("warning", fmt.Sprintf("Operação desconhecida: %s", msg.Operation))
+					errProcess = fmt.Errorf("operação inválida: %s", msg.Operation)
 				}
 
-			case <-stop:
-				logger.SendLog("warning", "Parando o serviço conforme solicitado")
-				close(done)
-				return
+				if errProcess != nil {
+					logger.SendLog("error", fmt.Sprintf("Erro ao processar mensagem: %v", errProcess))
+				}
+
+				utils.DeleteMessage(clientSQS, queueURL, ctx, message.ReceiptHandle, logger)
 			}
 		}
-	}()
-	<-done
+	}
 }

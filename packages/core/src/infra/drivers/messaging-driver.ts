@@ -3,6 +3,7 @@ type SendDataToQueueProps = {
   queueName: "carts";
   data: unknown;
   workspaceId: string;
+  operation: string;
 };
 
 interface MessagingDriver {
@@ -23,7 +24,11 @@ export class SQSMessagingDriver implements MessagingDriver {
 
     const params = {
       QueueUrl: this.queue.get(data.queueName),
-      MessageBody: JSON.stringify(data.data),
+      MessageBody: JSON.stringify({
+        workspaceId: data.workspaceId,
+        operation: data.operation,
+        data: data.data
+      }),
       MessageGroupId: "defaultGroup",
     };
 

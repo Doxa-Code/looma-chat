@@ -10,14 +10,44 @@ import (
 	"looma-service/utils"
 )
 
-func Query(query string, logger *utils.Logger) ([]string, *sql.Rows, error) {
-	db, err := sql.Open("mysql", os.Getenv("DB_URL"))
+var DB *sql.DB
+
+var logger *utils.Logger
+
+func Connect(isService bool) error {
+	logger = &utils.Logger{
+		Lw: &utils.LokiWriter{
+			Job: os.Getenv("QUEUE_NAME") + "-database"},
+		IsService: isService}
+
+	var err error
+	DB, err = sql.Open("mysql", os.Getenv("DB_URL"))
 	if err != nil {
-		logger.SendLog("fatal", fmt.Sprintf("Erro MySQL: %v", err))
-		return nil, nil, err
+		logger.SendLog("fatal", fmt.Sprintf("Erro ao conectar ao MySQL: %v", err))
+		return err
 	}
 
-	rows, err := db.Query(query)
+	if err := DB.Ping(); err != nil {
+		logger.SendLog("fatal", fmt.Sprintf("Erro ao testar conexão com MySQL: %v", err))
+		return err
+	}
+
+	logger.SendLog("info", "Conexão com banco estabelecida")
+	return nil
+}
+
+func Close() {
+	if DB != nil {
+		if err := DB.Close(); err != nil {
+			logger.SendLog("error", fmt.Sprintf("Erro ao fechar conexão MySQL: %v", err))
+		} else {
+			logger.SendLog("info", "Conexão com banco encerrada")
+		}
+	}
+}
+
+func Query(query string, logger *utils.Logger) ([]string, *sql.Rows, error) {
+	rows, err := DB.Query(query)
 	if err != nil {
 		logger.SendLog("error", fmt.Sprintf("Erro ao consultar a view: %v", err))
 		return nil, nil, err
@@ -26,6 +56,7 @@ func Query(query string, logger *utils.Logger) ([]string, *sql.Rows, error) {
 	columns, err := rows.Columns()
 	if err != nil {
 		logger.SendLog("error", fmt.Sprintf("Erro ao obter colunas: %v", err))
+		rows.Close()
 		return nil, nil, err
 	}
 
@@ -59,4 +90,8 @@ func CreateRowMap(colIdName string, columns []string, row *sql.Rows, logger *uti
 	}
 
 	return id, rowMap
+}
+
+func RunProcedure(query string, params []interface{}) (sql.Result, error) {
+	return DB.Exec(query, params...)
 }

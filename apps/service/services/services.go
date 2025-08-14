@@ -10,8 +10,7 @@ import (
 	"golang.org/x/sys/windows/svc/debug"
 
 	"looma-service/services/carts"
-	"looma-service/services/clients"
-	"looma-service/services/products"
+	"looma-service/utils/database"
 )
 
 type loomaService struct {
@@ -27,9 +26,9 @@ func (service *loomaService) Execute(args []string, req <-chan svc.ChangeRequest
 
 	log.Printf("Looma Service iniciado!")
 
-	go clients.StartWatcher(service.stopChan, service.isService)
-	go products.StartWatcher(service.stopChan, service.isService)
-	go carts.StartWatcher(service.stopChan, service.isService)
+	// go clients.StartWatcher(service.stopChan, service.isService)
+	// go products.StartWatcher(service.stopChan, service.isService)
+	// go carts.StartWatcher(service.stopChan, service.isService)
 	go carts.StartBroker(service.stopChan)
 
 	status <- svc.Status{State: svc.Running, Accepts: cmdsAccepted}
@@ -41,6 +40,7 @@ loop:
 			status <- c.CurrentStatus
 		case svc.Stop, svc.Shutdown:
 			close(service.stopChan)
+			database.Close()
 			break loop
 		default:
 			log.Printf("Comando não suportado: %v", c)
@@ -53,7 +53,12 @@ loop:
 
 func Run() {
 	name := "Looma Service"
+
 	isService, err := svc.IsWindowsService()
+
+	if err := database.Connect(isService); err != nil {
+		log.Fatalf("Erro ao inicializar banco: %v", err)
+	}
 
 	if isService {
 		err = svc.Run(name, &loomaService{make(chan struct{}), true})

@@ -70,7 +70,7 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 		case <-ticker.C:
 			logger.SendLog("info", "Iniciando o processo de checagem de mudanças")
 
-			query := `SELECT * FROM products;`
+			query := `SELECT * FROM doxacode_produtos;`
 
 			columns, rows, err := database.Query(query, logger)
 
