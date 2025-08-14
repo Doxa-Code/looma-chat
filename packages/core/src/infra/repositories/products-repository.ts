@@ -101,19 +101,19 @@ export class ProductsRepository {
       .limit(pageSize)
       .offset(offset);
 
-    const totalRows = searchTerm
-      ? (
-          await db
-            .select()
-            .from(products)
-            .where(
-              and(
+    const totalRows = (
+      await db
+        .select()
+        .from(products)
+        .where(
+          searchTerm
+            ? and(
                 eq(products.workspaceId, workspaceId),
                 ilike(products.description, `%${searchTerm}%`)
               )
-            )
-        ).length
-      : await db.$count(products);
+            : eq(products.workspaceId, workspaceId)
+        )
+    ).length;
 
     const total = Math.ceil(totalRows / pageSize);
 
