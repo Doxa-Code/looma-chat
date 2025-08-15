@@ -18,6 +18,7 @@ import { SidebarMenuButton } from "./ui/sidebar";
 type Props = {
   workspaces: { id: string; name: string }[];
   workspace: { id: string; name: string };
+  onSelected(): void;
 };
 
 export const WorkspaceDropdown = (props: Props) => {
@@ -78,12 +79,13 @@ export const WorkspaceDropdown = (props: Props) => {
             <DropdownMenuItem
               className="flex items-center justify-between"
               key={w.id}
-              onClick={() =>
+              onClick={() => {
+                props.onSelected();
                 changeWorkspaceAction.mutate({
                   workspaceId: w.id,
                   pathname: window.location.pathname,
-                })
-              }
+                });
+              }}
             >
               <span className="text-xs">{w.name}</span>
               <Check data-hidden={!isSelected} />

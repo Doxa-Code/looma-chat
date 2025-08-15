@@ -1,10 +1,5 @@
-import { Logo } from "@/components/logo";
+import { LoadingComponent } from "@/components/loading";
 
 export default function Loading() {
-  return (
-    <div className="fixed flex-col gap-1 inset-0 z-50 flex items-center justify-center bg-white/70 backdrop-blur-sm">
-      <Logo className="size-20 motion-preset-stretch " />
-      <span className="animate-pulse">Carregando...</span>
-    </div>
-  );
+  return <LoadingComponent />;
 }
