@@ -148,6 +148,13 @@
       "when": 1755277006550,
       "tag": "0020_panoramic_korath",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1755283943261,
+      "tag": "0021_youthful_wild_pack",
+      "breakpoints": true
     }
   ]
 }

@@ -12,7 +12,7 @@ import {
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().notNull(),
   name: text("name").default("").notNull(),
-  email: text("email").default("").notNull(),
+  email: text("email").unique().notNull(),
   thumbnail: text("thumbnail").default(""),
   password: text("password").default("").notNull(),
   sectorId: uuid("sector_id").references(() => sectors.id),

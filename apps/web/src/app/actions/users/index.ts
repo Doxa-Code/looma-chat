@@ -146,8 +146,11 @@ export const upsertUser = securityProcedure(["manage:users", "upsert:users"])
       sectorId: z.string().optional(),
     })
   )
+  .onError(async (err) => {
+    console.log(err);
+  })
   .handler(async ({ ctx, input }) => {
-    let user = await usersRepository.retrieve(input.id!);
+    let user = await usersRepository.retrieveUserByEmail(input.email!);
     if (!user) {
       user = User.create({
         email: input.email,

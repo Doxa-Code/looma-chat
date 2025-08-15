@@ -116,12 +116,11 @@ export class UsersRepository {
       })
       .onConflictDoUpdate({
         set: {
-          email: user.email,
           name: user.name,
           type: user?.type,
           sectorId: user.sector?.id ?? null,
         },
-        target: users.id,
+        target: users.email,
       });
   }
 
@@ -151,15 +150,11 @@ export class UsersRepository {
   async setPassword(userId: string, password: string) {
     const db = createDatabaseConnection();
     await db
-      .insert(users)
-      .values({
-        id: userId,
+      .update(users)
+      .set({
         password,
       })
-      .onConflictDoUpdate({
-        set: { password },
-        target: users.id,
-      });
+      .where(eq(users.id, userId));
   }
 
   async retrieveLoomaUser(workspaceId: string) {

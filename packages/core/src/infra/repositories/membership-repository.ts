@@ -7,6 +7,7 @@ import { memberships } from "../database/schemas";
 export class MembershipsRepository {
   async upsert(membership: Membership) {
     const db = createDatabaseConnection();
+    console.log({ membership });
     await db
       .insert(memberships)
       .values({
