@@ -51,7 +51,7 @@ const navMain: (user: User.Raw, permissions: Set<PolicyName>) => Menu[] = (
   permissions
 ) => [
   {
-    title: "Chat",
+    title: "Atendimentos",
     url: "/chat",
     icon: MessageCircle,
     active:

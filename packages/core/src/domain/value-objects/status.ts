@@ -13,7 +13,7 @@ export class Status {
     "expired",
     "budget",
     "order",
-    "canceled",
+    "cancelled",
     "shipped",
     "finished",
   ];

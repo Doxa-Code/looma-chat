@@ -13,6 +13,7 @@ export namespace Conversation {
     attendant: Attendant | null;
     status: Status;
     openedAt: Date | null;
+    closedAt: Date | null;
     sector: Sector | null;
     channel: string;
   }
@@ -24,6 +25,7 @@ export namespace Conversation {
     attendant: AttendantRaw | null;
     status: Status;
     openedAt: Date | null;
+    closedAt: Date | null;
     sector: SectorRaw | null;
     channel: string;
     lastMessage?: Message.Raw;
@@ -38,6 +40,7 @@ export class Conversation {
   public attendant: Attendant | null;
   public status: Conversation.Status;
   public openedAt: Date | null;
+  public closedAt: Date | null;
   public sector: Sector | null;
   public channel: string;
 
@@ -50,6 +53,7 @@ export class Conversation {
     this.openedAt = props.openedAt;
     this.sector = props.sector;
     this.channel = props.channel;
+    this.closedAt = props.closedAt;
   }
 
   raw(): Conversation.Raw {
@@ -64,6 +68,7 @@ export class Conversation {
       status: this.status,
       lastMessage: this.lastMessage?.raw?.(),
       teaser: this.teaser,
+      closedAt: this.closedAt,
     };
   }
 
@@ -161,6 +166,11 @@ export class Conversation {
     this.attendant = attendant;
   }
 
+  close() {
+    this.status = "closed";
+    this.closedAt = new Date();
+  }
+
   static instance(props: Conversation.Props) {
     return new Conversation(props);
   }
@@ -176,6 +186,7 @@ export class Conversation {
       openedAt: null,
       sector: null,
       channel,
+      closedAt: null,
     });
   }
 }

@@ -1,23 +1,29 @@
 import { Cart } from "@looma/core/domain/entities/cart";
 import { Setting } from "@looma/core/domain/value-objects/setting";
 import { RuntimeContext } from "@mastra/core/runtime-context";
-import { SystemPromptLeaf } from "./system-prompt-leaf";
-import { InitialPromptLeaf } from "./initial-prompt-leaf";
-import { OrderPromptLeaf } from "./order-prompt-leaf";
 import { AddressPromptLeaf } from "./address-prompt-leaf";
-import { PaymentMethodPromptLeaf } from "./payment-method-prompt-leaf";
-import { FinishPromptLeaf } from "./finish-prompt-leaf";
 import { CancelPromptLeaf } from "./cancel-prompt-leaf";
 import { FAQPromptLeaf } from "./faq-prompt-leaf";
+import { FinishPromptLeaf } from "./finish-prompt-leaf";
+import { InitialPromptLeaf } from "./initial-prompt-leaf";
+import { OrderPromptLeaf } from "./order-prompt-leaf";
+import { PaymentMethodPromptLeaf } from "./payment-method-prompt-leaf";
+import { RelevantPromptLeaf } from "./relevant-prompt-leaf";
 import { RulesPromptLeaf } from "./rules-prompt-leaf";
 import { StylePromptLeaf } from "./style-prompt-leaf";
-import { RelevantPromptLeaf } from "./relevant-prompt-leaf";
+import { SystemPromptLeaf } from "./system-prompt-leaf";
 
-type Context = {
+export type Context = {
   contactName: string;
   contactPhone: string;
   lastCart: Cart | null;
+  currentCart: Cart | null;
   settings: Setting;
+  sectors: string;
+  databaseConfig: any;
+  conversationId: string;
+  workspaceId: string;
+  userId: string;
 };
 
 export type PromptLeafProps = {
@@ -40,6 +46,7 @@ class PromptComposite implements PromptLeaf {
     for (const leaf of this.leafs) {
       result += `${leaf.mount(input).trim()}\n\n`;
     }
+
     return result;
   }
 

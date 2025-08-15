@@ -63,11 +63,18 @@ export const closeCartTool = createTool({
 export const cancelCartTool = createTool({
   id: "cancel-cart-tool",
   description: "Use para cancelar um pedido",
-  execute: async ({ runtimeContext, resourceId, threadId }) => {
+  inputSchema: z.object({
+    reason: z
+      .string()
+      .describe("Razão do cliente pelo cancelamento")
+      .optional(),
+  }),
+  execute: async ({ context, runtimeContext, resourceId, threadId }) => {
     const [, err] = await cancelCart({
       userId: runtimeContext.get("userId"),
       workspaceId: runtimeContext.get("workspaceId"),
       conversationId: runtimeContext.get("conversationId"),
+      reason: context.reason,
     } as any);
     if (err) return err;
     await saveMessageOnThread({
@@ -107,13 +114,14 @@ export const addProductOnCartTool = createTool({
     quantity: z.number(),
   }),
   execute: async ({ runtimeContext, context }) => {
-    const result = await upsertProductOnCart({
+    const [result, err] = await upsertProductOnCart({
       userId: runtimeContext.get("userId"),
       workspaceId: runtimeContext.get("workspaceId"),
       conversationId: runtimeContext.get("conversationId"),
       productId: context.productId,
       quantity: context.quantity,
     } as any);
+    if (err) return err;
     return result;
   },
 });

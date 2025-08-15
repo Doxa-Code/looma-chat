@@ -1,5 +1,5 @@
 "use client";
-import { Badge } from "@/components/ui/badge";
+import { listCarts } from "@/app/actions/cart";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -8,9 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useServerActionQuery } from "@/hooks/server-action-hooks";
 import { Cart } from "@looma/core/domain/entities/cart";
-import { PaymentMethodValue } from "@looma/core/domain/value-objects/payment-method";
-import { StatusValue } from "@looma/core/domain/value-objects/status";
 import {
   Table,
   TableBody,
@@ -31,41 +30,20 @@ import {
   Phone,
 } from "lucide-react";
 import { useState } from "react";
+import { BadgeStatus } from "./badge-status";
 import { EmptyState } from "./empty-state";
 import { Separator } from "./ui/separator";
-import { BadgeStatus } from "./badge-status";
 
 interface CartListProps {
-  cartsRaw: Cart.Raw[];
+  initCartsRaw: Cart.Raw[];
 }
 
-const statusLabels = {
-  budget: "Orçamento",
-  expired: "Expirado",
-  order: "Realizado",
-  cancelled: "Cancelado",
-  finished: "Finalizado",
-} as Record<StatusValue, string>;
-
-const statusVariants = {
-  budget: "secondary",
-  expired: "destructive",
-  order: "default",
-  cancelled: "outline",
-  finished: "outline",
-} as Record<
-  StatusValue,
-  "secondary" | "destructive" | "default" | "outline" | null | undefined
->;
-
-const paymentMethodLabels = {
-  CREDIT_CARD: "Cartão de Crédito",
-  DEBIT_CARD: "Cartão de Débito",
-  DIGITAL_PAYMENT: "PIX",
-  CASH: "Dinheiro",
-} as Record<PaymentMethodValue, string>;
-
-export function CartList({ cartsRaw }: CartListProps) {
+export function CartList({ initCartsRaw }: CartListProps) {
+  const { data: cartsRaw } = useServerActionQuery(listCarts, {
+    input: undefined,
+    queryKey: ["list-carts"],
+    initialData: initCartsRaw,
+  });
   const carts = cartsRaw.map((c) => Cart.instance(c));
   const [open, setOpen] = useState(false);
   const [cart, setCart] = useState<Cart | null>(null);
@@ -281,6 +259,22 @@ export function CartList({ cartsRaw }: CartListProps) {
                     {formatDate(cart?.createdAt?.toISOString?.()!)}
                   </p>
                 </div>
+                {cart?.canceledAt && (
+                  <div>
+                    <span className="font-medium text-xs">Cancelado em:</span>
+                    <p className="text-sm">
+                      {formatDate(cart?.canceledAt?.toISOString?.())}
+                    </p>
+                  </div>
+                )}
+                {cart?.cancelReason && (
+                  <div>
+                    <span className="font-medium text-xs">
+                      Motivo do cancelamento:
+                    </span>
+                    <p className="text-sm">{cart.cancelReason}</p>
+                  </div>
+                )}
                 {cart?.finishedAt && (
                   <div>
                     <span className="font-medium text-xs">Finalizado em:</span>

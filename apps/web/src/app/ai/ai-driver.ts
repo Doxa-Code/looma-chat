@@ -12,11 +12,13 @@ import { Span, trace } from "@opentelemetry/api";
 import { SemanticConventions } from "@arizeai/openinference-semantic-conventions";
 import { context } from "@opentelemetry/api";
 import { setSession } from "@arizeai/openinference-core";
+import { Context } from "./config/prompts";
 
 type SendMessageProps = {
   aiUser: User;
   workspaceId: string;
   lastCart: Cart | null;
+  currentCart: Cart | null;
   contact: Contact;
   conversationId: string;
   content: string;
@@ -47,8 +49,10 @@ export class LoomaAIDriver implements AIDriver {
       span.setAttribute(SemanticConventions.SESSION_ID, props.conversationId);
       span.setAttribute(SemanticConventions.INPUT_VALUE, props.content);
       try {
-        const runtimeContext = new RuntimeContext([
+        const runtimeContext = new RuntimeContext<Context>([
           ["contactName", props.contact.name],
+          ["lastCart", props.lastCart],
+          ["currentCart", props.currentCart],
           ["contactPhone", props.contact.phone],
           ["conversationId", props.conversationId],
           ["userId", props.aiUser.id],

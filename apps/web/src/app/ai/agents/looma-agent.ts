@@ -1,23 +1,20 @@
 import { Agent } from "@mastra/core/agent";
 import { azure } from "../config/llms/azure";
 import { memoryWithVector } from "../config/memories";
+import { prompt } from "../config/prompts";
 import {
+  addProductOnCartTool,
+  cancelCartTool,
+  closeCartTool,
   removeProductFromCartTool,
   retrieveCartTool,
+  retrieveClientTool,
   setAddressCartTool,
   setPaymentMethodCartTool,
   showCartTool,
-  addProductOnCartTool,
-  closeCartTool,
-  cancelCartTool,
-  retrieveClientTool,
 } from "../tools/cart-tools";
-import { promotionProductsTool, stockTool } from "../tools/stock-tool";
 import { consultingCepTool } from "../tools/consulting-cep-tool";
-import { AzureVoice } from "@mastra/voice-azure";
-import { prompt } from "../config/prompts";
-// TODO: VER ESSA TOOL
-// import { knowledgeBaseTool } from "../tools/knowledge-base-tool";
+import { promotionProductsTool, stockTool } from "../tools/stock-tool";
 
 export const loomaAgent = new Agent({
   name: "Looma Agent",
@@ -36,7 +33,6 @@ export const loomaAgent = new Agent({
     setAddressCartTool,
     setPaymentMethodCartTool,
     promotionProductsTool,
-    // knowledgeBaseTool,
     closeCartTool,
     cancelCartTool,
     retrieveClientTool,

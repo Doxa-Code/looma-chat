@@ -83,6 +83,7 @@ export const conversations = pgTable("conversations", {
     .references(() => workspaces.id)
     .notNull(),
   openedAt: integer("opened_at"),
+  closedAt: integer("closed_at"),
 });
 
 export const messages = pgTable("messages", {
@@ -181,6 +182,7 @@ export const carts = pgTable("carts", {
   expiredAt: integer("expired_at"),
   finishedAt: integer("finished_at"),
   canceledAt: integer("canceled_at"),
+  cancelReason: text("cancel_reason"),
   paymentMethod: text("payment_method"),
   paymentChange: integer("payment_change"),
 });

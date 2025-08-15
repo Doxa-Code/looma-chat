@@ -4,15 +4,14 @@ import { CartProduct } from "@looma/core/domain/entities/cart-product";
 import { Client } from "@looma/core/domain/entities/client";
 import { NotFound } from "@looma/core/domain/errors/not-found";
 import { Address } from "@looma/core/domain/value-objects/address";
+import { PaymentMethod } from "@looma/core/domain/value-objects/payment-method";
+import { SQSMessagingDriver } from "@looma/core/infra/drivers/messaging-driver";
 import { CartsRepository } from "@looma/core/infra/repositories/carts-repository";
 import { ClientsRepository } from "@looma/core/infra/repositories/clients-repository";
 import { ConversationsRepository } from "@looma/core/infra/repositories/conversations-repository";
 import { ProductsRepository } from "@looma/core/infra/repositories/products-repository";
 import z from "zod";
 import { securityProcedure } from "./../procedure";
-import { PaymentMethod } from "@looma/core/domain/value-objects/payment-method";
-import { SQSMessagingDriver } from "@looma/core/infra/drivers/messaging-driver";
-import { messages } from "@looma/core/infra/database/schemas";
 
 const conversationsRepository = ConversationsRepository.instance();
 const cartsRepository = CartsRepository.instance();
@@ -151,10 +150,20 @@ export const orderCart = securityProcedure(["manage:carts"])
       ctx.membership.workspaceId
     );
 
+    // TODO: COLOCAR TODAS AS VERIFICAÇOES NO METODO DO DOMINIO
+
     if (!cart) throw NotFound.instance("Cart");
 
     if (!cart.address)
       throw new Error("Não é possível finalizar o pedido sem um endereço.");
+
+    const conversation = await conversationsRepository.retrieve(
+      input.conversationId
+    );
+
+    if (!conversation) throw NotFound.instance("Cart");
+
+    conversation.close();
 
     const address = Address.create(cart.address?.raw());
 
@@ -168,15 +177,25 @@ export const orderCart = securityProcedure(["manage:carts"])
 
     if (!cart.paymentMethod) throw new Error("Defina um método de pagamento.");
 
-    cart.orderCart();
+    if (!cart.products.length)
+      throw new Error(`
+        Não é possível finalizar o pedido sem nenhum produto adicionado.
+      `);
 
-    await cartsRepository.upsert(cart, ctx.membership.workspaceId);
+    cart.orderCart();
 
     await messaging.sendDataToQueue({
       queueName: "carts",
       data: cart.raw(),
       workspaceId: ctx.membership.workspaceId,
     });
+
+    await cartsRepository.upsert(cart, ctx.membership.workspaceId);
+    await conversationsRepository.upsert(
+      conversation,
+      ctx.membership.workspaceId
+    );
+
     return cart.raw();
   });
 
@@ -204,6 +223,7 @@ export const cancelCart = securityProcedure(["manage:carts"])
   .input(
     z.object({
       conversationId: z.string(),
+      reason: z.string().optional(),
     })
   )
   .handler(async ({ input, ctx }) => {
@@ -216,9 +236,7 @@ export const cancelCart = securityProcedure(["manage:carts"])
 
     const isOrder = cart.status.is("order");
 
-    cart.cancelCart();
-
-    await cartsRepository.upsert(cart, ctx.membership.workspaceId);
+    cart.cancelCart(input.reason);
 
     if (isOrder) {
       await messaging.sendDataToQueue({
@@ -227,6 +245,9 @@ export const cancelCart = securityProcedure(["manage:carts"])
         workspaceId: ctx.membership.workspaceId,
       });
     }
+
+    await cartsRepository.upsert(cart, ctx.membership.workspaceId);
+
     return;
   });
 

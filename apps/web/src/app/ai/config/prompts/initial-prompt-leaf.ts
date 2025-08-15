@@ -5,14 +5,6 @@ export class InitialPromptLeaf implements PromptLeaf {
     const settings = runtimeContext.get("settings");
     const lastCart = runtimeContext.get("lastCart");
     const contactName = runtimeContext.get("contactName")?.split(" ")?.at(0);
-    const isClient = !!lastCart;
-
-    if (isClient) {
-      return `
-        ## Inicio
-        - Busque se tem pedido aberto, se tiver siga a conversa normalmente, senão inicie a conversa cumprimentando da seguinte maneira: "(bom dia/boa tarde/boa noite/olá/oii) (Primeiro nome do cliente. Se ele permitir chame por um apelido ex.: Fernando - Fer), como posso ajudar?
-      `;
-    }
 
     return `
       ## Inicio

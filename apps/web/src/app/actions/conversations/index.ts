@@ -24,6 +24,7 @@ import { NotFound } from "@looma/core/domain/errors/not-found";
 import { CartsRepository } from "@looma/core/infra/repositories/carts-repository";
 import { Setting } from "@looma/core/domain/value-objects/setting";
 import { JWTTokenDriver } from "@looma/core/infra/drivers/token-driver";
+import { Cart } from "@looma/core/domain/entities/cart";
 
 const usersRepository = UsersRepository.instance();
 const settingsRepository = SettingsRepository.instance();
@@ -80,10 +81,16 @@ function getSendToLoomaDebounced(conversationId: string) {
             await membershipsRepository.upsert(membership);
           }
 
-          const lastCart = await cartsRepository.retrieveLastCartByContactPhone(
-            conversation.contact.phone,
-            workspaceId
-          );
+          const [lastCart, currentCart] = await Promise.all([
+            cartsRepository.retrieveLastCartByContactPhone(
+              conversation.contact.phone,
+              workspaceId
+            ),
+            cartsRepository.retrieveOpenCartByConversationId(
+              conversation.id,
+              workspaceId
+            ),
+          ]);
 
           let content = "";
 
@@ -125,6 +132,7 @@ function getSendToLoomaDebounced(conversationId: string) {
             aiUser: loomaUser,
             workspaceId,
             lastCart,
+            currentCart,
             contact: conversation.contact,
             conversationId: conversation.id,
             content,
@@ -393,7 +401,7 @@ export const showCart = securityProcedure([
     return cart.formatted;
   });
 
-export const receivedMessaging = createServerAction()
+export const receivedMessage = createServerAction()
   .input(z.any())
   .onError(async (err) => {
     console.log(err);

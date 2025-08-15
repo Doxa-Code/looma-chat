@@ -5,7 +5,6 @@ export class RelevantPromptLeaf implements PromptLeaf {
     const currentDateTime = new Date().toLocaleString("pt-BR");
     const contactName = runtimeContext.get("contactName")?.split(" ")?.at(0);
     const lastCart = runtimeContext.get("lastCart");
-    const isClient = !!lastCart;
 
     let result = `
       ## INFORMAÇÕES RELEVANTES
@@ -13,7 +12,7 @@ export class RelevantPromptLeaf implements PromptLeaf {
       - Você está atendendo agora o cliente ${contactName}
     `;
 
-    if (isClient) {
+    if (lastCart) {
       result += `
         - Na última compra, o cliente fez a seguinte compra.
         ${lastCart.formatted}

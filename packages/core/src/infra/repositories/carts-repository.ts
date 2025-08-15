@@ -12,6 +12,8 @@ import {
   users,
 } from "../database/schemas";
 import { PaymentMethodValue } from "../../domain/value-objects/payment-method";
+import { asc } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 
 export class CartsRepository {
   private timestampToDate(timestamp: number) {
@@ -66,6 +68,7 @@ export class CartsRepository {
         : null,
       paymentMethod: cart.paymentMethod?.value,
       paymentChange: cart.paymentChange ? cart.paymentChange * 100 : null,
+      cancelReason: cart.cancelReason,
     };
 
     const productsOnCartNewValues =
@@ -90,8 +93,8 @@ export class CartsRepository {
             cartId: cart.id,
             productId: product.id,
             description: product.description,
-            price: product.price * 100,
-            realPrice: product.realPrice * 100,
+            price: Math.round(product.price * 100),
+            realPrice: Math.round(product.realPrice * 100),
             quantity: product.quantity,
           };
         })
@@ -197,6 +200,7 @@ export class CartsRepository {
         canceledAt: carts.canceledAt,
         paymentMethod: carts.paymentMethod,
         paymentChange: carts.paymentChange,
+        cancelReason: carts.cancelReason,
         products: sql`
                 COALESCE(
                   JSON_AGG(
@@ -267,6 +271,7 @@ export class CartsRepository {
         : null,
       paymentMethod: cart.paymentMethod as PaymentMethodValue,
       paymentChange: cart.paymentChange ? cart.paymentChange / 100 : null,
+      cancelReason: cart.cancelReason,
     });
   }
 
@@ -337,6 +342,7 @@ export class CartsRepository {
         canceledAt: carts.canceledAt,
         paymentMethod: carts.paymentMethod,
         paymentChange: carts.paymentChange,
+        cancelReason: carts.cancelReason,
         products: sql`
                 COALESCE(
                   JSON_AGG(
@@ -355,7 +361,17 @@ export class CartsRepository {
       .innerJoin(users, eq(carts.attendantId, users.id))
       .innerJoin(addresses, eq(addresses.id, carts.addressId))
       .leftJoin(productsOnCart, eq(carts.id, productsOnCart.cartId))
-      .where(eq(carts.clientId, client.id))
+      .where(
+        and(
+          eq(carts.clientId, client.id),
+          or(
+            eq(carts.status, "finished"),
+            eq(carts.status, "order"),
+            eq(carts.status, "shipped")
+          )
+        )
+      )
+      .orderBy(desc(carts.createdAt))
       .groupBy(
         carts.id,
         users.id,
@@ -402,6 +418,7 @@ export class CartsRepository {
         : null,
       paymentMethod: cart.paymentMethod as PaymentMethodValue,
       paymentChange: cart.paymentChange ? cart.paymentChange / 100 : null,
+      cancelReason: cart.cancelReason,
     });
   }
 
@@ -465,6 +482,7 @@ export class CartsRepository {
         canceledAt: carts.canceledAt,
         paymentMethod: carts.paymentMethod,
         paymentChange: carts.paymentChange,
+        cancelReason: carts.cancelReason,
         products: sql`
                 COALESCE(
                   JSON_AGG(
@@ -530,10 +548,11 @@ export class CartsRepository {
         : null,
       paymentMethod: cart.paymentMethod as PaymentMethodValue,
       paymentChange: cart.paymentChange ? cart.paymentChange / 100 : null,
+      cancelReason: cart.cancelReason ?? null,
     });
   }
 
-  async list(workspaceId: string): Promise<Cart[]> {
+  async list(workspaceId: string): Promise<Cart.Raw[]> {
     const db = createDatabaseConnection();
 
     const allCarts = await db
@@ -582,6 +601,7 @@ export class CartsRepository {
       .innerJoin(addresses, eq(addresses.id, carts.addressId))
       .leftJoin(productsOnCart, eq(carts.id, productsOnCart.cartId))
       .where(eq(conversations.workspaceId, workspaceId))
+      .orderBy(asc(carts.createdAt))
       .groupBy(
         carts.id,
         users.id,
@@ -631,7 +651,7 @@ export class CartsRepository {
 
         if (!client) return null;
 
-        return Cart.instance({
+        return {
           address: cart.address,
           attendant: cart.attendant,
           client: {
@@ -663,7 +683,7 @@ export class CartsRepository {
             : null,
           paymentMethod: cart.paymentMethod as PaymentMethodValue,
           paymentChange: cart.paymentChange ? cart.paymentChange / 100 : null,
-        });
+        } as Cart.Raw;
       })
     );
 

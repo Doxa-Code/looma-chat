@@ -11,7 +11,7 @@ export default async function OrdersPage() {
         <TitlePage>Pedidos</TitlePage>
       </header>
       <main className="p-6">
-        <CartList cartsRaw={carts.map((c) => c.raw())} />
+        <CartList initCartsRaw={carts} />
       </main>
     </>
   );

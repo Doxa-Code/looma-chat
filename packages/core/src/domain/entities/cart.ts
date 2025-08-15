@@ -23,6 +23,7 @@ export namespace Cart {
     canceledAt: Date | null;
     paymentMethod: PaymentMethod | null;
     paymentChange: number | null;
+    cancelReason: string | null;
   }
 
   export interface Raw {
@@ -39,6 +40,7 @@ export namespace Cart {
     canceledAt: Date | null;
     paymentMethod: PaymentMethodValue | null;
     paymentChange: number | null;
+    cancelReason: string | null;
   }
 
   export interface CreateProps {
@@ -61,6 +63,7 @@ export class Cart {
   public canceledAt: Date | null;
   public paymentMethod: PaymentMethod | null;
   public paymentChange: number | null;
+  public cancelReason: string | null;
 
   constructor(props: Cart.Props) {
     this.id = props.id;
@@ -76,6 +79,7 @@ export class Cart {
     this.canceledAt = props.canceledAt;
     this.paymentMethod = props.paymentMethod;
     this.paymentChange = props.paymentChange;
+    this.cancelReason = props.cancelReason;
   }
 
   set address(address: Address | null) {
@@ -126,9 +130,10 @@ export class Cart {
     this.finishedAt = new Date();
   }
 
-  cancelCart() {
+  cancelCart(reason?: string) {
     this.status = Status.create("cancelled");
     this.canceledAt = new Date();
+    this.cancelReason = reason ?? "Não informado";
   }
 
   removeCartProduct(productId: string) {
@@ -143,20 +148,27 @@ export class Cart {
 *Resumo do pedido*:
       
 *Lista de Produtos*:
-${this.products
-  .map(
-    (p) =>
-      `- ${p.description} - ${p.quantity} x ${p.price.toLocaleString("pt-BR", {
-        currency: "BRL",
-        style: "currency",
-      })} = ${
-        p.total.toLocaleString("pt-BR", {
-          currency: "BRL",
-          style: "currency",
-        }) ?? "Sem produtos no pedido"
-      }`
-  )
-  .join("\n")}
+${
+  this.products.length
+    ? this.products
+        .map(
+          (p) =>
+            `- ${p.description} - ${p.quantity} x ${p.price.toLocaleString(
+              "pt-BR",
+              {
+                currency: "BRL",
+                style: "currency",
+              }
+            )} = ${
+              p.total.toLocaleString("pt-BR", {
+                currency: "BRL",
+                style: "currency",
+              }) ?? "Sem produtos no pedido"
+            }`
+        )
+        .join("\n")
+    : "Nenhum produto"
+}
 
 *Informações de entrega*:
 ${
@@ -180,9 +192,6 @@ ${this.total.toLocaleString("pt-BR", {
   currency: "BRL",
   style: "currency",
 })}
-
-*Status do pedido*
-${this.status.formatted}
 `.trim();
   }
 
@@ -209,6 +218,7 @@ ${this.status.formatted}
       canceledAt: null,
       paymentMethod: null,
       paymentChange: null,
+      cancelReason: null,
     });
   }
 
@@ -229,6 +239,7 @@ ${this.status.formatted}
         : null,
       products: props.products.map((p) => CartProduct.instance(p)),
       status: Status.create(props.status),
+      cancelReason: props.cancelReason,
     });
   }
 
@@ -247,6 +258,7 @@ ${this.status.formatted}
       canceledAt: this.canceledAt,
       paymentMethod: this.paymentMethod?.raw() ?? null,
       paymentChange: this.paymentChange ?? null,
+      cancelReason: this.cancelReason ?? null,
     };
   }
 }

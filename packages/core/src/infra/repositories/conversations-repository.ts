@@ -55,6 +55,7 @@ export class ConversationsRepository {
             },
             status: conversations.status,
             openedAt: conversations.openedAt,
+            closedAt: conversations.closedAt,
             sector: {
               id: sectors.id,
               name: sectors.name,
@@ -115,6 +116,9 @@ export class ConversationsRepository {
       ),
       openedAt: conversation.openedAt
         ? this.timestampToDate(conversation.openedAt)
+        : null,
+      closedAt: conversation.closedAt
+        ? this.timestampToDate(conversation.closedAt)
         : null,
       sector: conversation.sector
         ? Sector.create(conversation.sector.name, conversation.sector.id)
@@ -223,6 +227,9 @@ export class ConversationsRepository {
           openedAt: conversation.openedAt
             ? this.dateToTimestamp(conversation.openedAt)
             : null,
+          closedAt: conversation.closedAt
+            ? this.dateToTimestamp(conversation.closedAt)
+            : null,
           status: conversation.status,
           workspaceId,
           attendantId: conversation.attendant?.id,
@@ -234,6 +241,9 @@ export class ConversationsRepository {
             channel: conversation.channel,
             openedAt: conversation.openedAt
               ? this.dateToTimestamp(conversation.openedAt)
+              : null,
+            closedAt: conversation.closedAt
+              ? this.dateToTimestamp(conversation.closedAt)
               : null,
             status: conversation.status,
             workspaceId,
