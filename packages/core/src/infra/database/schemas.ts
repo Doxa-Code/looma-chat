@@ -47,7 +47,7 @@ export const settings = pgTable("settings", {
 export const memberships = pgTable("memberships", {
   id: uuid("id").primaryKey().notNull(),
   userId: uuid("user_id")
-    .references(() => users.id)
+    .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   workspaceId: uuid("workspace_id")
     .references(() => workspaces.id)
