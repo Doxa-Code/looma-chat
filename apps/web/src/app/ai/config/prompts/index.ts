@@ -4,7 +4,6 @@ import { RuntimeContext } from "@mastra/core/runtime-context";
 import { AddressPromptLeaf } from "./address-prompt-leaf";
 import { CancelPromptLeaf } from "./cancel-prompt-leaf";
 import { FAQPromptLeaf } from "./faq-prompt-leaf";
-import { FinishPromptLeaf } from "./finish-prompt-leaf";
 import { InitialPromptLeaf } from "./initial-prompt-leaf";
 import { OrderPromptLeaf } from "./order-prompt-leaf";
 import { PaymentMethodPromptLeaf } from "./payment-method-prompt-leaf";
@@ -64,7 +63,6 @@ prompt.register(
   OrderPromptLeaf.instance(),
   AddressPromptLeaf.instance(),
   PaymentMethodPromptLeaf.instance(),
-  FinishPromptLeaf.instance(),
   CancelPromptLeaf.instance(),
   FAQPromptLeaf.instance(),
   RulesPromptLeaf.instance(),

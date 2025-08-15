@@ -689,25 +689,6 @@ export class CartsRepository {
 
     return result.filter((c) => c !== null);
   }
-
-  async removeProductFromCart(
-    productId: string,
-    cartId: string
-  ): Promise<boolean> {
-    const db = createDatabaseConnection();
-
-    await db
-      .delete(productsOnCart)
-      .where(
-        and(
-          eq(productsOnCart.productId, productId),
-          eq(productsOnCart.cartId, cartId)
-        )
-      );
-
-    return true;
-  }
-
   static instance() {
     return new CartsRepository();
   }

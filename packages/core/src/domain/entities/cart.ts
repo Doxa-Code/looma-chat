@@ -108,6 +108,11 @@ export class Cart {
   }
 
   upsertProduct(product: CartProduct) {
+    if (this.status.is("order")) {
+      throw new Error(
+        "O pedido já está fechado e já não pode mais adicionar produtos"
+      );
+    }
     this._products.set(product.id, product);
   }
 
@@ -115,12 +120,29 @@ export class Cart {
     this.paymentMethod = method;
   }
 
-  orderCart() {
+  order() {
+    if (!this.address)
+      throw new Error("Não é possível finalizar o pedido sem um endereço.");
+
+    const validateAddress = this.address.validate();
+    if (!validateAddress.isValid)
+      throw new Error(`
+        Não é possível finalizar o pedido com o endereço incompleto.
+        Campos faltantes: ${validateAddress.missingFields}
+      `);
+
+    if (!this.paymentMethod) throw new Error("Defina um método de pagamento.");
+
+    if (!this.products.length)
+      throw new Error(`
+        Não é possível finalizar o pedido sem nenhum produto adicionado.
+      `);
+
     this.status = Status.create("order");
     this.orderedAt = new Date();
   }
 
-  expireCart() {
+  expire() {
     this.status = Status.create("expired");
     this.expiredAt = new Date();
   }
@@ -130,15 +152,17 @@ export class Cart {
     this.finishedAt = new Date();
   }
 
-  cancelCart(reason?: string) {
+  cancel(reason?: string) {
     this.status = Status.create("cancelled");
     this.canceledAt = new Date();
     this.cancelReason = reason ?? "Não informado";
   }
 
-  removeCartProduct(productId: string) {
-    if (!this._products.has(productId)) {
-      throw new Error(`CartProduct ${productId} not found`);
+  removeProduct(productId: string) {
+    if (this.status.is("order")) {
+      throw new Error(
+        "O pedido já está fechado e já não pode mais remover produtos"
+      );
     }
     return this._products.delete(productId);
   }

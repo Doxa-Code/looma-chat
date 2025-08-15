@@ -103,14 +103,6 @@ export const upsertProductOnCart = securityProcedure(["manage:carts"])
 
     await cartsRepository.upsert(cart, ctx.membership.workspaceId);
 
-    if (cart.status.is("order")) {
-      await messaging.sendDataToQueue({
-        queueName: "carts",
-        data: cart.raw(),
-        workspaceId: ctx.membership.workspaceId,
-      });
-    }
-
     return cart.raw();
   });
 
@@ -129,13 +121,9 @@ export const removeProductFromCart = securityProcedure(["manage:carts"])
 
     if (!cart) throw NotFound.instance("Cart");
 
-    const product = cart.products.find((p) => p.id === input.productId);
+    cart.removeProduct(input.productId);
 
-    if (!product) throw NotFound.instance("Product");
-
-    await cartsRepository.removeProductFromCart(input.productId, cart.id);
-
-    return;
+    await cartsRepository.upsert(cart, ctx.membership.workspaceId);
   });
 
 export const orderCart = securityProcedure(["manage:carts"])
@@ -150,47 +138,26 @@ export const orderCart = securityProcedure(["manage:carts"])
       ctx.membership.workspaceId
     );
 
-    // TODO: COLOCAR TODAS AS VERIFICAÇOES NO METODO DO DOMINIO
-
     if (!cart) throw NotFound.instance("Cart");
-
-    if (!cart.address)
-      throw new Error("Não é possível finalizar o pedido sem um endereço.");
 
     const conversation = await conversationsRepository.retrieve(
       input.conversationId
     );
 
-    if (!conversation) throw NotFound.instance("Cart");
+    if (!conversation) throw NotFound.instance("Conversation");
 
-    conversation.close();
-
-    const address = Address.create(cart.address?.raw());
-
-    const validateAddress = address.validate();
-
-    if (!validateAddress.isValid)
-      throw new Error(`
-      Não é possível finalizar o pedido com o endereço incompleto.
-      Campos faltantes: ${validateAddress.missingFields}
-      `);
-
-    if (!cart.paymentMethod) throw new Error("Defina um método de pagamento.");
-
-    if (!cart.products.length)
-      throw new Error(`
-        Não é possível finalizar o pedido sem nenhum produto adicionado.
-      `);
-
-    cart.orderCart();
+    cart.order();
 
     await messaging.sendDataToQueue({
-      queueName: "carts",
+      queueName: "orderCart",
       data: cart.raw(),
       workspaceId: ctx.membership.workspaceId,
     });
 
     await cartsRepository.upsert(cart, ctx.membership.workspaceId);
+
+    conversation.close();
+
     await conversationsRepository.upsert(
       conversation,
       ctx.membership.workspaceId
@@ -213,10 +180,9 @@ export const expireCart = securityProcedure(["manage:carts"])
 
     if (!cart) throw NotFound.instance("Cart");
 
-    cart.expireCart();
+    cart.expire();
 
     await cartsRepository.upsert(cart, ctx.membership.workspaceId);
-    return;
   });
 
 export const cancelCart = securityProcedure(["manage:carts"])
@@ -234,21 +200,15 @@ export const cancelCart = securityProcedure(["manage:carts"])
 
     if (!cart) throw NotFound.instance("Cart");
 
-    const isOrder = cart.status.is("order");
+    cart.cancel(input.reason);
 
-    cart.cancelCart(input.reason);
-
-    if (isOrder) {
-      await messaging.sendDataToQueue({
-        queueName: "carts",
-        data: cart.raw(),
-        workspaceId: ctx.membership.workspaceId,
-      });
-    }
+    await messaging.sendDataToQueue({
+      queueName: "cancelCart",
+      data: cart.raw(),
+      workspaceId: ctx.membership.workspaceId,
+    });
 
     await cartsRepository.upsert(cart, ctx.membership.workspaceId);
-
-    return;
   });
 
 export const setCartAddress = securityProcedure(["manage:carts"])
@@ -330,5 +290,4 @@ export const setPaymentMethod = securityProcedure(["manage:carts"])
     cart.setPaymentChange(input.paymentChange);
 
     await cartsRepository.upsert(cart, ctx.membership.workspaceId);
-    return;
   });

@@ -522,7 +522,7 @@ export const receivedMessage = createServerAction()
               id: messagePayload.id,
               createdAt: new Date(messagePayload.timestamp * 1000),
               sender: contact,
-              content: messagePayload.image.id,
+              content: messagePayload?.image?.id,
               type: "image",
             });
 

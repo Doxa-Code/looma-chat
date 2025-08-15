@@ -18,7 +18,7 @@ export const retrieveClientTool = createTool({
   id: "retrieve-client-tool",
   description: "Use para recuperar o cadastro do cliente",
   execute: async ({ runtimeContext }) => {
-    const result = await retrieveClient({
+    const [result] = await retrieveClient({
       userId: runtimeContext.get("userId"),
       workspaceId: runtimeContext.get("workspaceId"),
       conversationId: runtimeContext.get("conversationId"),
@@ -32,7 +32,7 @@ export const retrieveCartTool = createTool({
   id: "retrieve-cart-tool",
   description: "Use para recuperar o pedido do cliente",
   execute: async ({ runtimeContext }) => {
-    const result = await retrieveOpenCart({
+    const [result] = await retrieveOpenCart({
       userId: runtimeContext.get("userId"),
       workspaceId: runtimeContext.get("workspaceId"),
       conversationId: runtimeContext.get("conversationId"),
