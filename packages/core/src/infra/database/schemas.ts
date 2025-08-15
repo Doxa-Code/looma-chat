@@ -167,10 +167,12 @@ export const carts = pgTable("carts", {
   attendantId: uuid("attendant_id").references(() => users.id),
   clientId: uuid("client_id").references(() => clients.id),
   addressId: uuid("address_id").references(() => addresses.id),
-  conversationId: uuid("conversation_id").references(() => conversations.id, {
-    onDelete: "cascade",
-    onUpdate: "cascade",
-  }),
+  conversationId: uuid("conversation_id")
+    .unique()
+    .references(() => conversations.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
   status: varchar("status", {
     length: 10,
     enum: ["expired", "budget", "shipped", "order", "cancelled", "finished"],

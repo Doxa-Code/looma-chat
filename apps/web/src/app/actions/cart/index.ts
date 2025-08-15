@@ -69,7 +69,8 @@ export const upsertProductOnCart = securityProcedure(["manage:carts"])
     if (!conversation) throw NotFound.instance("Conversation");
 
     let client = await clientsRepository.retrieveByPhone(
-      conversation.contact.phone
+      conversation.contact.phone,
+      ctx.membership.workspaceId
     );
 
     if (!client) {
@@ -94,14 +95,30 @@ export const upsertProductOnCart = securityProcedure(["manage:carts"])
 
     if (!product) throw NotFound.instance("Product");
 
-    cart.upsertProduct(
-      CartProduct.create({
-        product,
-        quantity: input.quantity,
-      })
-    );
+    const cartProduct = CartProduct.create({
+      product,
+      quantity: input.quantity,
+    });
 
-    await cartsRepository.upsert(cart, ctx.membership.workspaceId);
+    cart.upsertProduct(cartProduct);
+
+    await cartsRepository.upsert(cart, conversation.id);
+
+    if (cart.status.is("order")) {
+      await messaging.sendDataToQueue({
+        queueName: "orderCart",
+        data: {
+          cartId: cart.id,
+          cartProduct: {
+            id: cartProduct.id,
+            quantity: cartProduct.quantity,
+            price: cartProduct.price,
+          },
+        },
+        workspaceId: ctx.membership.workspaceId,
+        operation: "upsertProduct",
+      });
+    }
 
     return cart.raw();
   });
@@ -114,6 +131,11 @@ export const removeProductFromCart = securityProcedure(["manage:carts"])
     })
   )
   .handler(async ({ input, ctx }) => {
+    const conversation = await conversationsRepository.retrieve(
+      input.conversationId
+    );
+    if (!conversation) throw NotFound.instance("Conversation");
+
     const cart = await cartsRepository.retrieveOpenCartByConversationId(
       input.conversationId,
       ctx.membership.workspaceId
@@ -123,7 +145,19 @@ export const removeProductFromCart = securityProcedure(["manage:carts"])
 
     cart.removeProduct(input.productId);
 
-    await cartsRepository.upsert(cart, ctx.membership.workspaceId);
+    await cartsRepository.upsert(cart, conversation.id);
+
+    if (cart.status.is("order")) {
+      await messaging.sendDataToQueue({
+        queueName: "orderCart",
+        data: {
+          cartId: cart.id,
+          productId: input.productId,
+        },
+        workspaceId: ctx.membership.workspaceId,
+        operation: "removeProduct",
+      });
+    }
   });
 
 export const orderCart = securityProcedure(["manage:carts"])
@@ -150,11 +184,15 @@ export const orderCart = securityProcedure(["manage:carts"])
 
     await messaging.sendDataToQueue({
       queueName: "orderCart",
-      data: cart.raw(),
+      data: {
+        cart: cart.raw(),
+        total: cart.total,
+      },
       workspaceId: ctx.membership.workspaceId,
+      operation: "orderCart",
     });
 
-    await cartsRepository.upsert(cart, ctx.membership.workspaceId);
+    await cartsRepository.upsert(cart, conversation.id);
 
     conversation.close();
 
@@ -173,6 +211,11 @@ export const expireCart = securityProcedure(["manage:carts"])
     })
   )
   .handler(async ({ input, ctx }) => {
+    const conversation = await conversationsRepository.retrieve(
+      input.conversationId
+    );
+    if (!conversation) throw NotFound.instance("Conversation");
+
     const cart = await cartsRepository.retrieveOpenCartByConversationId(
       input.conversationId,
       ctx.membership.workspaceId
@@ -182,7 +225,7 @@ export const expireCart = securityProcedure(["manage:carts"])
 
     cart.expire();
 
-    await cartsRepository.upsert(cart, ctx.membership.workspaceId);
+    await cartsRepository.upsert(cart, conversation.id);
   });
 
 export const cancelCart = securityProcedure(["manage:carts"])
@@ -193,6 +236,11 @@ export const cancelCart = securityProcedure(["manage:carts"])
     })
   )
   .handler(async ({ input, ctx }) => {
+    const conversation = await conversationsRepository.retrieve(
+      input.conversationId
+    );
+    if (!conversation) throw NotFound.instance("Conversation");
+
     const cart = await cartsRepository.retrieveOpenCartByConversationId(
       input.conversationId,
       ctx.membership.workspaceId
@@ -204,11 +252,12 @@ export const cancelCart = securityProcedure(["manage:carts"])
 
     await messaging.sendDataToQueue({
       queueName: "cancelCart",
-      data: cart.raw(),
+      data: cart.id,
       workspaceId: ctx.membership.workspaceId,
+      operation: "cancelCart",
     });
 
-    await cartsRepository.upsert(cart, ctx.membership.workspaceId);
+    await cartsRepository.upsert(cart, conversation.id);
   });
 
 export const setCartAddress = securityProcedure(["manage:carts"])
@@ -235,7 +284,8 @@ export const setCartAddress = securityProcedure(["manage:carts"])
     if (!conversation) throw NotFound.instance("Conversation");
 
     let client = await clientsRepository.retrieveByPhone(
-      conversation.contact.phone
+      conversation.contact.phone,
+      ctx.membership.workspaceId
     );
 
     if (!client) {
@@ -265,7 +315,7 @@ export const setCartAddress = securityProcedure(["manage:carts"])
 
     cart.address = newAddress;
 
-    await cartsRepository.upsert(cart, ctx.membership.workspaceId);
+    await cartsRepository.upsert(cart, conversation.id);
   });
 
 export const setPaymentMethod = securityProcedure(["manage:carts"])
@@ -277,6 +327,11 @@ export const setPaymentMethod = securityProcedure(["manage:carts"])
     })
   )
   .handler(async ({ input, ctx }) => {
+    const conversation = await conversationsRepository.retrieve(
+      input.conversationId
+    );
+    if (!conversation) throw NotFound.instance("Conversation");
+
     const cart = await cartsRepository.retrieveOpenCartByConversationId(
       input.conversationId,
       ctx.membership.workspaceId
@@ -289,5 +344,5 @@ export const setPaymentMethod = securityProcedure(["manage:carts"])
     cart.setPaymentMethod(paymentMethod);
     cart.setPaymentChange(input.paymentChange);
 
-    await cartsRepository.upsert(cart, ctx.membership.workspaceId);
+    await cartsRepository.upsert(cart, conversation.id);
   });

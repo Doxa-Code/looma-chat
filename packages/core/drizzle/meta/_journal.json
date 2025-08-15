@@ -141,6 +141,13 @@
       "when": 1755260951174,
       "tag": "0019_glamorous_tomas",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1755277006550,
+      "tag": "0020_panoramic_korath",
+      "breakpoints": true
     }
   ]
 }

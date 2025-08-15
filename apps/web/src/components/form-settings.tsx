@@ -54,7 +54,6 @@ export function FormSetting(props: Props) {
           knowledgeBase: form.get("knowledgeBase")?.toString() ?? "",
           aiEnabled: form.get("aiEnabled")?.toString() === "on",
         };
-        console.log(body);
         mutate(body);
       }}
       className="flex flex-wrap shadow rounded bg-white p-6 gap-4"

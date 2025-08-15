@@ -57,12 +57,12 @@ export const ChatForm: React.FC<Props> = (props) => {
       }}
       className="w-full z-50 absolute bottom-0 flex items-center bg-white gap-2 p-3"
     >
-      <FileButton
+      {/* <FileButton
         conversationId={props.conversationId}
         onAddMessage={(message) => {
-          console.log(message);
+          // TODO: adicionar file
         }}
-      />
+      /> */}
       <Textarea
         data-hidden={inRecording}
         className="resize-none rounded-4xl flex-1 font-light max-h-[200px]"

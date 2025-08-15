@@ -14,6 +14,8 @@ import {
   users,
 } from "../database/schemas";
 import { and } from "drizzle-orm";
+import { desc } from "drizzle-orm";
+import { asc } from "drizzle-orm";
 
 export class ConversationsRepository {
   private fullQuery(db: any) {
@@ -210,10 +212,21 @@ export class ConversationsRepository {
 
     const db = createDatabaseConnection();
     const list = await this.fullQuery(db).where(
-      eq(conversations.workspaceId, workspaceId)
+      and(
+        eq(conversations.workspaceId, workspaceId),
+        or(
+          eq(conversations.status, "open"),
+          eq(conversations.status, "waiting"),
+          eq(conversations.status, "expired")
+        )
+      )
     );
 
-    return list.map((c) => this.toConversation(c));
+    return list
+      .map((c) => this.toConversation(c))
+      .sort((ca, cb) =>
+        ca?.lastMessage?.createdAt! > cb?.lastMessage?.createdAt! ? -1 : 1
+      );
   }
 
   async upsert(conversation: Conversation, workspaceId: string) {

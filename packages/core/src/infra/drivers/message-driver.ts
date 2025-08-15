@@ -25,7 +25,12 @@ interface MessageDriver {
     mediaId: string;
   }>;
   sendTyping(data: TypingProps): Promise<void>;
-  downloadMedia(channel: string, mediaId: string): Promise<ArrayBuffer>;
+  downloadMedia(
+    channel: string,
+    mediaId: string
+  ): Promise<
+    { success: true; content: ArrayBuffer } | { success: false; content: Error }
+  >;
   listPhonesId(wabaId: string): Promise<{ id: string; phone: string }[]>;
 }
 
@@ -49,16 +54,25 @@ export class MetaMessageDriver implements MessageDriver {
     }
   }
 
-  async downloadMedia(channel: string, mediaId: string): Promise<ArrayBuffer> {
-    const mediaRetrieved = await this.client.get<{ url: string }>(
-      `/${mediaId}?phone_number_id=${channel}`
-    );
-    const result = await axios.get(mediaRetrieved.data.url, {
-      responseType: "arraybuffer",
-      headers: { Authorization: `Bearer ${process.env.META_TOKEN}` },
-    });
+  async downloadMedia(
+    channel: string,
+    mediaId: string
+  ): Promise<
+    { success: true; content: ArrayBuffer } | { success: false; content: Error }
+  > {
+    try {
+      const mediaRetrieved = await this.client.get<{ url: string }>(
+        `/${mediaId}?phone_number_id=${channel}`
+      );
+      const result = await axios.get(mediaRetrieved.data.url, {
+        responseType: "arraybuffer",
+        headers: { Authorization: `Bearer ${process.env.META_TOKEN}` },
+      });
 
-    return result.data;
+      return { success: true, content: result.data };
+    } catch (err) {
+      return { success: false, content: err as Error };
+    }
   }
 
   async sendTyping(data: TypingProps): Promise<void> {

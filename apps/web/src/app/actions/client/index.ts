@@ -25,8 +25,11 @@ export const changeClientAddress = securityProcedure(["manage:carts"])
       }),
     })
   )
-  .handler(async ({ input }) => {
-    const client = await clientsRepository.retrieveByPhone(input.phone);
+  .handler(async ({ input, ctx }) => {
+    const client = await clientsRepository.retrieveByPhone(
+      input.phone,
+      ctx.membership.workspaceId
+    );
 
     if (!client) throw NotFound.instance("Client");
 
@@ -46,8 +49,11 @@ export const retrieveClient = securityProcedure(["manage:carts"])
       phone: z.string(),
     })
   )
-  .handler(async ({ input }) => {
-    const client = await clientsRepository.retrieveByPhone(input.phone);
+  .handler(async ({ input, ctx }) => {
+    const client = await clientsRepository.retrieveByPhone(
+      input.phone,
+      ctx.membership.workspaceId
+    );
 
     if (!client) throw NotFound.instance("Client");
 

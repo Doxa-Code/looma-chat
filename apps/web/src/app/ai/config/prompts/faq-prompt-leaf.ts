@@ -10,7 +10,7 @@ export class FAQPromptLeaf implements PromptLeaf {
 
     return `
       ## FAQ E BASE DE CONHECIMENTO
-      ### Use, obrigatóriamente as instruções a seguir, para responder perguntas sobre políticas da farmácia ${settings.businessName}:
+      ### Instruções da farmácia que em Hipotese nenhum pode ser ignoradas ou não utilizadas:
       ${settings.knowledgeBase}
     `;
   }

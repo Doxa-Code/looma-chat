@@ -7,6 +7,7 @@ type SendDataToQueueProps = {
   queueName: QueueNames;
   data: unknown;
   workspaceId: string;
+  operation: "orderCart" | "upsertProduct" | "removeProduct" | "cancelCart";
 };
 
 interface MessagingDriver {
@@ -37,13 +38,18 @@ export class SQSMessagingDriver implements MessagingDriver {
 
     const params = {
       QueueUrl: this.queue.get(data.queueName),
-      MessageBody: JSON.stringify(data.data),
+      MessageBody: JSON.stringify({
+        data: data.data,
+        workspaceId: data.workspaceId,
+        operation: data.operation,
+      }),
       MessageGroupId: "defaultGroup",
       MessageDeduplicationId: randomUUID(),
     };
 
     const command = new SendMessageCommand(params);
-    await sqsClient.send(command);
+    const response = await sqsClient.send(command);
+    console.log(response);
 
     return true;
   }

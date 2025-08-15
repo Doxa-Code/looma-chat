@@ -14,55 +14,50 @@ export const stockTool = createTool({
     query: z.string(),
   }),
   async execute({ context, runtimeContext, threadId, resourceId }) {
-    try {
-      const { embedding } = await embed({
-        model: azureEmbeddings.textEmbeddingModel("text-embedding-3-small", {
-          dimensions: 1536,
-        }),
-        value: context.query,
+    const { embedding } = await embed({
+      model: azureEmbeddings.textEmbeddingModel("text-embedding-3-small", {
+        dimensions: 1536,
+      }),
+      value: context.query,
+    });
+
+    const setting = runtimeContext.get("settings") as Setting;
+
+    const response = await pinecone
+      .index<{
+        id: string;
+        description: string;
+        manufactory: string;
+      }>("products")
+      .namespace(setting.vectorNamespace)
+      .query({
+        topK: 30,
+        vector: embedding,
+        includeMetadata: true,
       });
 
-      const setting = runtimeContext.get("settings") as Setting;
+    const vectorProducts = response.matches.map((m) => m.metadata);
 
-      const response = await pinecone
-        .index<{
-          id: string;
-          description: string;
-          manufactory: string;
-        }>("products")
-        .namespace(setting.vectorNamespace)
-        .query({
-          topK: 30,
-          vector: embedding,
-          includeMetadata: true,
-        });
+    if (!vectorProducts.length) return [];
 
-      const vectorProducts = response.matches.map((m) => m.metadata);
+    const productsRepository = ProductsRepository.instance();
 
-      if (!vectorProducts.length) return [];
+    const products = await productsRepository.listByIds(
+      vectorProducts.map((i) => i?.id ?? ""),
+      runtimeContext.get("workspaceId")
+    );
 
-      const productsRepository = ProductsRepository.instance();
+    const result = products
+      .filter((p) => p.stock > 0)
+      .sort((a, b) => (a.price > b.price ? 1 : -1));
 
-      const products = await productsRepository.listByIds(
-        vectorProducts.map((i) => i?.id ?? ""),
-        runtimeContext.get("workspaceId")
-      );
+    await saveMessageOnThread({
+      content: result,
+      resourceId,
+      threadId,
+    });
 
-      const result = products
-        .filter((p) => p.stock > 0)
-        .sort((a, b) => (a.price > b.price ? 1 : -1));
-
-      await saveMessageOnThread({
-        content: result,
-        resourceId,
-        threadId,
-      });
-
-      return result;
-    } catch (e) {
-      console.log(e);
-      return "";
-    }
+    return result;
   },
 });
 

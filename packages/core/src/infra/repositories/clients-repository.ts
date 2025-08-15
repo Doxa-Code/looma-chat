@@ -4,9 +4,13 @@ import { addresses, clients, contacts } from "../database/schemas";
 import { eq } from "drizzle-orm";
 import { Address } from "@looma/core/domain/value-objects/address";
 import { Contact } from "@looma/core/domain/value-objects/contact";
+import { and } from "drizzle-orm";
 
 export class ClientsRepository {
-  async retrieveByPhone(phone: string): Promise<Client | null> {
+  async retrieveByPhone(
+    phone: string,
+    workspaceId: string
+  ): Promise<Client | null> {
     const db = createDatabaseConnection();
     const [client] = await db
       .select({
@@ -30,7 +34,12 @@ export class ClientsRepository {
       .from(clients)
       .innerJoin(contacts, eq(contacts.phone, clients.contactPhone))
       .leftJoin(addresses, eq(addresses.id, clients.addressId))
-      .where(eq(clients.contactPhone, phone));
+      .where(
+        and(
+          eq(clients.contactPhone, phone),
+          eq(clients.workspaceId, workspaceId)
+        )
+      );
 
     if (!client) return null;
 

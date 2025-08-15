@@ -3,7 +3,6 @@ import { PromptLeaf, PromptLeafProps } from ".";
 export class AddressPromptLeaf implements PromptLeaf {
   mount({ runtimeContext }: PromptLeafProps): string {
     const lastCart = runtimeContext.get("lastCart");
-    const currentCart = runtimeContext.get("currentCart");
 
     if (lastCart) {
       return `

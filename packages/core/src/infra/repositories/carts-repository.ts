@@ -24,37 +24,14 @@ export class CartsRepository {
     return Math.floor(date.getTime() / 1000);
   }
 
-  async upsert(cart: Cart, workspaceId: string) {
+  async upsert(cart: Cart, conversationId: string) {
     const db = createDatabaseConnection();
-
-    const [client] = await db
-      .select({
-        id: clients.id,
-        contactPhone: clients.contactPhone,
-        addressId: clients.addressId,
-        conversationId: conversations.id,
-      })
-      .from(clients)
-      .innerJoin(contacts, eq(clients.contactPhone, contacts.phone))
-      .leftJoin(
-        conversations,
-        and(
-          eq(conversations.contactPhone, clients.contactPhone),
-          eq(conversations.status, "open")
-        )
-      )
-      .where(
-        and(
-          eq(contacts.phone, cart.client.contact.phone),
-          eq(clients.workspaceId, workspaceId)
-        )
-      );
 
     const cartNewValues = {
       id: cart.id,
       attendantId: cart.attendant.id,
-      conversationId: client?.conversationId,
-      clientId: client?.id,
+      conversationId,
+      clientId: cart.client?.id,
       addressId: cart.address?.id ?? null,
       status: cart.status.value,
       createdAt: this.dateToTimestamp(cart.createdAt),
@@ -108,26 +85,17 @@ export class CartsRepository {
         });
       }
 
-      await tx
-        .insert(carts)
-        .values(cartNewValues)
-        .onConflictDoUpdate({
-          target: carts.id,
-          set: cartNewValues,
-        })
-        .returning();
+      await tx.insert(carts).values(cartNewValues).onConflictDoUpdate({
+        target: carts.conversationId,
+        set: cartNewValues,
+      });
 
       await Promise.all(
         productsOnCartNewValues.map(async (product) => {
-          const [productInserted] = await tx
-            .insert(productsOnCart)
-            .values(product)
-            .onConflictDoUpdate({
-              target: productsOnCart.id,
-              set: product,
-            })
-            .returning();
-          return productInserted;
+          await tx.insert(productsOnCart).values(product).onConflictDoUpdate({
+            target: productsOnCart.id,
+            set: product,
+          });
         })
       );
     });
@@ -138,41 +106,6 @@ export class CartsRepository {
     workspaceId: string
   ): Promise<Cart | null> {
     const db = createDatabaseConnection();
-
-    const [client] = await db
-      .select({
-        id: clients.id,
-        address: {
-          id: addresses.id,
-          street: addresses.street,
-          number: addresses.number,
-          neighborhood: addresses.neighborhood,
-          city: addresses.city,
-          state: addresses.state,
-          zipCode: addresses.zipCode,
-          country: addresses.country,
-          note: addresses.note,
-        },
-        contact: {
-          phone: contacts.phone,
-          name: contacts.name,
-        },
-      })
-      .from(clients)
-      .leftJoin(addresses, eq(clients.addressId, addresses.id))
-      .leftJoin(contacts, eq(clients.contactPhone, contacts.phone))
-      .leftJoin(
-        conversations,
-        eq(clients.contactPhone, conversations.contactPhone)
-      )
-      .where(
-        and(
-          eq(conversations.id, conversationId),
-          eq(clients.workspaceId, workspaceId)
-        )
-      );
-
-    if (!client) return null;
 
     const [cart] = await db
       .select({
@@ -201,6 +134,7 @@ export class CartsRepository {
         paymentMethod: carts.paymentMethod,
         paymentChange: carts.paymentChange,
         cancelReason: carts.cancelReason,
+        clientId: carts.clientId,
         products: sql`
                 COALESCE(
                   JSON_AGG(
@@ -242,6 +176,41 @@ export class CartsRepository {
       );
 
     if (!cart) return null;
+
+    const [client] = await db
+      .select({
+        id: clients.id,
+        address: {
+          id: addresses.id,
+          street: addresses.street,
+          number: addresses.number,
+          neighborhood: addresses.neighborhood,
+          city: addresses.city,
+          state: addresses.state,
+          zipCode: addresses.zipCode,
+          country: addresses.country,
+          note: addresses.note,
+        },
+        contact: {
+          phone: contacts.phone,
+          name: contacts.name,
+        },
+      })
+      .from(clients)
+      .leftJoin(addresses, eq(clients.addressId, addresses.id))
+      .leftJoin(contacts, eq(clients.contactPhone, contacts.phone))
+      .leftJoin(
+        conversations,
+        eq(clients.contactPhone, conversations.contactPhone)
+      )
+      .where(
+        and(
+          eq(clients.id, cart.clientId!),
+          eq(clients.workspaceId, workspaceId)
+        )
+      );
+
+    if (!client) return null;
 
     return Cart.instance({
       address: cart.address,

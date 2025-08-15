@@ -95,10 +95,12 @@ function getSendToLoomaDebounced(conversationId: string) {
 
           for (const message of conversation.lastContactMessages) {
             if (message?.type === "audio") {
-              const arrayBuffer = await messageDriver.downloadMedia(
-                conversation.channel,
-                message.content
-              );
+              const { success, content: arrayBuffer } =
+                await messageDriver.downloadMedia(
+                  conversation.channel,
+                  message.content
+                );
+              if (!success) continue;
               const transcript = await aiDriver.transcriptAudio({
                 audio: arrayBuffer,
               });
@@ -107,10 +109,12 @@ function getSendToLoomaDebounced(conversationId: string) {
             }
 
             if (message?.type === "image") {
-              const arrayBuffer = await messageDriver.downloadMedia(
-                conversation.channel,
-                message.content
-              );
+              const { success, content: arrayBuffer } =
+                await messageDriver.downloadMedia(
+                  conversation.channel,
+                  message.content
+                );
+              if (!success) continue;
               const transcript = await aiDriver.analyzerImage({
                 image: arrayBuffer,
               });
@@ -159,7 +163,6 @@ function getSendToLoomaDebounced(conversationId: string) {
           sseEmitter.emit("message", conversation.raw());
           sseEmitter.emit("untyping");
         } catch (err) {
-          console.log({ err });
           sseEmitter.emit("untyping");
         }
       },
@@ -187,10 +190,12 @@ export const listenAudio = securityProcedure([
 
     if (!message || message?.type !== "audio") return;
 
-    const arrayBuffer = await messageDriver.downloadMedia(
+    const { success, content: arrayBuffer } = await messageDriver.downloadMedia(
       input.channel,
       message.content
     );
+    if (!success) return;
+
     return new Response(arrayBuffer, {
       headers: {
         "Content-Type": "audio/ogg",
@@ -213,10 +218,11 @@ export const retrieveImage = securityProcedure([
 
     if (!message || message?.type !== "image") return;
 
-    const arrayBuffer = await messageDriver.downloadMedia(
+    const { success, content: arrayBuffer } = await messageDriver.downloadMedia(
       input.channel,
       message.content
     );
+    if (!success) return;
 
     return new Response(new Uint8Array(arrayBuffer), {
       headers: {
@@ -402,9 +408,6 @@ export const showCart = securityProcedure([
 
 export const receivedMessage = createServerAction()
   .input(z.any())
-  .onError(async (err) => {
-    console.log(err);
-  })
   .handler(async ({ input, request }) => {
     if (!request) throw new NotAuthorized();
 
@@ -498,7 +501,7 @@ export const receivedMessage = createServerAction()
       conversation = Conversation.create(contact, phoneId);
     }
 
-    conversation.setChannel(phoneId);
+    // conversation.setChannel(phoneId);
 
     const message =
       messagePayload?.type === "text"
@@ -564,5 +567,21 @@ export const markLastMessagesContactAsViewed = securityProcedure([
     conversation.markLastMessagesContactAsViewed();
 
     await conversationsRepository.upsert(conversation, membership.workspaceId);
+    sseEmitter.emit("message", conversation.raw());
+  });
+
+export const closeConversation = securityProcedure(["close:conversation"])
+  .input(z.object({ conversationId: z.string() }))
+  .handler(async ({ input, ctx: { membership } }) => {
+    const conversation = await conversationsRepository.retrieve(
+      input.conversationId
+    );
+
+    if (!conversation) return;
+
+    conversation.close();
+
+    await conversationsRepository.upsert(conversation, membership.workspaceId);
+
     sseEmitter.emit("message", conversation.raw());
   });

@@ -15,6 +15,6 @@ export const memoryWithVector = new Memory({
       messageRange: 50,
       topK: 50,
     },
-    lastMessages: 50,
+    lastMessages: 5,
   },
 });

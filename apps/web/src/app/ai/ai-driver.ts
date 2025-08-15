@@ -67,6 +67,9 @@ export class LoomaAIDriver implements AIDriver {
             },
           ],
         ]);
+
+        const resourceId = [props.workspaceId, props.contact.phone].join("-");
+
         return context.with(
           setSession(context.active(), { sessionId: props.conversationId }),
           async () => {
@@ -74,10 +77,10 @@ export class LoomaAIDriver implements AIDriver {
               runtimeContext,
               maxSteps: 999,
               memory: {
-                resource: props.contact.phone,
+                resource: resourceId,
                 thread: {
                   id: props.conversationId,
-                  resourceId: props.contact.phone,
+                  resourceId,
                 },
               },
               telemetry: {
@@ -142,6 +145,9 @@ export class LoomaAIDriver implements AIDriver {
         );
       } catch (err: any) {
         span.recordException(err);
+        span.end();
+
+        console.log(err);
         if (retry > 2) {
           return "";
         }

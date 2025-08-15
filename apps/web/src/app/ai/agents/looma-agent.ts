@@ -15,6 +15,7 @@ import {
 } from "../tools/cart-tools";
 import { consultingCepTool } from "../tools/consulting-cep-tool";
 import { promotionProductsTool, stockTool } from "../tools/stock-tool";
+import { closeConversationTool } from "../tools/conversation-tools";
 
 export const loomaAgent = new Agent({
   name: "Looma Agent",
@@ -36,5 +37,6 @@ export const loomaAgent = new Agent({
     closeCartTool,
     cancelCartTool,
     retrieveClientTool,
+    closeConversationTool,
   },
 });

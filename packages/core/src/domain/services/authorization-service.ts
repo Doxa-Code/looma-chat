@@ -27,6 +27,7 @@ export const permissions = {
   "view:conversations": "Permite visualizar todos os atendimentos",
   "send:message": "Permite enviar mensagens",
   "manage:carts": "Permite gerenciar todos os carrinhos",
+  "close:conversation": "Permite fechar um atendimento",
   "view:carts": "Permite visualizar todos os carrinhos",
   "create:cart": "Permite criar carrinho",
 } as const;
