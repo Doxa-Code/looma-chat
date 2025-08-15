@@ -9,6 +9,7 @@ import (
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/debug"
 
+	"looma-service/services/carts"
 	"looma-service/services/clients"
 	"looma-service/services/products"
 	"looma-service/utils/database"
@@ -29,8 +30,8 @@ func (service *loomaService) Execute(args []string, req <-chan svc.ChangeRequest
 
 	go clients.StartWatcher(service.stopChan, service.isService)
 	go products.StartWatcher(service.stopChan, service.isService)
-	// go carts.StartWatcher(service.stopChan, service.isService)
-	// go carts.StartBroker(service.stopChan)
+	go carts.StartWatcher(service.stopChan, service.isService)
+	go carts.StartHandler(service.stopChan, service.isService)
 
 	status <- svc.Status{State: svc.Running, Accepts: cmdsAccepted}
 

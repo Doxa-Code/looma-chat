@@ -28,7 +28,8 @@ func createClient(queueName string, logger *Logger) (*sqs.Client, string, contex
 
 	queueURLS := map[string]string{
 		"productsQueue": "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-ProductsBrokerQueue.fifo",
-		"upsertCart":    "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-UpsertCartQueue.fifo",
+		"orderCart":     "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-OrderCartQueue-mxxkawms.fifo",
+		"cancelCart":    "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-CancelCartQueue-bazfwbnt.fifo",
 		"clientsQueue":  "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-ClientsBrokerQueue.fifo",
 		"finishCart":    "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-FinishCartQueue.fifo",
 	}

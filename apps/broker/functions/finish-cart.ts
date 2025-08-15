@@ -5,6 +5,7 @@ import z from "zod";
 
 const finishCartValidate = z.object({
   cartId: z.string(),
+  status: z.string(),
   workspaceId: z.string(),
 });
 

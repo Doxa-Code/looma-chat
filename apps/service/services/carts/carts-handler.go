@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -13,39 +14,82 @@ import (
 	"looma-service/utils/database"
 )
 
+var cartLogger *utils.Logger
+
 func mapCartToPedido(data interface{}) (Pedido, error) {
-	var cart map[string]interface{}
+	var payload map[string]interface{}
 	bytes, _ := json.Marshal(data)
-	if err := json.Unmarshal(bytes, &cart); err != nil {
+	if err := json.Unmarshal(bytes, &payload); err != nil {
 		return Pedido{}, err
 	}
 
-	address := cart["address"].(map[string]interface{})
-	client := cart["client"].(map[string]interface{})
-	contact := client["contact"].(map[string]interface{})
+	cart, ok := payload["cart"].(map[string]interface{})
+	if !ok {
+		return Pedido{}, fmt.Errorf("campo 'cart' não é map[string]interface{}")
+	}
+
+	address, ok := cart["address"].(map[string]interface{})
+	if !ok {
+		return Pedido{}, fmt.Errorf("campo 'address' não é map[string]interface{}")
+	}
+
+	client, ok := cart["client"].(map[string]interface{})
+	if !ok {
+		return Pedido{}, fmt.Errorf("campo 'client' não é map[string]interface{}")
+	}
+
+	contact, ok := client["contact"].(map[string]interface{})
+	if !ok {
+		return Pedido{}, fmt.Errorf("campo 'contact' não é map[string]interface{}")
+	}
+
+	// Função auxiliar para pegar string com segurança
+	getString := func(m map[string]interface{}, key string) string {
+		if v, ok := m[key]; ok && v != nil {
+			if s, ok := v.(string); ok {
+				return s
+			}
+		}
+		return ""
+	}
+
+	// Função auxiliar para pegar float64 com segurança
+	getFloat := func(m map[string]interface{}, key string) float64 {
+		if v, ok := m[key]; ok && v != nil {
+			switch val := v.(type) {
+			case float64:
+				return val
+			case string:
+				if num, err := strconv.ParseFloat(val, 64); err == nil {
+					return num
+				}
+			}
+		}
+		return 0
+	}
 
 	return Pedido{
-		IdPedido:              cart["id"].(string),
-		IdCliente:             client["id"].(string),
+		IdPedido:              getString(cart, "id"),
+		IdCliente:             getString(client, "id"),
 		ClienteCPF:            "",
-		ClienteNome:           contact["name"].(string),
-		ClienteEnderecoRua:    address["street"].(string),
-		ClienteEnderecoNumero: address["number"].(string),
-		ClienteEnderecoComp:   address["note"].(string),
-		ClienteEnderecoCidade: address["city"].(string),
-		ClienteEnderecoBairro: address["neighborhood"].(string),
-		ClienteEnderecoRef:    address["note"].(string),
-		ClienteEnderecoCEP:    address["zipCode"].(string),
-		ClienteEnderecoUF:     address["state"].(string),
-		ClienteTelefone:       contact["phone"].(string),
-		FormaEntrega:          "delivery",
-		FormaPagamento:        cart["paymentMethod"].(string),
+		ClienteNome:           getString(contact, "name"),
+		ClienteEnderecoRua:    getString(address, "street"),
+		ClienteEnderecoNumero: getString(address, "number"),
+		ClienteEnderecoComp:   getString(address, "note"),
+		ClienteEnderecoCidade: getString(address, "city"),
+		ClienteEnderecoBairro: getString(address, "neighborhood"),
+		ClienteEnderecoRef:    getString(address, "note"),
+		ClienteEnderecoCEP:    getString(address, "zipCode"),
+		ClienteEnderecoUF:     getString(address, "state"),
+		ClienteTelefone:       getString(contact, "phone"),
+		FormaEntrega:          "1",
+		FormaPagamento:        getString(cart, "paymentMethod"),
 		TrocoPara:             0,
 		StatusEfetuado:        "",
 		StatusProntoEntrega:   "",
-		ValorProdutos:         cart["total"].(float64),
+		ValorProdutos:         getFloat(cart, "total"),
 		ValorTaxaEntrega:      0,
-		ValorTotal:            cart["total"].(float64),
+		ValorTotal:            getFloat(cart, "total"),
 	}, nil
 }
 
@@ -86,7 +130,8 @@ func salvarPedido(pedido Pedido) error {
 func processOrderCart(data interface{}) error {
 	pedido, err := mapCartToPedido(data)
 	if err != nil {
-		return fmt.Errorf("erro ao mapear pedido: %w", err)
+		cartLogger.SendLog("error", fmt.Sprintf("Falha ao processar carrinho: %v", err))
+		return err
 	}
 
 	if err := salvarPedido(pedido); err != nil {
@@ -94,6 +139,53 @@ func processOrderCart(data interface{}) error {
 	}
 
 	log.Printf("Pedido %s salvo com sucesso no banco", pedido.IdPedido)
+
+	if err := processProductsFromCart(data, pedido.IdPedido); err != nil {
+		return fmt.Errorf("erro ao processar produtos do carrinho: %w", err)
+	}
+
+	return nil
+}
+
+func processProductsFromCart(data interface{}, cartId string) error {
+	var payload map[string]interface{}
+	bytes, _ := json.Marshal(data)
+	if err := json.Unmarshal(bytes, &payload); err != nil {
+		return err
+	}
+
+	cart, ok := payload["cart"].(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("campo 'cart' não é map[string]interface{}")
+	}
+
+	productsRaw, ok := cart["products"].([]interface{})
+	if !ok {
+		return fmt.Errorf("campo 'products' não encontrado ou inválido")
+	}
+
+	for _, p := range productsRaw {
+		productMap, ok := p.(map[string]interface{})
+		if !ok {
+			log.Printf("Produto inválido no carrinho: %+v", p)
+			continue
+		}
+
+		payload := UpsertProductPayload{
+			Id: cartId,
+			CartProduct: Product{
+				Id:          fmt.Sprintf("%v", productMap["id"]),
+				Description: fmt.Sprintf("%v", productMap["description"]),
+				Price:       productMap["price"].(float64),
+				Quantity:    int(productMap["quantity"].(float64)), // se vier float
+			},
+		}
+
+		if err := processUpsertProduct(payload); err != nil {
+			log.Printf("Erro ao processar produto %s: %v", payload.CartProduct.Id, err)
+		}
+	}
+
 	return nil
 }
 
@@ -123,8 +215,6 @@ func processUpsertProduct(data interface{}) error {
 
 	cartId := payload.Id
 	product := payload.CartProduct
-
-	adicionarProduto(product, cartId)
 
 	if err := adicionarProduto(product, cartId); err != nil {
 		return fmt.Errorf("erro ao adicionar produto: %w", err)
@@ -198,34 +288,39 @@ func processCancelCart(data interface{}) error {
 	return nil
 }
 
-func StartBroker(stop <-chan struct{}) {
-	logger := &utils.Logger{
+func StartHandler(stop <-chan struct{}, isService bool) {
+	cartLogger = &utils.Logger{
 		Lw: &utils.LokiWriter{
-			Job: os.Getenv("QUEUE_NAME") + "-products-watcher"},
-		IsService: false}
+			Job: os.Getenv("QUEUE_NAME") + "-carts-handler"},
+		IsService: isService}
 
-	queueName := "upsertCart"
+	queueName := "orderCart"
 
-	logger.SendLog("info", "Serviço iniciado. Aguardando mensagens SQS...")
+	cartLogger.SendLog("info", "Serviço iniciado. Aguardando mensagens SQS...")
 
 	for {
 		select {
 		case <-stop:
-			logger.SendLog("warning", "Parando o serviço conforme solicitado")
+			cartLogger.SendLog("warning", "Parando o serviço conforme solicitado")
 			return
 		default:
 
-			rmessages, clientSQS, queueURL, ctx, err := utils.ReceiveMessage(queueName, logger)
+			rmessages, clientSQS, queueURL, ctx, err := utils.ReceiveMessage(queueName, cartLogger)
 
 			if err != nil {
-				logger.SendLog("error", fmt.Sprintf("Erro ao receber mensagem: %v", err))
+				cartLogger.SendLog("error", fmt.Sprintf("Erro ao receber mensagem: %v", err))
 				continue
 			}
 
 			for _, message := range rmessages {
 				var msg CartMessage
 				if err := json.Unmarshal([]byte(*message.Body), &msg); err != nil {
-					logger.SendLog("error", fmt.Sprintf("Erro ao decodificar mensagem: %v", err))
+					cartLogger.SendLog("error", fmt.Sprintf("Erro ao decodificar mensagem: %v", err))
+					continue
+				}
+
+				if msg.WorkspaceId != os.Getenv("WORKSPACE_ID") {
+					cartLogger.SendLog("warn", "Mensagem ignorada, workspaceId diferente")
 					continue
 				}
 
@@ -240,15 +335,16 @@ func StartBroker(stop <-chan struct{}) {
 				case "cancelCart":
 					errProcess = processCancelCart(msg.Data)
 				default:
-					logger.SendLog("warning", fmt.Sprintf("Operação desconhecida: %s", msg.Operation))
+					cartLogger.SendLog("warning", fmt.Sprintf("Operação desconhecida: %s", msg.Operation))
 					errProcess = fmt.Errorf("operação inválida: %s", msg.Operation)
 				}
 
 				if errProcess != nil {
-					logger.SendLog("error", fmt.Sprintf("Erro ao processar mensagem: %v", errProcess))
+					cartLogger.SendLog("error", fmt.Sprintf("Erro ao processar mensagem: %v", errProcess))
+					continue
 				}
 
-				utils.DeleteMessage(clientSQS, queueURL, ctx, message.ReceiptHandle, logger)
+				utils.DeleteMessage(clientSQS, queueURL, ctx, message.ReceiptHandle, cartLogger)
 			}
 		}
 	}

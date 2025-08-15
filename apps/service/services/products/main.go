@@ -89,11 +89,18 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 			logger.SendLog("info", "Entrando no loop rows.Next()")
 
 			for rows.Next() {
-				id, rowMap := database.CreateRowMap("id", columns, rows, logger)
+				id, rowMap := database.CreateRowMap("codigo", columns, rows, logger)
 				hash := utils.CreateHash(rowMap, logger)
 
 				if oldHash, exists := hashes[id]; !exists || oldHash != hash {
 					logger.SendLog("info", fmt.Sprintf("Mudança detectada para Id %s: %+v", id, rowMap))
+
+					if exists {
+						logger.SendLog("debug", fmt.Sprintf("Hash antigo: %s | Hash novo: %s", oldHash, hash))
+					} else {
+						logger.SendLog("debug", fmt.Sprintf("Nenhum hash antigo encontrado | Hash novo: %s", hash))
+					}
+
 					hashes[id] = hash
 					utils.SaveHashes(hashesPath, hashes, logger)
 
@@ -105,6 +112,7 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 					}
 				}
 			}
+			logger.SendLog("info", "Finalizou loop de verificação de mudanças")
 		}
 	}
 }
