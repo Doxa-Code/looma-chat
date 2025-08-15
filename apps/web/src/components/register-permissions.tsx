@@ -80,7 +80,7 @@ export const RegisterPermissions: React.FC<Props> = (props) => {
           Permissões
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-w-4xl max-h-[800px] pb-0 overflow-auto">
         <DialogClose asChild>
           <Button
             className="absolute right-3 top-3 p-2 !text-gray-400 hover:text-gray-500 dark:!text-gray-600 hover:dark:text-gray-500"
@@ -157,8 +157,7 @@ export const RegisterPermissions: React.FC<Props> = (props) => {
               </div>
             ))}
           </div>
-          <Divider />
-          <footer className="flex justify-end items-center gap-2">
+          <footer className="flex sticky py-4 border-t bg-white bottom-0 w-full px-4 justify-end items-center gap-2">
             <Button>Salvar</Button>
             <Button variant="light">Cancelar</Button>
           </footer>
