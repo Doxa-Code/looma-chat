@@ -201,8 +201,8 @@ export function CartList({ initCartsRaw }: CartListProps) {
                           </div>
                           <div className="text-right">
                             <p className="font-medium text-sm">
-                              {formatCurrency(product.price)} x{" "}
-                              {product.quantity}
+                              {product.quantity} x{" "}
+                              {formatCurrency(product.price)}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               Total:{" "}
