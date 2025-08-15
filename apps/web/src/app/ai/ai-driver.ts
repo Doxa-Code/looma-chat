@@ -95,8 +95,10 @@ export class LoomaAIDriver implements AIDriver {
             );
             span.setAttribute(
               SemanticConventions.LLM_TOKEN_COUNT_COMPLETION_DETAILS,
-              (response?.response?.body as any)?.usage
-                ?.completion_tokens_details
+              JSON.stringify(
+                (response?.response?.body as any)?.usage
+                  ?.completion_tokens_details
+              )
             );
             span.setAttribute(
               SemanticConventions.LLM_TOKEN_COUNT_PROMPT,
@@ -104,7 +106,9 @@ export class LoomaAIDriver implements AIDriver {
             );
             span.setAttribute(
               SemanticConventions.LLM_TOKEN_COUNT_PROMPT_DETAILS,
-              (response?.response?.body as any)?.usage?.prompt_tokens_details
+              JSON.stringify(
+                (response?.response?.body as any)?.usage?.prompt_tokens_details
+              )
             );
             span.setAttribute(
               SemanticConventions.LLM_TOKEN_COUNT_TOTAL,
@@ -117,7 +121,7 @@ export class LoomaAIDriver implements AIDriver {
             response.toolCalls.map((t: any) => {
               span.setAttribute(
                 SemanticConventions.TOOL_CALL_FUNCTION_ARGUMENTS_JSON,
-                t.args
+                JSON.stringify(t.args)
               );
               span.setAttribute(
                 SemanticConventions.TOOL_CALL_FUNCTION_NAME,
@@ -128,7 +132,7 @@ export class LoomaAIDriver implements AIDriver {
             response.response.messages.map((m: any) => {
               span.setAttribute(
                 SemanticConventions.MESSAGE_CONTENT,
-                m.content as any
+                JSON.stringify(m.content)
               );
               span.setAttribute(SemanticConventions.MESSAGE_ROLE, m.role);
             });
@@ -147,69 +151,59 @@ export class LoomaAIDriver implements AIDriver {
   }
 
   async transcriptAudio(props: TranscriptAudioProps): Promise<string> {
-    try {
-      const form = new FormData();
-      form.append("file", Buffer.from(props.audio), {
-        filename: "audio.ogg",
-        contentType: "audio/ogg",
-      });
-      form.append("language", "pt");
+    const form = new FormData();
+    form.append("file", Buffer.from(props.audio), {
+      filename: "audio.ogg",
+      contentType: "audio/ogg",
+    });
+    form.append("language", "pt");
 
-      const response = await axios.post(
-        `${process.env.AZURE_VOICE_ENDPOINT}`,
-        form,
-        {
-          headers: {
-            ...form.getHeaders(),
-            Authorization: `Bearer ${process.env.AZURE_MEDIA_API_KEY}`,
-          },
-        }
-      );
+    const response = await axios.post(
+      `${process.env.AZURE_VOICE_ENDPOINT}`,
+      form,
+      {
+        headers: {
+          ...form.getHeaders(),
+          Authorization: `Bearer ${process.env.AZURE_MEDIA_API_KEY}`,
+        },
+      }
+    );
 
-      const transcript = response.data;
+    const transcript = response.data;
 
-      await setTimeout(1000);
+    await setTimeout(1000);
 
-      return transcript.text;
-    } catch (err) {
-      console.log(err);
-      return "";
-    }
+    return transcript.text;
   }
 
   async analyzerImage(props: AnalyzerImageProps): Promise<string> {
-    try {
-      const response = await azure("gpt-4.1").doGenerate({
-        mode: { type: "regular" },
-        prompt: [
-          {
-            role: "system",
-            content:
-              "Você receberá uma imagem de uma receita médica o seu objetivo é transcrever todas as informações descritas nelas para auxiliar um atendente de farmácia a atendenter o cliente.",
-          },
-          {
-            role: "user",
-            content: [
-              {
-                image: new Uint8Array(props.image),
-                type: "image",
-                mimeType: "image/jpeg",
-              },
-            ],
-          },
-        ],
-        inputFormat: "prompt",
-      });
+    const response = await azure("gpt-4.1").doGenerate({
+      mode: { type: "regular" },
+      prompt: [
+        {
+          role: "system",
+          content:
+            "Você receberá uma imagem de uma receita médica o seu objetivo é transcrever todas as informações descritas nelas para auxiliar um atendente de farmácia a atendenter o cliente.",
+        },
+        {
+          role: "user",
+          content: [
+            {
+              image: new Uint8Array(props.image),
+              type: "image",
+              mimeType: "image/jpeg",
+            },
+          ],
+        },
+      ],
+      inputFormat: "prompt",
+    });
 
-      await setTimeout(1000);
-      return `
+    await setTimeout(1000);
+    return `
         O cliente enviou uma imagem e contém:
         ${response.text} 
       `;
-    } catch (err) {
-      console.log(err);
-      return "";
-    }
   }
 
   static instance() {

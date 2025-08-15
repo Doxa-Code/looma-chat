@@ -1,30 +1,29 @@
 "use server";
+import { LoomaAIDriver } from "@/app/ai/ai-driver";
+import { sseEmitter } from "@/lib/sse";
 import { Conversation } from "@looma/core/domain/entities/conversation";
+import { Membership } from "@looma/core/domain/entities/membership";
 import { Message } from "@looma/core/domain/entities/message";
 import { User } from "@looma/core/domain/entities/user";
 import { NotAuthorized } from "@looma/core/domain/errors/not-authorized";
+import { NotFound } from "@looma/core/domain/errors/not-found";
 import { Attendant } from "@looma/core/domain/value-objects/attendant";
 import { Contact } from "@looma/core/domain/value-objects/contact";
-import { LoomaAIDriver } from "@/app/ai/ai-driver";
+import { Setting } from "@looma/core/domain/value-objects/setting";
 import { MetaMessageDriver } from "@looma/core/infra/drivers/message-driver";
+import { JWTTokenDriver } from "@looma/core/infra/drivers/token-driver";
+import { CartsRepository } from "@looma/core/infra/repositories/carts-repository";
 import { ContactsRepository } from "@looma/core/infra/repositories/contacts-repository";
 import { ConversationsRepository } from "@looma/core/infra/repositories/conversations-repository";
+import { MembershipsRepository } from "@looma/core/infra/repositories/membership-repository";
 import { MessagesRepository } from "@looma/core/infra/repositories/messages-repository";
 import { SettingsRepository } from "@looma/core/infra/repositories/settings-repository";
 import { UsersRepository } from "@looma/core/infra/repositories/users-repository";
-import { sseEmitter } from "@/lib/sse";
+import pDebounce from "p-debounce";
 import z from "zod";
 import { createServerAction } from "zsa";
 import { securityProcedure } from "../procedure";
 import { ValidSignature } from "./helpers";
-import { Membership } from "@looma/core/domain/entities/membership";
-import { MembershipsRepository } from "@looma/core/infra/repositories/membership-repository";
-import pDebounce from "p-debounce";
-import { NotFound } from "@looma/core/domain/errors/not-found";
-import { CartsRepository } from "@looma/core/infra/repositories/carts-repository";
-import { Setting } from "@looma/core/domain/value-objects/setting";
-import { JWTTokenDriver } from "@looma/core/infra/drivers/token-driver";
-import { Cart } from "@looma/core/domain/entities/cart";
 
 const usersRepository = UsersRepository.instance();
 const settingsRepository = SettingsRepository.instance();
@@ -160,7 +159,7 @@ function getSendToLoomaDebounced(conversationId: string) {
           sseEmitter.emit("message", conversation.raw());
           sseEmitter.emit("untyping");
         } catch (err) {
-          console.log(err);
+          console.log({ err });
           sseEmitter.emit("untyping");
         }
       },
@@ -504,7 +503,7 @@ export const receivedMessage = createServerAction()
     const message =
       messagePayload?.type === "text"
         ? Message.create({
-            content: messagePayload.text.body,
+            content: messagePayload?.text?.body,
             id: messagePayload.id,
             createdAt: new Date(messagePayload.timestamp * 1000),
             sender: contact,
@@ -515,7 +514,7 @@ export const receivedMessage = createServerAction()
               id: messagePayload.id,
               createdAt: new Date(messagePayload.timestamp * 1000),
               sender: contact,
-              content: messagePayload.audio.id,
+              content: messagePayload?.audio?.id,
               type: "audio",
             })
           : Message.create({

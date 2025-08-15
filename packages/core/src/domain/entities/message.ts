@@ -91,7 +91,7 @@ export class Message {
 
   static create(props: Message.CreateProps) {
     return new Message({
-      content: props.content,
+      content: props.content ?? "",
       createdAt: props.createdAt,
       id: props.id,
       sender: Sender.create(
