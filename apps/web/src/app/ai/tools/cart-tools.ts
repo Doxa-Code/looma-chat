@@ -181,15 +181,14 @@ export const setPaymentMethodCartTool = createTool({
     paymentChange: z.number().optional().describe("valor de troco"),
   }),
   execute: async ({ runtimeContext, context }) => {
-    const [result, err] = await setPaymentMethod({
+    const [, err] = await setPaymentMethod({
       userId: runtimeContext.get("userId"),
       workspaceId: runtimeContext.get("workspaceId"),
       conversationId: runtimeContext.get("conversationId"),
       paymentMethod: context.paymentMethod,
       paymentChange: context.paymentChange,
     } as any);
-    console.log(err);
     if (err) return err;
-    return result;
+    return "Forma de pagamento alterada";
   },
 });

@@ -31,6 +31,9 @@ export const listAllProducts = securityProcedure(["view:products"])
       total: z.number().default(0),
     })
   )
+  .onError(async (err) => {
+    console.log(err);
+  })
   .handler(async ({ input, ctx }) => {
     const { products, total } = await productsRepository.list({
       page: input.page,

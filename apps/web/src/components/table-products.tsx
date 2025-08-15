@@ -97,7 +97,7 @@ export default function TableProducts(props: Props) {
         <div className="flex items-center gap-4">
           <span className="text-foreground text-xs text-nowrap">
             Página {isPending ? "..." : pagination.pageIndex + 1} de{" "}
-            {isPending ? "..." : total} páginas
+            {isPending ? "..." : total === 0 ? 1 : total} páginas
           </span>
           <Pagination>
             <PaginationContent>
@@ -105,7 +105,7 @@ export default function TableProducts(props: Props) {
               <PaginationItem>
                 <Button
                   className="disabled:pointer-events-none disabled:opacity-50"
-                  disabled={pagination.pageIndex === 0}
+                  disabled={total === 0 || pagination.pageIndex === 0}
                   onClick={() => {
                     if (pagination.pageIndex === 0) return;
                     setPagination({
@@ -122,7 +122,7 @@ export default function TableProducts(props: Props) {
               <PaginationItem>
                 <Button
                   className="disabled:pointer-events-none disabled:opacity-50"
-                  disabled={pagination.pageIndex === 0}
+                  disabled={total === 0 || pagination.pageIndex === 0}
                   onClick={() => {
                     if (pagination.pageIndex === 0) return;
                     setPagination({
@@ -139,7 +139,7 @@ export default function TableProducts(props: Props) {
               <PaginationItem>
                 <Button
                   className="disabled:pointer-events-none disabled:opacity-50"
-                  disabled={pagination.pageIndex === total - 1}
+                  disabled={total === 0 || pagination.pageIndex === total - 1}
                   onClick={() => {
                     if (pagination.pageIndex === total - 1) return;
 
@@ -157,7 +157,7 @@ export default function TableProducts(props: Props) {
               <PaginationItem>
                 <Button
                   className="disabled:pointer-events-none disabled:opacity-50"
-                  disabled={pagination.pageIndex === total - 1}
+                  disabled={total === 0 || pagination.pageIndex === total - 1}
                   onClick={() => {
                     if (pagination.pageIndex === total - 1) return;
                     setPagination({
@@ -173,14 +173,6 @@ export default function TableProducts(props: Props) {
             </PaginationContent>
           </Pagination>
         </div>
-      </div>
-
-      <div
-        data-hidden={!isPending}
-        className="absolute z-[9999] h-full w-full bg-white/30 flex justify-center flex-col gap-4 items-center"
-      >
-        <Spinner />
-        <span>Carregando produtos...</span>
       </div>
 
       {/* Table */}
