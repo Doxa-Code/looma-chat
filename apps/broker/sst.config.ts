@@ -42,10 +42,14 @@ export default $config({
       environment,
     });
 
-    const upsertCart = new sst.aws.Queue("UpsertCart", {
+    const orderCart = new sst.aws.Queue("OrderCart", {
       fifo: true,
     });
-
+  
+    const cancelCart = new sst.aws.Queue("CancelCart", {
+      fifo: true,
+    });
+  
     const finishCart = new sst.aws.Queue("FinishCart", {
       fifo: true,
     });
@@ -58,7 +62,8 @@ export default $config({
     return {
       productsQueue: productsQueue.url,
       clientsQueue: clientsQueue.url,
-      upsertCart: upsertCart.url,
+      orderCart: orderCart.url,
+      cancelCart: cancelCart.url,
       finishCart: finishCart.url,
     };
   },

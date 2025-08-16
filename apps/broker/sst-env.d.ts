@@ -5,6 +5,10 @@
 
 declare module "sst" {
   export interface Resource {
+    "CancelCart": {
+      "type": "sst.aws.Queue"
+      "url": string
+    }
     "ClientsBroker": {
       "type": "sst.aws.Queue"
       "url": string
@@ -13,11 +17,11 @@ declare module "sst" {
       "type": "sst.aws.Queue"
       "url": string
     }
-    "ProductsBroker": {
+    "OrderCart": {
       "type": "sst.aws.Queue"
       "url": string
     }
-    "UpsertCart": {
+    "ProductsBroker": {
       "type": "sst.aws.Queue"
       "url": string
     }

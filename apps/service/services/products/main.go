@@ -70,7 +70,7 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 		case <-ticker.C:
 			logger.SendLog("info", "Iniciando o processo de checagem de mudanças")
 
-			query := `SELECT * FROM products;`
+			query := `SELECT * FROM doxacode_produtos;`
 
 			columns, rows, err := database.Query(query, logger)
 
@@ -89,21 +89,30 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 			logger.SendLog("info", "Entrando no loop rows.Next()")
 
 			for rows.Next() {
-				id, rowMap := database.CreateRowMap("id", columns, rows, logger)
+				id, rowMap := database.CreateRowMap("codigo", columns, rows, logger)
 				hash := utils.CreateHash(rowMap, logger)
 
 				if oldHash, exists := hashes[id]; !exists || oldHash != hash {
 					logger.SendLog("info", fmt.Sprintf("Mudança detectada para Id %s: %+v", id, rowMap))
+
+					if exists {
+						logger.SendLog("debug", fmt.Sprintf("Hash antigo: %s | Hash novo: %s", oldHash, hash))
+					} else {
+						logger.SendLog("debug", fmt.Sprintf("Nenhum hash antigo encontrado | Hash novo: %s", hash))
+					}
+
 					hashes[id] = hash
 					utils.SaveHashes(hashesPath, hashes, logger)
 
 					jsonPayload, err := utils.BuildProductPayloadJSON(rowMap, os.Getenv("WORKSPACE_ID"))
 					if err != nil {
-						log.Fatalf("Erro: %v", err)
+						logger.SendLog("error", fmt.Sprintf("Erro: %v", err))
+					} else {
+						utils.SendMessage(string(jsonPayload), "productsQueue", logger)
 					}
-					utils.SendMessage(string(jsonPayload), "productsQueue", logger)
 				}
 			}
+			logger.SendLog("info", "Finalizou loop de verificação de mudanças")
 		}
 	}
 }

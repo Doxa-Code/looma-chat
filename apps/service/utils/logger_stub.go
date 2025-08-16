@@ -3,7 +3,15 @@
 
 package utils
 
-type Logger struct{}
+type Logger struct {
+	Lw        *LokiWriter
+	IsService bool
+}
+
+type LokiWriter struct {
+	Job   string
+	Level string
+}
 
 func (l *Logger) SetupEventLog(name string) error      { return nil }
 func (l *Logger) CloseEventLog()                       {}
