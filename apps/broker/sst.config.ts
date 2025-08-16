@@ -45,11 +45,11 @@ export default $config({
     const orderCart = new sst.aws.Queue("OrderCart", {
       fifo: true,
     });
-  
+
     const cancelCart = new sst.aws.Queue("CancelCart", {
       fifo: true,
     });
-  
+
     const finishCart = new sst.aws.Queue("FinishCart", {
       fifo: true,
     });

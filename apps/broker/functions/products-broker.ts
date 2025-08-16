@@ -53,7 +53,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       product.description !== productAlreadyExists.description
     ) {
       console.log(
-        `${product.id} - Embedando descrição do produto, ${productAlreadyExists?.description}, ${product.description}`
+        `${product.id} - Embedando descrição do produto, ${productAlreadyExists?.description ?? "Produto não existe"}, ${product.description}`
       );
       const vectorStore = createPineconeClient(settings?.vectorNamespace!);
       const { embedding } = await createEmbedding(product.description);
