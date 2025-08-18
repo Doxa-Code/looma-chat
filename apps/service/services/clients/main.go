@@ -109,7 +109,7 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 						logger.SendLog("error", fmt.Sprintf("Erro: %v", err))
 					} else {
 						log.Println(string(jsonPayload))
-						utils.SendMessage(string(jsonPayload), "clientsQueue", logger)
+						utils.SendMessage(string(jsonPayload), "clientsQueue", logger, false)
 					}
 				}
 			}

@@ -28,31 +28,35 @@ func createClient(queueName string, logger *Logger) (*sqs.Client, string, contex
 
 	queueURLS := map[string]string{
 		"productsQueue": "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-ProductsBrokerQueue.fifo",
-		"orderCart":     "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-OrderCartQueue-mxxkawms.fifo",
-		"cancelCart":    "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-CancelCartQueue-bazfwbnt.fifo",
-		"clientsQueue":  "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-ClientsBrokerQueue.fifo",
-		"finishCart":    "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-FinishCartQueue.fifo",
+		"clientsQueue":  "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-ClientsBrokerQueue-nbvctnoe",
+		"cartQueue":     "https://sqs.us-east-1.amazonaws.com/557130579131/looma-b-production-CartBrokerc2d27d7a1c04451bb7f9548f2faf3bd3Queue-medtarhu.fifo",
+		"finishCart":    "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-FinishCartQueue-cbwecnfv",
 	}
 
 	return clientSQS, queueURLS[queueName], ctx
 }
 
-func SendMessage(payload string, queueName string, logger *Logger) {
+func SendMessage(payload string, queueName string, logger *Logger, isFifo bool) {
 	clientSQS, queueURL, ctx := createClient(queueName, logger)
 
-	dedupID := uuid.New().String()
+	input := &sqs.SendMessageInput{
+		QueueUrl:    &queueURL,
+		MessageBody: aws.String(payload),
+	}
 
-	sendResp, err := clientSQS.SendMessage(ctx, &sqs.SendMessageInput{
-		QueueUrl:               &queueURL,
-		MessageBody:            aws.String(payload),
-		MessageGroupId:         aws.String("default"),
-		MessageDeduplicationId: aws.String(dedupID),
-	})
+	if isFifo {
+		dedupID := uuid.New().String()
+		input.MessageGroupId = aws.String("default")
+		input.MessageDeduplicationId = aws.String(dedupID)
+	}
 
+	sendResp, err := clientSQS.SendMessage(ctx, input)
 	if err != nil {
 		logger.SendLog("fatal", fmt.Sprintf("Erro ao enviar mensagem: %v", err))
+		return
 	}
-	logger.SendLog("info", fmt.Sprintf("Mensagem enviada, ID: %v", string(*sendResp.MessageId)))
+
+	logger.SendLog("info", fmt.Sprintf("Mensagem enviada, ID: %v", *sendResp.MessageId))
 }
 
 func ReceiveMessage(queueName string, logger *Logger) ([]types.Message, *sqs.Client, string, context.Context, error) {

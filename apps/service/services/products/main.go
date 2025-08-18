@@ -108,7 +108,7 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 					if err != nil {
 						logger.SendLog("error", fmt.Sprintf("Erro: %v", err))
 					} else {
-						utils.SendMessage(string(jsonPayload), "productsQueue", logger)
+						utils.SendMessage(string(jsonPayload), "productsQueue", logger, true)
 					}
 				}
 			}

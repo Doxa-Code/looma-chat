@@ -294,7 +294,7 @@ func StartHandler(stop <-chan struct{}, isService bool) {
 			Job: os.Getenv("QUEUE_NAME") + "-carts-handler"},
 		IsService: isService}
 
-	queueName := "orderCart"
+	queueName := "cartQueue"
 
 	cartLogger.SendLog("info", "Serviço iniciado. Aguardando mensagens SQS...")
 

@@ -101,7 +101,7 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 						log.Fatalf("Erro ao converter para JSON: %v", err)
 					}
 
-					utils.SendMessage(string(jsonBytes), "finishCart", logger)
+					utils.SendMessage(string(jsonBytes), "finishCart", logger, false)
 				}
 			}
 			logger.SendLog("info", "Finalizou loop de verificação de mudanças")
