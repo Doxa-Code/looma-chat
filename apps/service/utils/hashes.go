@@ -26,7 +26,7 @@ func LoadHashes(filename string, logger *Logger) (map[string]string, string) {
 			return hashes, hashesPath
 		}
 	}
-	
+
 	file, err := os.Open(hashesPath)
 	if err != nil {
 		SaveHashes(hashesPath, hashes, logger)
@@ -43,7 +43,6 @@ func LoadHashes(filename string, logger *Logger) (map[string]string, string) {
 
 	return hashes, hashesPath
 }
-
 
 func SaveHashes(path string, hashes map[string]string, logger *Logger) {
 	file, err := os.Create(path)

@@ -138,7 +138,7 @@ func processOrderCart(data interface{}) error {
 		return fmt.Errorf("erro ao salvar pedido: %w", err)
 	}
 
-	log.Printf("Pedido %s salvo com sucesso no banco", pedido.IdPedido)
+	cartLogger.SendLog("info", fmt.Sprintf("Pedido %s salvo com sucesso no banco", pedido.IdPedido))
 
 	if err := processProductsFromCart(data, pedido.IdPedido); err != nil {
 		return fmt.Errorf("erro ao processar produtos do carrinho: %w", err)
@@ -167,7 +167,7 @@ func processProductsFromCart(data interface{}, cartId string) error {
 	for _, p := range productsRaw {
 		productMap, ok := p.(map[string]interface{})
 		if !ok {
-			log.Printf("Produto inválido no carrinho: %+v", p)
+			cartLogger.SendLog("error", fmt.Sprintf("Produto inválido no carrinho: %+v", p))
 			continue
 		}
 
@@ -220,8 +220,8 @@ func processUpsertProduct(data interface{}) error {
 		return fmt.Errorf("erro ao adicionar produto: %w", err)
 	}
 
-	log.Printf("Produto atualizado para carrinho=%s: Id=%s, Nome=%s, Preço=%.2f, Quantidade=%d, Total=%.2f",
-		cartId, product.Id, product.Description, product.Price, product.Quantity, float64(product.Price)*float64(product.Quantity))
+	cartLogger.SendLog("info", fmt.Sprintf("Produto atualizado para carrinho=%s: Id=%s, Nome=%s, Preço=%.2f, Quantidade=%d, Total=%.2f",
+		cartId, product.Id, product.Description, product.Price, product.Quantity, float64(product.Price)*float64(product.Quantity)))
 	return nil
 }
 
@@ -252,8 +252,8 @@ func processRemoveProduct(data interface{}) error {
 		return fmt.Errorf("erro ao remover produto: %w", err)
 	}
 
-	log.Printf("Produto removido do carrinho=%s: Id=%s",
-		cartId, productId)
+	cartLogger.SendLog("info", fmt.Sprintf("Produto removido do carrinho=%s: Id=%s",
+		cartId, productId))
 	return nil
 }
 
@@ -283,8 +283,7 @@ func processCancelCart(data interface{}) error {
 		return fmt.Errorf("erro ao remover produto: %w", err)
 	}
 
-	log.Printf("Pedido cancelado: Id=%s",
-		cartId)
+	cartLogger.SendLog("info", fmt.Sprintf("Pedido cancelado: Id=%s", cartId))
 	return nil
 }
 

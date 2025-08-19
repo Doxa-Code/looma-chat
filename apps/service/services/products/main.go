@@ -90,6 +90,9 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 
 			for rows.Next() {
 				id, rowMap := database.CreateRowMap("codigo", columns, rows, logger)
+				if val, ok := rowMap["preco"]; !ok || val == nil {
+					rowMap["preco"] = 0
+				}
 				hash := utils.CreateHash(rowMap, logger)
 
 				if oldHash, exists := hashes[id]; !exists || oldHash != hash {

@@ -69,7 +69,7 @@ func BuildProductPayloadJSON(product map[string]interface{}, workspaceId string)
 	} else if v, ok := product["preco"].(float64); ok && v != 0.0 {
 		payload.Product.Price = int64(v * 100)
 	} else {
-		return nil, fmt.Errorf("campo 'price' inválido ou ausente")
+		return nil, fmt.Errorf("campo 'price' inválido ou ausente para o id: %v", product["codigo"])
 	}
 
 	// Stock

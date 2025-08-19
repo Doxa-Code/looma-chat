@@ -9,9 +9,7 @@ import (
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/debug"
 
-	"looma-service/services/carts"
-	"looma-service/services/clients"
-	"looma-service/services/products"
+	"looma-service/config"
 	"looma-service/utils/database"
 )
 
@@ -28,10 +26,10 @@ func (service *loomaService) Execute(args []string, req <-chan svc.ChangeRequest
 
 	log.Printf("Looma Service iniciado!")
 
-	go clients.StartWatcher(service.stopChan, service.isService)
-	go products.StartWatcher(service.stopChan, service.isService)
-	go carts.StartWatcher(service.stopChan, service.isService)
-	go carts.StartHandler(service.stopChan, service.isService)
+	// go clients.StartWatcher(service.stopChan, service.isService)
+	// go products.StartWatcher(service.stopChan, service.isService)
+	// go carts.StartWatcher(service.stopChan, service.isService)
+	// go carts.StartHandler(service.stopChan, service.isService)
 
 	status <- svc.Status{State: svc.Running, Accepts: cmdsAccepted}
 
@@ -53,8 +51,17 @@ loop:
 	return false, 0
 }
 
-func Run() {
+func Run(cliente, unidade string) {
 	name := "Looma Service"
+	log.Printf(cliente, unidade)
+
+	if err := config.Load(cliente, unidade); err != nil {
+		log.Fatalf("Erro ao carregar configuração: %v", err)
+	}
+
+	env := config.Get()
+	log.Printf(env.Cliente)
+	log.Printf(env.Unidade)
 
 	isService, err := svc.IsWindowsService()
 
