@@ -6,7 +6,6 @@ package clients
 import (
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -14,6 +13,7 @@ import (
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/debug"
 
+	"looma-service/config"
 	"looma-service/utils"
 	"looma-service/utils/database"
 )
@@ -58,7 +58,6 @@ loop:
 }
 
 func runMonitorLoopWithStop(stop <-chan struct{}) {
-	utils.CheckEnvironments(logger)
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 
@@ -70,7 +69,7 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 		case <-ticker.C:
 			logger.SendLog("info", "Iniciando o processo de checagem de mudanças")
 
-			query := `SELECT * FROM doxacode_clientes;`
+			query := config.Env.Client.Queries.ClientsWatcher
 
 			columns, rows, err := database.Query(query, logger)
 
@@ -104,7 +103,7 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 					hashes[id] = hash
 					utils.SaveHashes(hashesPath, hashes, logger)
 
-					jsonPayload, err := utils.BuildClientPayloadJSON(rowMap, os.Getenv("WORKSPACE_ID"))
+					jsonPayload, err := utils.BuildClientPayloadJSON(rowMap, config.Env.Client.WorkspaceId)
 					if err != nil {
 						logger.SendLog("error", fmt.Sprintf("Erro: %v", err))
 					} else {
@@ -121,10 +120,8 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 func StartWatcher(stop <-chan struct{}, isService bool) {
 	logger = &utils.Logger{
 		Lw: &utils.LokiWriter{
-			Job: os.Getenv("QUEUE_NAME") + "-clients-watcher"},
+			Job: config.Env.Client.QueueName + "-clients-watcher"},
 		IsService: isService}
-
-	utils.LoadEnvironments()
 
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 

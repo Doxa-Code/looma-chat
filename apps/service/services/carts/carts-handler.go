@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 
+	"looma-service/config"
 	"looma-service/utils"
 	"looma-service/utils/database"
 )
@@ -290,7 +290,7 @@ func processCancelCart(data interface{}) error {
 func StartHandler(stop <-chan struct{}, isService bool) {
 	cartLogger = &utils.Logger{
 		Lw: &utils.LokiWriter{
-			Job: os.Getenv("QUEUE_NAME") + "-carts-handler"},
+			Job: config.Env.Client.QueueName + "-carts-handler"},
 		IsService: isService}
 
 	queueName := "cartQueue"
@@ -318,7 +318,7 @@ func StartHandler(stop <-chan struct{}, isService bool) {
 					continue
 				}
 
-				if msg.WorkspaceId != os.Getenv("WORKSPACE_ID") {
+				if msg.WorkspaceId != config.Env.Client.WorkspaceId {
 					cartLogger.SendLog("warn", "Mensagem ignorada, workspaceId diferente")
 					continue
 				}

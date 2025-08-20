@@ -7,12 +7,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"looma-service/config"
 )
 
 func LoadHashes(filename string, logger *Logger) (map[string]string, string) {
 	hashes := make(map[string]string)
 
-	hashesDir := os.Getenv("HASHES_PATH")
+	hashesDir := config.Env.Common.HashesPath
 	hashesPath := filepath.Join(hashesDir, filename)
 
 	if hashesDir == "" {

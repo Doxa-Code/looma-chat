@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -15,6 +14,7 @@ import (
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/debug"
 
+	"looma-service/config"
 	"looma-service/utils"
 	"looma-service/utils/database"
 )
@@ -59,7 +59,6 @@ loop:
 }
 
 func runMonitorLoopWithStop(stop <-chan struct{}) {
-	utils.CheckEnvironments(logger)
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 
@@ -71,7 +70,7 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 		case <-ticker.C:
 			logger.SendLog("info", "Iniciando o processo de checagem de mudanças")
 
-			query := `SELECT * FROM sdp_pedidos;`
+			query := config.Env.Client.Queries.CartsWatcher
 
 			columns, rows, err := database.Query(query, logger)
 			if err != nil {
@@ -112,10 +111,8 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 func StartWatcher(stop <-chan struct{}, isService bool) {
 	logger = &utils.Logger{
 		Lw: &utils.LokiWriter{
-			Job: os.Getenv("QUEUE_NAME") + "-carts-watcher"},
+			Job: config.Env.Client.QueueName + "-carts-watcher"},
 		IsService: isService}
-
-	utils.LoadEnvironments()
 
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 

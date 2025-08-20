@@ -1,0 +1,12 @@
+{
+  "awsAccessKeyId": "",
+  "awsSecretAccessKey": "",
+  "awsRegion": "",
+  "hashesPath": "",
+  "lokiUrl": "",
+  "queues": {
+    "finishCart": "",
+    "productsQueue": "",
+    "clientsQueue": ""
+  }
+}

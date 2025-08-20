@@ -3,10 +3,10 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 
+	"looma-service/config"
 	"looma-service/utils"
 )
 
@@ -17,13 +17,13 @@ var logger *utils.Logger
 func Connect(isService bool) error {
 	logger = &utils.Logger{
 		Lw: &utils.LokiWriter{
-			Job: os.Getenv("QUEUE_NAME") + "-database"},
+			Job: config.Env.Client.QueueName + "-database"},
 		IsService: isService}
 
 	var err error
-	DB, err = sql.Open("mysql", os.Getenv("DB_URL"))
+	DB, err = sql.Open("mysql", config.Env.Client.DbUrl)
 	if err != nil {
-		logger.SendLog("error", os.Getenv("DB_URL"))
+		logger.SendLog("error", config.Env.Client.DbUrl)
 		logger.SendLog("fatal", fmt.Sprintf("Erro ao conectar ao MySQL: %v", err))
 		return err
 	}

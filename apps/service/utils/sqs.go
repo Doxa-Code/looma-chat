@@ -6,15 +6,29 @@ import (
 	"log"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
+	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/google/uuid"
+
+	"looma-service/config"
 )
 
 func createClient(queueName string, logger *Logger) (*sqs.Client, string, context.Context) {
 	ctx := context.TODO()
-	cfg, err := config.LoadDefaultConfig(ctx)
+	cfg, err := awsConfig.LoadDefaultConfig(ctx,
+		awsConfig.WithRegion(config.Env.Common.AwsRegion),
+		awsConfig.WithCredentialsProvider(
+			aws.CredentialsProviderFunc(func(ctx context.Context) (aws.Credentials, error) {
+				return aws.Credentials{
+					AccessKeyID:     config.Env.Common.AwsAccessKeyId,
+					SecretAccessKey: config.Env.Common.AwsSecretAccessKey,
+					SessionToken:    "", // só se tiver
+					Source:          "common.json",
+				}, nil
+			}),
+		),
+	)
 	if err != nil {
 		log.Fatalf("Erro carregando AWS config: %v", err)
 	}

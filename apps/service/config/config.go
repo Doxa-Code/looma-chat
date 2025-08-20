@@ -52,13 +52,15 @@ var (
 //go:embed clients/*.json
 var clientFiles embed.FS
 
+var Env = Get()
+
 func Load(cliente, unidade string) error {
 	if cliente == "" {
 		return errors.New("cliente não informado")
 	}
 
 	// lê common.json
-	commonData, err := clientFiles.ReadFile("common.json")
+	commonData, err := clientFiles.ReadFile("clients/common.json")
 	if err != nil {
 		return fmt.Errorf("erro lendo common.json: %w", err)
 	}
@@ -102,6 +104,7 @@ func Load(cliente, unidade string) error {
 			Cliente: cliente,
 			Unidade: chosenUnit,
 		}
+		Env = *Current
 		mu.Unlock()
 		return nil
 	}
@@ -119,6 +122,7 @@ func Load(cliente, unidade string) error {
 		Cliente: cliente,
 		Unidade: "",
 	}
+	Env = *Current
 	mu.Unlock()
 
 	return nil

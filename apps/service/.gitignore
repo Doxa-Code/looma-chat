@@ -1,4 +1,4 @@
 .env
 *.exe
-apps/service/config/clients/common.json
+common.json
 builds
