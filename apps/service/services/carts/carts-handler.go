@@ -16,31 +16,31 @@ import (
 
 var cartLogger *utils.Logger
 
-func mapCartToPedido(data interface{}) (Pedido, error) {
+func mapCartToOrder(data interface{}) (Order, error) {
 	var payload map[string]interface{}
 	bytes, _ := json.Marshal(data)
 	if err := json.Unmarshal(bytes, &payload); err != nil {
-		return Pedido{}, err
+		return Order{}, err
 	}
 
 	cart, ok := payload["cart"].(map[string]interface{})
 	if !ok {
-		return Pedido{}, fmt.Errorf("campo 'cart' não é map[string]interface{}")
+		return Order{}, fmt.Errorf("campo 'cart' não é map[string]interface{}")
 	}
 
 	address, ok := cart["address"].(map[string]interface{})
 	if !ok {
-		return Pedido{}, fmt.Errorf("campo 'address' não é map[string]interface{}")
+		return Order{}, fmt.Errorf("campo 'address' não é map[string]interface{}")
 	}
 
 	client, ok := cart["client"].(map[string]interface{})
 	if !ok {
-		return Pedido{}, fmt.Errorf("campo 'client' não é map[string]interface{}")
+		return Order{}, fmt.Errorf("campo 'client' não é map[string]interface{}")
 	}
 
 	contact, ok := client["contact"].(map[string]interface{})
 	if !ok {
-		return Pedido{}, fmt.Errorf("campo 'contact' não é map[string]interface{}")
+		return Order{}, fmt.Errorf("campo 'contact' não é map[string]interface{}")
 	}
 
 	// Função auxiliar para pegar string com segurança
@@ -68,7 +68,7 @@ func mapCartToPedido(data interface{}) (Pedido, error) {
 		return 0
 	}
 
-	return Pedido{
+	return Order{
 		IdPedido:              getString(cart, "id"),
 		IdCliente:             getString(client, "id"),
 		ClienteCPF:            "",
@@ -87,60 +87,62 @@ func mapCartToPedido(data interface{}) (Pedido, error) {
 		TrocoPara:             0,
 		StatusEfetuado:        "",
 		StatusProntoEntrega:   "",
-		ValorProdutos:         getFloat(cart, "total"),
+		ValorProdutos:         getFloat(payload, "total"),
 		ValorTaxaEntrega:      0,
-		ValorTotal:            getFloat(cart, "total"),
+		ValorTotal:            getFloat(payload, "total"),
 	}, nil
 }
 
-func salvarPedido(pedido Pedido) error {
-	query := `CALL sp_inserir_cabecalho_pedido(
+func saveOrder(order Order) error {
+	query := `CALL sp_inserir_atualizar_cabecalho_pedido(
 		?,?,?,?,?,?,?,?,?,?,?,?,
 			?,?,?,?,?,?,?,?,?,?
 		);`
 
 	params := []interface{}{
-		pedido.IdPedido,
-		pedido.IdCliente,
-		pedido.ClienteCPF,
-		pedido.ClienteNome,
-		pedido.ClienteEnderecoRua,
-		pedido.ClienteEnderecoNumero,
-		pedido.ClienteEnderecoComp,
-		pedido.ClienteEnderecoCidade,
-		pedido.ClienteEnderecoBairro,
-		pedido.ClienteEnderecoRef,
-		pedido.ClienteEnderecoCEP,
-		pedido.ClienteEnderecoUF,
-		pedido.ClienteTelefone,
-		pedido.FormaEntrega,
-		pedido.FormaPagamento,
-		pedido.TrocoPara,
-		pedido.StatusEfetuado,
-		pedido.StatusProntoEntrega,
-		pedido.ValorProdutos,
-		pedido.ValorTaxaEntrega,
-		pedido.ValorTotal,
+		order.IdPedido,
+		order.IdCliente,
+		order.ClienteCPF,
+		order.ClienteNome,
+		order.ClienteEnderecoRua,
+		order.ClienteEnderecoNumero,
+		order.ClienteEnderecoComp,
+		order.ClienteEnderecoCidade,
+		order.ClienteEnderecoBairro,
+		order.ClienteEnderecoRef,
+		order.ClienteEnderecoCEP,
+		order.ClienteEnderecoUF,
+		order.ClienteTelefone,
+		order.FormaEntrega,
+		order.FormaPagamento,
+		order.TrocoPara,
+		order.StatusEfetuado,
+		order.StatusProntoEntrega,
+		order.ValorProdutos,
+		order.ValorTaxaEntrega,
+		order.ValorTotal,
 		"DOXACODE"}
 
 	_, err := database.RunProcedure(query, params)
 	return err
 }
 
-func processOrderCart(data interface{}) error {
-	pedido, err := mapCartToPedido(data)
+func processUpsertCart(data interface{}) error {
+	order, err := mapCartToOrder(data)
 	if err != nil {
 		cartLogger.SendLog("error", fmt.Sprintf("Falha ao processar carrinho: %v", err))
 		return err
 	}
 
-	if err := salvarPedido(pedido); err != nil {
+	bytes, _ := json.Marshal(order)
+	log.Println(string(bytes))
+	if err := saveOrder(order); err != nil {
 		return fmt.Errorf("erro ao salvar pedido: %w", err)
 	}
 
-	cartLogger.SendLog("info", fmt.Sprintf("Pedido %s salvo com sucesso no banco", pedido.IdPedido))
+	cartLogger.SendLog("info", fmt.Sprintf("Pedido %s salvo com sucesso no banco", order.IdPedido))
 
-	if err := processProductsFromCart(data, pedido.IdPedido); err != nil {
+	if err := processProductsFromCart(data, order.IdPedido); err != nil {
 		return fmt.Errorf("erro ao processar produtos do carrinho: %w", err)
 	}
 
@@ -189,8 +191,8 @@ func processProductsFromCart(data interface{}, cartId string) error {
 	return nil
 }
 
-func adicionarProduto(produto Product, cartId string) error {
-	query := `CALL sp_inserir_itens_pedido(
+func upsertProduct(produto Product, cartId string) error {
+	query := `CALL sp_inserir_atualizar_itens_pedido(
 			?, ?, ?, ?, ?, ?
 		);`
 	params := []interface{}{
@@ -216,7 +218,7 @@ func processUpsertProduct(data interface{}) error {
 	cartId := payload.Id
 	product := payload.CartProduct
 
-	if err := adicionarProduto(product, cartId); err != nil {
+	if err := upsertProduct(product, cartId); err != nil {
 		return fmt.Errorf("erro ao adicionar produto: %w", err)
 	}
 
@@ -225,7 +227,7 @@ func processUpsertProduct(data interface{}) error {
 	return nil
 }
 
-func removerProduto(produtoId string, cartId string) error {
+func removeProduct(produtoId string, cartId string) error {
 	query := `CALL sp_deletar_item_pedido(
 			?, ?, ?
 		);`
@@ -245,10 +247,10 @@ func processRemoveProduct(data interface{}) error {
 		return fmt.Errorf("erro ao mapear payload: %w", err)
 	}
 
-	cartId := payload.Id
+	cartId := payload.Cart.Id
 	productId := payload.ProductId
 
-	if err := removerProduto(productId, cartId); err != nil {
+	if err := removeProduct(productId, cartId); err != nil {
 		return fmt.Errorf("erro ao remover produto: %w", err)
 	}
 
@@ -257,7 +259,7 @@ func processRemoveProduct(data interface{}) error {
 	return nil
 }
 
-func cancelarCarrinho(cartId string) error {
+func cancelOrder(cartId string) error {
 	query := `CALL sp_cancelar_pedido(
 			?, ?, ?
 		);`
@@ -279,7 +281,7 @@ func processCancelCart(data interface{}) error {
 
 	cartId := payload.Id
 
-	if err := cancelarCarrinho(cartId); err != nil {
+	if err := cancelOrder(cartId); err != nil {
 		return fmt.Errorf("erro ao remover produto: %w", err)
 	}
 
@@ -326,11 +328,14 @@ func StartHandler(stop <-chan struct{}, isService bool) {
 				var errProcess error
 				switch msg.Operation {
 				case "orderCart":
-					errProcess = processOrderCart(msg.Data)
+					errProcess = processUpsertCart(msg.Data)
 				case "upsertProduct":
-					errProcess = processUpsertProduct(msg.Data)
+					errProcess = processUpsertCart(msg.Data)
 				case "removeProduct":
 					errProcess = processRemoveProduct(msg.Data)
+					if errProcess == nil {
+						errProcess = processUpsertCart(msg.Data)
+					}
 				case "cancelCart":
 					errProcess = processCancelCart(msg.Data)
 				default:

@@ -1,6 +1,6 @@
 package carts
 
-type Pedido struct {
+type Order struct {
 	IdPedido              string  `json:"id_pedido"`
 	IdCliente             string  `json:"id_cliente"`
 	ClienteCPF            string  `json:"cliente_cpf"`
@@ -65,8 +65,9 @@ type CancelCartPayload struct {
 }
 
 type RemoveProductPayload struct {
-	Id        string `json:"id"`
-	ProductId string `json:"productId"`
+	Cart      Cart    `json:"cart"`
+	Total     float64 `json:"total"`
+	ProductId string  `json:"productId"`
 }
 
 type UpsertProductPayload struct {

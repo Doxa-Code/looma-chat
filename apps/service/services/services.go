@@ -60,7 +60,6 @@ func Run(cliente, unidade string) {
 	if err := config.Load(cliente, unidade); err != nil {
 		log.Fatalf("Erro ao carregar configuração: %v", err)
 	}
-
 	log.Printf("Configurações carregadas para %s", config.Env.Client.QueueName)
 
 	isService, err := svc.IsWindowsService()

@@ -41,10 +41,10 @@ func createClient(queueName string, logger *Logger) (*sqs.Client, string, contex
 	clientSQS := sqs.NewFromConfig(cfg)
 
 	queueURLS := map[string]string{
-		"productsQueue": "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-ProductsBrokerQueue.fifo",
-		"clientsQueue":  "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-ClientsBrokerQueue-nbvctnoe",
-		"cartQueue":     "https://sqs.us-east-1.amazonaws.com/557130579131/looma-b-production-CartBrokerc7c919eaad06448d947dda9cb51de85cQueue-umurokwo.fifo",
-		"finishCart":    "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-FinishCartQueue-cbwecnfv",
+		"productsQueue": config.Env.Common.CommonQueues.ProductsQueue,
+		"clientsQueue":  config.Env.Common.CommonQueues.ClientsQueue,
+		"finishCart":    config.Env.Common.CommonQueues.FinishCart,
+		"cartQueue":     config.Env.Client.CartsQueueUrl,
 	}
 
 	return clientSQS, queueURLS[queueName], ctx
