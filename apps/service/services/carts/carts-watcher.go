@@ -4,7 +4,6 @@
 package carts
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -17,6 +16,7 @@ import (
 	"looma-service/config"
 	"looma-service/utils"
 	"looma-service/utils/database"
+	"looma-service/utils/formatter"
 )
 
 var logger *utils.Logger
@@ -95,12 +95,13 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 					hashes[id] = hash
 					utils.SaveHashes(hashesPath, hashes, logger)
 
-					jsonBytes, err := json.Marshal(rowMap)
+					jsonPayload, err := formatter.BuildCartPayloadJSON(rowMap, config.Env.Client.WorkspaceId)
+					logger.SendLog("debug", string(jsonPayload))
 					if err != nil {
-						log.Fatalf("Erro ao converter para JSON: %v", err)
+						logger.SendLog("error", fmt.Sprintf("Erro: %v", err))
+					} else {
+						utils.SendMessage(string(jsonPayload), "finishCart", logger, false)
 					}
-
-					utils.SendMessage(string(jsonBytes), "finishCart", logger, false)
 				}
 			}
 			logger.SendLog("info", "Finalizou loop de verificação de mudanças")
