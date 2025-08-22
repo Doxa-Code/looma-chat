@@ -112,13 +112,13 @@ O arquivo de clientes pode possuir apenas uma unidade, nesse caso, o json não t
 
 ## Filas
 
-## Fila de Clientes
+### Fila de Clientes
 
 - **Descrição:** Recebe os dados de clientes do servidor, utilizados para consultar informações de desconto.
 - **Escopo:** Fila comum entre os clientes.
 - **Fluxo:** `Looma Service (Servidor)` → `Fila` → `Looma Chat`
 
-### Estrutura do payload
+#### Estrutura do payload
 
 | Campo                         | Tipo             | Descrição                                        |
 | ----------------------------- | ---------------- | ------------------------------------------------ |
@@ -131,16 +131,16 @@ O arquivo de clientes pode possuir apenas uma unidade, nesse caso, o json não t
 | `client.address.number`       | `string`         | Número do endereço                               |
 | `client.address.neighborhood` | `string`         | Bairro                                           |
 | `client.address.city`         | `string`         | Cidade                                           |
-| `client.address.state`        | `string`         | Estado (sigla)                                   |
+| `client.address.state`        | `string`         | Sigla do estado (Ex: SP)                         |
 | `client.address.zipCode`      | `string`         | CEP                                              |
 | `client.address.country`      | `string`         | País (fixo como "Brasil")                        |
 | `client.address.note`         | `string \| null` | Observação ou complemento do endereço (opcional) |
 
-### Exemplo de mensagem
+#### Exemplo de mensagem
 
 ```json
 {
-  "workspaceId": "c2d27d7a-1c04-451b-b7f9-548f2faf3bd3",
+  "workspaceId": "5e398e1a-09fa-4c14-9b04-4fac059ec913",
   "client": {
     "id": "550e8400-e29b-41d4-a716-446655440000",
     "partnerId": "C12345",
@@ -162,13 +162,13 @@ O arquivo de clientes pode possuir apenas uma unidade, nesse caso, o json não t
 }
 ```
 
-## Fila de Produtos
+### Fila de Produtos
 
 - **Descrição:** Recebe todos os produtos da base do cliente, mantendo a Looma atualizada com estoque e preço atual.
 - **Escopo:** Fila comum entre os clientes.
 - **Fluxo:** `Looma Service (Servidor)` → `Fila` → `Looma Chat`
 
-### Estrutura do payload
+#### Estrutura do payload
 
 | Campo                    | Tipo             | Descrição                                             |
 | ------------------------ | ---------------- | ----------------------------------------------------- |
@@ -183,11 +183,11 @@ O arquivo de clientes pode possuir apenas uma unidade, nesse caso, o json não t
 | `product.promotionStart` | `string \| null` | Data/hora de início da promoção em ISO8601 (opcional) |
 | `product.promotionEnd`   | `string \| null` | Data/hora de fim da promoção em ISO8601 (opcional)    |
 
-### Exemplo de mensagem
+#### Exemplo de mensagem
 
 ```json
 {
-  "workspaceId": "c2d27d7a-1c04-451b-b7f9-548f2faf3bd3",
+  "workspaceId": "5e398e1a-09fa-4c14-9b04-4fac059ec913",
   "product": {
     "id": "P12345",
     "description": "Nome do remédio",
@@ -208,10 +208,22 @@ O arquivo de clientes pode possuir apenas uma unidade, nesse caso, o json não t
 - **Escopo:** Fila comum entre os clientes.
 - **Fluxo:** Looma Service no servidor -> Fila -> Looma Chat
 
-#### Exemplo:
+#### Estrutura do payload
+
+| Campo         | Tipo     | Descrição                                                         |
+| ------------- | -------- | ----------------------------------------------------------------- |
+| `workspaceId` | `string` | ID do workspace                                                   |
+| `cartId`      | `string` | UUID do carrinho ou pedido                                        |
+| `status`      | `string` | Status atual do carrinho. Os valores dependem do banco do cliente |
+
+#### Exemplo de mensagem
 
 ```json
-
+{
+  "workspaceId": "5e398e1a-09fa-4c14-9b04-4fac059ec913",
+  "cartId": "0a398933-536f-498b-ba48-90bf469c4de7",
+  "status": "processing"
+}
 ```
 
 ### Fila de Carrinhos (Handler)
@@ -220,38 +232,222 @@ O arquivo de clientes pode possuir apenas uma unidade, nesse caso, o json não t
 - **Escopo:** Fila única por cliente.
 - **Fluxo:** Looma Chat -> Fila -> Looma Service no servidor do cliente
 - **Operações Disponíveis:**
-  - `orderCart` – Finaliza o carrinho e envia para o sistema do cliente.
-  - `upsertProduct` – Adiciona ou atualiza um produto no carrinho.
-  - `removeProduct` – Remove um produto do carrinho.
-  - `cancelCart` – Cancela o carrinho.
+  - `orderCart` – Envia para o sistema do cliente para criar um pedido.
+  - `upsertProduct` – Adiciona ou atualiza um produto do carrinho no sistema do cliente.
+  - `removeProduct` – Remove um produto do carrinho no sistema do cliente.
+  - `cancelCart` – Cancela o carrinho no sistema do cliente.
 
-#### Exemplo `orderCart`:
+#### Estrutura base do objeto `cart`
+
+| Campo                      | Tipo             | Descrição                                                                                       |
+| -------------------------- | ---------------- | ----------------------------------------------------------------------------------------------- |
+| `id`                       | `string`         | UUID do carrinho/pedido.                                                                        |
+| `client.id`                | `string`         | UUID do cliente.                                                                                |
+| `client.contact.name`      | `string`         | Nome do cliente.                                                                                |
+| `client.contact.phone`     | `string`         | Telefone do cliente.                                                                            |
+| `client.contact.thumbnail` | `string`         | URL da imagem do cliente (opcional).                                                            |
+| `client.address`           | `object`         | Endereço principal do cliente ([ver estrutura do endereço](#estrutura-base-do-objeto-address)). |
+| `attendant.id`             | `string`         | UUID do atendente associado ao pedido.                                                          |
+| `attendant.name`           | `string`         | Nome do atendente.                                                                              |
+| `products[]`               | `array`          | Lista de produtos no carrinho.                                                                  |
+| `products[].id`            | `string`         | ID interno do produto.                                                                          |
+| `products[].description`   | `string`         | Descrição do produto.                                                                           |
+| `products[].price`         | `number`         | Preço unitário do produto.                                                                      |
+| `products[].realPrice`     | `number`         | Preço unitário original (sem desconto).                                                         |
+| `products[].quantity`      | `number`         | Quantidade do produto no carrinho.                                                              |
+| `address`                  | `object`         | Endereço de entrega do pedido ([ver estrutura do endereço](#estrutura-base-do-objeto-address)). |
+| `status`                   | `string`         | Status atual do carrinho, ex.: `"order"`.                                                       |
+| `createdAt`                | `string`         | Data/hora de criação do carrinho (ISO8601).                                                     |
+| `orderedAt`                | `string`         | Data/hora de finalização ou atualização do carrinho (ISO8601).                                  |
+| `expiredAt`                | `string \| null` | Data de expiração do pedido (se aplicável).                                                     |
+| `finishedAt`               | `string \| null` | Data de conclusão do pedido (se aplicável).                                                     |
+| `canceledAt`               | `string \| null` | Data de cancelamento (se aplicável).                                                            |
+| `paymentMethod`            | `string`         | Método de pagamento (ex.: `"CREDIT_CARD"`).                                                     |
+| `paymentChange`            | `number \| null` | Troco solicitado (se pagamento em dinheiro).                                                    |
+| `cancelReason`             | `string \| null` | Motivo do cancelamento (quando aplicável).                                                      |
+
+#### Estrutura base do objeto `address`
+
+| Campo                  | Tipo             | Descrição                                         |
+| ---------------------- | ---------------- | ------------------------------------------------- |
+| `address.id`           | `string`         | UUID do endereço.                                 |
+| `address.street`       | `string`         | Rua do endereço.                                  |
+| `address.number`       | `string`         | Número do endereço.                               |
+| `address.neighborhood` | `string`         | Bairro.                                           |
+| `address.city`         | `string`         | Cidade.                                           |
+| `address.state`        | `string`         | Sigla do estado (Ex: SP).                         |
+| `address.zipCode`      | `string`         | CEP.                                              |
+| `address.country`      | `string`         | País (fixo como "Brasil").                        |
+| `address.note`         | `string \| null` | Observação ou complemento do endereço (opcional). |
+
+#### Exemplo do objeto `cart`
 
 ```json
-
-```
-
-#### Exemplo `upsertProduct`:
-
-```json
-
-```
-
-#### Exemplo `removeProduct`:
-
-```json
-
-```
-
-#### Exemplo `cancelCart`:
-
-```json
-
+{
+  "id": "85fe98s6-0rgs-43h4-85bb-761573482156",
+  "client": {
+    "id": "db4ddacb-4315-4f87-aa66-9fc616504a7b",
+    "contact": {
+      "name": "Doxa Code",
+      "phone": "5519920016741",
+      "thumbnail": ""
+    },
+    "address": {
+      "id": "c2d27d7a-1c04-451b-b7f9-548f2faf3bd3",
+      "street": "Rua Marquês de Três Rios",
+      "number": "",
+      "neighborhood": "Centro",
+      "city": "Campinas",
+      "state": "SP",
+      "zipCode": "13013177",
+      "country": "Brasil",
+      "note": ""
+    }
+  },
+  "attendant": {
+    "id": "a3ebb0e0-7652-49c2-8734-cc3078905e24",
+    "name": "Looma AI"
+  },
+  "products": [
+    {
+      "id": "17678",
+      "description": "DIPIRONA 1G MONO C/8 CP PRATI",
+      "price": 13.31,
+      "realPrice": 13.31,
+      "quantity": 1
+    },
+    {
+      "id": "4700021",
+      "description": "HIRUDOID 500 POMADA 40G",
+      "price": 46.41,
+      "realPrice": 46.41,
+      "quantity": 1
+    }
+  ],
+  "address": {
+    "id": "b1bc714d-8f79-46a6-869d-f8c1d00f3c6e",
+    "street": "Rua Marquês de Três Rios",
+    "number": "242",
+    "neighborhood": "Centro",
+    "city": "Campinas",
+    "state": "SP",
+    "zipCode": "13013177",
+    "country": "",
+    "note": ""
+  },
+  "status": "order",
+  "createdAt": "2025-08-15T17:54:34.000Z",
+  "orderedAt": "2025-08-15T18:07:22.090Z",
+  "expiredAt": null,
+  "finishedAt": null,
+  "canceledAt": null,
+  "paymentMethod": "CREDIT_CARD",
+  "paymentChange": null,
+  "cancelReason": null
+}
 ```
 
 ---
 
-## Gerando a Build
+#### Estrutura do payload – `orderCart`
+
+| Campo         | Tipo     | Descrição                                                                |
+| ------------- | -------- | ------------------------------------------------------------------------ |
+| `workspaceId` | `string` | ID do workspace.                                                         |
+| `operation`   | `string` | Sempre `"orderCart"`.                                                    |
+| `data.cart`   | `object` | Estrutura do carrinho ([ver cart base](#estrutura-base-do-objeto-cart)). |
+| `data.total`  | `number` | Valor total do carrinho.                                                 |
+
+#### Exemplo `orderCart`
+
+```json
+{
+  "workspaceId": "5e398e1a-09fa-4c14-9b04-4fac059ec913",
+  "operation": "orderCart",
+  "data": {
+    "cart": {...estrutura base do cart...},
+    "total": 59.72
+  }
+}
+```
+
+---
+
+#### Estrutura do payload – `upsertProduct`
+
+| Campo         | Tipo     | Descrição                                                                |
+| ------------- | -------- | ------------------------------------------------------------------------ |
+| `workspaceId` | `string` | ID do workspace.                                                         |
+| `operation`   | `string` | Sempre `"upsertProduct"`.                                                |
+| `data.cart`   | `object` | Estrutura do carrinho ([ver cart base](#estrutura-base-do-objeto-cart)). |
+| `data.total`  | `number` | Valor total atualizado do carrinho.                                      |
+
+#### Exemplo `upsertProduct`
+
+```json
+{
+  "workspaceId": "5e398e1a-09fa-4c14-9b04-4fac059ec913",
+  "operation": "upsertProduct",
+  "data": {
+    "cart": {...estrutura base do cart...},
+    "total": 73.03
+  }
+}
+```
+
+---
+
+#### Estrutura do payload – `removeProduct`
+
+| Campo            | Tipo     | Descrição                                                                |
+| ---------------- | -------- | ------------------------------------------------------------------------ |
+| `workspaceId`    | `string` | ID do workspace.                                                         |
+| `operation`      | `string` | Sempre `"removeProduct"`.                                                |
+| `data.cart`      | `object` | Estrutura do carrinho ([ver cart base](#estrutura-base-do-objeto-cart)). |
+| `data.total`     | `number` | Valor total atualizado após remoção.                                     |
+| `data.productId` | `string` | ID do produto removido.                                                  |
+
+#### Exemplo `removeProduct`
+
+```json
+{
+  "workspaceId": "5e398e1a-09fa-4c14-9b04-4fac059ec913",
+  "operation": "removeProduct",
+  "data": {
+    "cart": {...estrutura base do cart...},
+    "total": 46.41,
+    "productId": "17678"
+  }
+}
+```
+
+#### Estrutura do payload – `cancelCart`
+
+| Campo         | Tipo     | Descrição                       |
+| ------------- | -------- | ------------------------------- |
+| `workspaceId` | `string` | ID do workspace.                |
+| `operation`   | `string` | Sempre `"cancelCart"`.          |
+| `data.id`     | `string` | ID do carrinho a ser cancelado. |
+
+---
+
+#### Exemplo `cancelCart`
+
+```json
+{
+  "workspaceId": "5e398e1a-09fa-4c14-9b04-4fac059ec913",
+  "operation": "cancelCart",
+  "data": {
+    "id": "85fe98s6-0rgs-43h4-85bb-761573482156"
+  }
+}
+```
+
+---
+
+## Passos para instalação
+
+### 1. **Gerar o executável**
 
 Para gerar o executável personalizado, utilize o seguinte comando:
 
@@ -259,4 +455,48 @@ Para gerar o executável personalizado, utilize o seguinte comando:
  build.sh nome-cliente nome-unidade
 ```
 
-O arquivo `.exe` será gerado usando as configurações do cliente informado.
+O arquivo `looma-service-nome-cliente-nome-unidade.exe` será gerado usando as configurações do cliente informado.
+
+### 2. **Enviar para o cliente**
+
+Acessar o servidor através de software de acesso remoto, e enviar o arquivo gerado. Coloque o executável em uma pasta adequada, por exemplo: `C:\looma\`
+
+### 3. **Criar o serviço no Windows**
+
+Para criar um serviço, utilizar o comando:
+
+```bash
+sc create "Looma Service" binPath= "C:\looma\looma-service-nome-cliente-nome-unidade.exe" start= auto
+```
+
+**Observação:** O espaço após `binPath=` e `start=` é obrigatório.
+
+### 4. **Gerenciar o serviço**
+
+Para gerenciar através do prompt de comando, usar os seguintes comandos:
+
+- Iniciar o serviço:
+
+```bash
+sc start "Looma Service"
+```
+
+- Parar o serviço:
+
+```bash
+sc stop "Looma Service"
+```
+
+- Deletar o serviço:
+
+```bash
+sc delete "Looma Service"
+```
+
+Também é possível acessar o **Gerenciador de Serviços do Windows**, abrindo o **Executar** e digitando `services.msc`.
+
+### 5. **Verificar logs**
+
+Use o Visualizador de Eventos do Windows para confirmar se o serviço está executando corretamente.
+
+Os logs gerais do serviço podem ser acessados pelo Grafana, utilizando o nome da fila especificado no JSON de configuração.
