@@ -1,4 +1,4 @@
-package utils
+package formatter
 
 import (
 	"encoding/json"
@@ -7,51 +7,6 @@ import (
 
 	"github.com/google/uuid"
 )
-
-type ProductPayload struct {
-	WorkspaceId string  `json:"workspaceId"`
-	Product     Product `json:"product"`
-}
-
-type Product struct {
-	ID             string     `json:"id"`
-	Description    string     `json:"description"`
-	Code           *string    `json:"code"` // nullable => ponteiro
-	Manufactory    string     `json:"manufactory"`
-	Price          int64      `json:"price"`
-	Stock          int        `json:"stock"`
-	PromotionPrice *int64     `json:"promotionPrice"`
-	PromotionStart *time.Time `json:"promotionStart"`
-	PromotionEnd   *time.Time `json:"promotionEnd"`
-}
-
-type ClientPayload struct {
-	WorkspaceId string `json:"workspaceId"`
-	Client      Client `json:"client"`
-}
-
-type Client struct {
-	ID        string   `json:"id"`
-	PartnerID string   `json:"partnerId"`
-	Contact   Contact  `json:"contact"`
-	Address   *Address `json:"address,omitempty"`
-}
-
-type Contact struct {
-	Phone string `json:"phone"`
-	Name  string `json:"name"`
-}
-
-type Address struct {
-	Street       string  `json:"street"`
-	Number       string  `json:"number"`
-	Neighborhood string  `json:"neighborhood"`
-	City         string  `json:"city"`
-	State        string  `json:"state"`
-	ZipCode      string  `json:"zipCode"`
-	Country      string  `json:"country"`
-	Note         *string `json:"note,omitempty"` // nullable
-}
 
 func BuildProductPayloadJSON(product map[string]interface{}, workspaceId string) ([]byte, error) {
 	payload := ProductPayload{
@@ -135,4 +90,56 @@ func BuildClientPayloadJSON(data map[string]interface{}, workspaceId string) ([]
 	}
 
 	return json.Marshal(payload)
+}
+
+func BuildCartPayloadJSON(data map[string]interface{}, workspaceId string) ([]byte, error) {
+	var cartID string
+	var status string = "pending" // valor padrão
+
+	// --- ID do carrinho ---
+	if val, ok := data["id_pedido"]; ok && val != nil && fmt.Sprintf("%v", val) != "" {
+		cartID = fmt.Sprintf("%v", val)
+	} else {
+		return nil, fmt.Errorf("nenhum identificador de carrinho válido encontrado")
+	}
+
+	// --- Status ---
+	switch {
+	case isNotEmpty(data["status_cancelado"]):
+		status = "canceled"
+	case isNotEmpty(data["status_entrega"]):
+		status = "delivered"
+	case isNotEmpty(data["status_saiu_entrega"]):
+		status = "on_the_way"
+	case isNotEmpty(data["status_pronto_entrega"]):
+		status = "ready_for_delivery"
+	case isNotEmpty(data["status_separacao"]):
+		status = "processing"
+	case isNotEmpty(data["status_efetuado"]):
+		status = "confirmed"
+	}
+
+	// --- Monta payload ---
+	payload := CartPayload{
+		WorkspaceId: workspaceId,
+		CartID:      cartID,
+		Status:      status,
+	}
+
+	// --- Converte para JSON ---
+	jsonBytes, err := json.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao converter cart payload para JSON: %w", err)
+	}
+
+	return jsonBytes, nil
+}
+
+// Função utilitária para checar se um valor é não-nulo e não-vazio
+func isNotEmpty(value interface{}) bool {
+	if value == nil {
+		return false
+	}
+	str := fmt.Sprintf("%v", value)
+	return str != ""
 }

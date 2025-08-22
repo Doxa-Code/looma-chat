@@ -16,6 +16,7 @@ import (
 	"looma-service/config"
 	"looma-service/utils"
 	"looma-service/utils/database"
+	"looma-service/utils/formatter"
 )
 
 var logger *utils.Logger
@@ -106,7 +107,7 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 					hashes[id] = hash
 					utils.SaveHashes(hashesPath, hashes, logger)
 
-					jsonPayload, err := utils.BuildProductPayloadJSON(rowMap, config.Env.Client.WorkspaceId)
+					jsonPayload, err := formatter.BuildProductPayloadJSON(rowMap, config.Env.Client.WorkspaceId)
 					if err != nil {
 						logger.SendLog("error", fmt.Sprintf("Erro: %v", err))
 					} else {
