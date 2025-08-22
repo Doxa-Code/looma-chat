@@ -1,4 +1,4 @@
-import { Workspace } from "@looma/core/domain/value-objects/workspace";
+import { Workspace } from "../../domain/value-objects/workspace";
 import { createDatabaseConnection } from "../database";
 import { memberships, workspaces } from "../database/schemas";
 import { eq } from "drizzle-orm";

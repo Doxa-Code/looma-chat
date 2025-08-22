@@ -1,10 +1,10 @@
-import { Membership } from "@looma/core/domain/entities/membership";
-import { PolicyName } from "@looma/core/domain/services/authorization-service";
+import { Membership } from "../../domain/entities/membership";
+import { PolicyName } from "../../domain/services/authorization-service";
 import { and, eq } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import { memberships } from "../database/schemas";
 
-export class MembershipsRepository {
+export class MembershipsDatabaseRepository {
   async upsert(membership: Membership) {
     const db = createDatabaseConnection();
     console.log({ membership });
@@ -78,6 +78,6 @@ export class MembershipsRepository {
     });
   }
   static instance() {
-    return new MembershipsRepository();
+    return new MembershipsDatabaseRepository();
   }
 }

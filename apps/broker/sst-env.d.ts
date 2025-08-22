@@ -5,7 +5,15 @@
 
 declare module "sst" {
   export interface Resource {
-    "CancelCart": {
+    "CartBroker-0543027b-7074-4d83-9eb3-3bbdbdfd6856": {
+      "type": "sst.aws.Queue"
+      "url": string
+    }
+    "CartBroker-c2d27d7a-1c04-451b-b7f9-548f2faf3bd3": {
+      "type": "sst.aws.Queue"
+      "url": string
+    }
+    "CartBroker-c7c919ea-ad06-448d-947d-da9cb51de85c": {
       "type": "sst.aws.Queue"
       "url": string
     }
@@ -14,10 +22,6 @@ declare module "sst" {
       "url": string
     }
     "FinishCart": {
-      "type": "sst.aws.Queue"
-      "url": string
-    }
-    "OrderCart": {
       "type": "sst.aws.Queue"
       "url": string
     }

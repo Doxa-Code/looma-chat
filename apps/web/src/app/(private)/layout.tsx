@@ -2,15 +2,15 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { getUserAuthenticate } from "../actions/security";
 import { listWorkspaces } from "../actions/users";
-import { MembershipsRepository } from "@looma/core/infra/repositories/membership-repository";
+import { MembershipsDatabaseRepository } from "@looma/core/infra/repositories/membership-repository";
 
-const membershipsRepository = MembershipsRepository.instance();
+const membershipsRepository = MembershipsDatabaseRepository.instance();
 
 export default async function PrivateRootLayout(
   props: React.PropsWithChildren
 ) {
   const [user] = await getUserAuthenticate();
-  const [workspaces] = await listWorkspaces({});
+  const [workspaces] = await listWorkspaces();
   const membership = await membershipsRepository.retrieveByUserIdAndWorkspaceId(
     user?.id!,
     workspaces?.workspace?.id!

@@ -1,18 +1,15 @@
 "use client";
 
-import { listPhonesId, updateSettings } from "@/app/actions/settings";
-import {
-  useServerActionMutation,
-  useServerActionQuery,
-} from "@/hooks/server-action-hooks";
-import { Label } from "./ui/label";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { updateSettings } from "@/app/actions/settings";
+import { useServerActionMutation } from "@/hooks/server-action-hooks";
 import { useToast } from "@/hooks/use-toast";
 import { SettingProps } from "@looma/core/domain/value-objects/setting";
-import { Textarea } from "./ui/textarea";
-import { Switch } from "./ui/switch";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 import { SelectNative } from "./ui/select-native";
+import { Switch } from "./ui/switch";
+import { Textarea } from "./ui/textarea";
 
 type Props = {
   setting: SettingProps;
@@ -53,6 +50,8 @@ export function FormSetting(props: Props) {
           vectorNamespace: form.get("vectorNamespace")?.toString() ?? "",
           knowledgeBase: form.get("knowledgeBase")?.toString() ?? "",
           aiEnabled: form.get("aiEnabled")?.toString() === "on",
+          queueURL: form.get("queueURL")?.toString() ?? "",
+          openingHours: form.get("openingHours")?.toString() ?? "",
         };
         mutate(body);
       }}
@@ -118,9 +117,33 @@ export function FormSetting(props: Props) {
           placeholder=""
         />
       </div>
+
+      <div className="flex flex-col w-full max-w-[300px] gap-1">
+        <Label className="text-sm text-muted-foreground">URL da Fila</Label>
+        <Input
+          defaultValue={props.setting?.queueURL}
+          name="queueURL"
+          className="w-full"
+          placeholder=""
+          type="url"
+        />
+      </div>
+
       <div className="flex flex-col w-full max-w-[300px] gap-1">
         <Label className="text-sm text-muted-foreground">Habilitar IA?</Label>
         <Switch name="aiEnabled" defaultChecked={props.setting?.aiEnabled} />
+      </div>
+
+      <div className="flex flex-col w-full gap-1">
+        <Label className="text-sm text-muted-foreground">
+          Horário de funcionamento
+        </Label>
+        <Textarea
+          defaultValue={props.setting?.openingHours}
+          name="openingHours"
+          className="w-full h-screen max-h-[100px]"
+          placeholder=""
+        />
       </div>
 
       <div className="flex flex-col w-full gap-1">
@@ -134,6 +157,7 @@ export function FormSetting(props: Props) {
           placeholder=""
         />
       </div>
+
       <div className="flex flex-col w-full gap-1">
         <Label className="text-sm text-muted-foreground">
           Métodos de pagamentos
@@ -145,6 +169,7 @@ export function FormSetting(props: Props) {
           placeholder=""
         />
       </div>
+
       <div className="flex flex-col w-full gap-1">
         <Label className="text-sm text-muted-foreground">
           Base de conhecimento do estabelecimento

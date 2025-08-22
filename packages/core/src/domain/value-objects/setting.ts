@@ -8,6 +8,8 @@ export type SettingProps = {
   vectorNamespace: string;
   knowledgeBase: string;
   aiEnabled: boolean;
+  queueURL: string;
+  openingHours: string;
 };
 
 export class Setting {
@@ -20,7 +22,9 @@ export class Setting {
     readonly paymentMethods: string,
     readonly vectorNamespace: string,
     readonly knowledgeBase: string,
-    readonly aiEnabled: boolean
+    readonly aiEnabled: boolean,
+    readonly queueURL: string,
+    readonly openingHours: string
   ) {}
 
   raw() {
@@ -34,6 +38,8 @@ export class Setting {
       vectorNamespace: this.vectorNamespace,
       knowledgeBase: this.knowledgeBase,
       aiEnabled: this.aiEnabled,
+      queueURL: this.queueURL,
+      openingHours: this.openingHours,
     };
   }
 
@@ -47,7 +53,9 @@ export class Setting {
       props?.paymentMethods ?? "",
       props?.vectorNamespace ?? "",
       props?.knowledgeBase ?? "",
-      props?.aiEnabled ?? true
+      props?.aiEnabled ?? true,
+      props?.queueURL ?? "",
+      props?.openingHours ?? ""
     );
   }
 }

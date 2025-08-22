@@ -1,8 +1,8 @@
 import "dotenv/config";
-import { UsersRepository } from "@looma/core/infra/repositories/users-repository";
+import { UsersDatabaseRepository } from "../../infra/repositories/users-repository";
 import { BcryptPasswordDriver } from "../drivers/password-driver";
 
-const usersRepository = UsersRepository.instance();
+const usersRepository = UsersDatabaseRepository.instance();
 const payload = {
   email: process.argv[2],
   password: process.argv[3],

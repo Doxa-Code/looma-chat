@@ -1,8 +1,8 @@
 import { createDatabaseConnection } from "../database";
 import { addresses } from "../database/schemas";
-import { Address } from "@looma/core/domain/value-objects/address";
+import { Address } from "../../domain/value-objects/address";
 
-export class AddressesRepository {
+export class AddressesDatabaseRepository {
   async upsertAddress(address: Address): Promise<boolean> {
     const db = createDatabaseConnection();
 
@@ -19,6 +19,6 @@ export class AddressesRepository {
   }
 
   static instance() {
-    return new AddressesRepository();
+    return new AddressesDatabaseRepository();
   }
 }

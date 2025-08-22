@@ -155,6 +155,27 @@
       "when": 1755283943261,
       "tag": "0021_youthful_wild_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1755542423316,
+      "tag": "0022_wandering_rawhide_kid",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1755542687643,
+      "tag": "0023_volatile_xavin",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1755890243391,
+      "tag": "0024_stormy_medusa",
+      "breakpoints": true
     }
   ]
 }

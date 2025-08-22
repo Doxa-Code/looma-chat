@@ -1,10 +1,8 @@
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { randomUUID } from "node:crypto";
 
-type QueueNames = "orderCart" | "cancelCart";
-
 type SendDataToQueueProps = {
-  queueName: QueueNames;
+  queueURL: string;
   data: unknown;
   workspaceId: string;
   operation: "orderCart" | "upsertProduct" | "removeProduct" | "cancelCart";
@@ -15,19 +13,7 @@ interface MessagingDriver {
 }
 
 export class SQSMessagingDriver implements MessagingDriver {
-  private readonly queue = new Map<QueueNames, string>([
-    [
-      "orderCart",
-      "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-OrderCartQueue-mxxkawms.fifo",
-    ],
-    [
-      "cancelCart",
-      "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-CancelCartQueue-bazfwbnt.fifo",
-    ],
-  ]);
   async sendDataToQueue(data: SendDataToQueueProps): Promise<boolean> {
-    if (!this.queue.has(data.queueName)) return false;
-
     const sqsClient = new SQSClient({
       credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
@@ -37,7 +23,7 @@ export class SQSMessagingDriver implements MessagingDriver {
     });
 
     const params = {
-      QueueUrl: this.queue.get(data.queueName),
+      QueueUrl: data.queueURL,
       MessageBody: JSON.stringify({
         data: data.data,
         workspaceId: data.workspaceId,

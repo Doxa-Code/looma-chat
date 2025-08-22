@@ -1,0 +1,1 @@
+ALTER TABLE "settings" ADD COLUMN "opening_hours" text DEFAULT '' NOT NULL;

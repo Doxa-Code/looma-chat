@@ -1,11 +1,11 @@
 "use server";
 import { Setting } from "@looma/core/domain/value-objects/setting";
-import { SettingsRepository } from "@looma/core/infra/repositories/settings-repository";
+import { SettingsDatabaseRepository } from "@looma/core/infra/repositories/settings-repository";
 import z from "zod";
 import { securityProcedure } from "../procedure";
 import { MetaMessageDriver } from "@looma/core/infra/drivers/message-driver";
 
-const settingsRepository = SettingsRepository.instance();
+const settingsRepository = SettingsDatabaseRepository.instance();
 const messaging = MetaMessageDriver.instance();
 
 export const retrieveSettings = securityProcedure([
@@ -50,6 +50,8 @@ export const updateSettings = securityProcedure([
       vectorNamespace: z.string(),
       knowledgeBase: z.string(),
       aiEnabled: z.boolean(),
+      queueURL: z.string(),
+      openingHours: z.string(),
     })
   )
   .handler(async ({ input, ctx }) => {
@@ -65,6 +67,8 @@ export const updateSettings = securityProcedure([
         vectorNamespace: input.vectorNamespace,
         knowledgeBase: input.knowledgeBase,
         aiEnabled: input.aiEnabled,
+        queueURL: input.queueURL,
+        openingHours: input.openingHours,
       })
     );
   });

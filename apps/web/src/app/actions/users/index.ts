@@ -9,28 +9,28 @@ import {
   AuthorizationService,
   PolicyName,
 } from "@looma/core/domain/services/authorization-service";
+import { Workspace } from "@looma/core/domain/value-objects/workspace";
 import { BcryptPasswordDriver } from "@looma/core/infra/drivers/password-driver";
 import { JWTTokenDriver } from "@looma/core/infra/drivers/token-driver";
-import { MembershipsRepository } from "@looma/core/infra/repositories/membership-repository";
-import { SectorsRepository } from "@looma/core/infra/repositories/sectors-respository";
-import { UsersRepository } from "@looma/core/infra/repositories/users-repository";
+import { MembershipsDatabaseRepository } from "@looma/core/infra/repositories/membership-repository";
+import { SectorsDatabaseRepository } from "@looma/core/infra/repositories/sectors-respository";
+import { UsersDatabaseRepository } from "@looma/core/infra/repositories/users-repository";
 import { WorkspacesRepository } from "@looma/core/infra/repositories/workspaces-repository";
+import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
-import { redirect, RedirectType } from "next/navigation";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createServerAction } from "zsa";
 import { securityProcedure } from "../procedure";
-import { Workspace } from "@looma/core/domain/value-objects/workspace";
-import { revalidatePath } from "next/cache";
 
-const usersRepository = UsersRepository.instance();
+const usersRepository = UsersDatabaseRepository.instance();
 const authorizationService = AuthorizationService.instance();
 const passwordDriver = BcryptPasswordDriver.instance();
 const workspaceServices = WorkspaceServices.instance();
 const workspacesRepository = WorkspacesRepository.instance();
 const tokenDriver = JWTTokenDriver.instance();
-const membershipRepository = MembershipsRepository.instance();
-const sectorsRepository = SectorsRepository.instance();
+const membershipRepository = MembershipsDatabaseRepository.instance();
+const sectorsRepository = SectorsDatabaseRepository.instance();
 
 export const upsertWorkspace = securityProcedure(["upsert:workspaces"])
   .input(

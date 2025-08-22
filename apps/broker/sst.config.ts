@@ -1,5 +1,11 @@
 /// <reference path="./.sst/platform/config.d.ts" />
 
+const cartQueues = [
+  "c2d27d7a-1c04-451b-b7f9-548f2faf3bd3",
+  "c7c919ea-ad06-448d-947d-da9cb51de85c",
+  "0543027b-7074-4d83-9eb3-3bbdbdfd6856",
+];
+
 export default $config({
   app(input) {
     return {
@@ -33,37 +39,31 @@ export default $config({
       environment,
     });
 
-    const clientsQueue = new sst.aws.Queue("ClientsBroker", {
-      fifo: true,
-    });
+    const clientsQueue = new sst.aws.Queue("ClientsBroker");
 
     clientsQueue.subscribe({
       handler: "functions/clients-broker.handler",
       environment,
     });
 
-    const orderCart = new sst.aws.Queue("OrderCart", {
-      fifo: true,
-    });
-
-    const cancelCart = new sst.aws.Queue("CancelCart", {
-      fifo: true,
-    });
-
-    const finishCart = new sst.aws.Queue("FinishCart", {
-      fifo: true,
-    });
+    const finishCart = new sst.aws.Queue("FinishCart");
 
     finishCart.subscribe({
       handler: "functions/finish-cart.handler",
       environment,
     });
 
+    const carts = cartQueues.map(
+      (workspaceId) =>
+        new sst.aws.Queue(`CartBroker-${workspaceId}`, {
+          fifo: true,
+        }).url
+    );
+
     return {
       productsQueue: productsQueue.url,
       clientsQueue: clientsQueue.url,
-      orderCart: orderCart.url,
-      cancelCart: cancelCart.url,
+      carts,
       finishCart: finishCart.url,
     };
   },

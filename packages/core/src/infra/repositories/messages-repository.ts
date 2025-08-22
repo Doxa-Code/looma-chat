@@ -1,10 +1,10 @@
-import { Message } from "@looma/core/domain/entities/message";
-import { Sender, SenderType } from "@looma/core/domain/value-objects/sender";
+import { Message } from "../../domain/entities/message";
+import { Sender, SenderType } from "../../domain/value-objects/sender";
 import { eq } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import { messages } from "../database/schemas";
 
-export class MessagesRepository {
+export class MessagesDatabaseRepository {
   private timestampToDate(timestamp: number) {
     return new Date(timestamp * 1000);
   }
@@ -89,6 +89,6 @@ export class MessagesRepository {
   }
 
   static instance() {
-    return new MessagesRepository();
+    return new MessagesDatabaseRepository();
   }
 }

@@ -2,11 +2,11 @@ import { useRef, useState } from "react";
 import { Textarea } from "../ui/textarea";
 import { FileButton } from "./file-button";
 import { useServerActionMutation } from "@/hooks/server-action-hooks";
-import { sendMessage, sendAudio } from "@/app/actions/conversations";
 import { Message } from "@looma/core/domain/entities/message";
 import { Attendant } from "@looma/core/domain/value-objects/attendant";
 import dynamic from "next/dynamic";
 import { User } from "@looma/core/domain/entities/user";
+import { sendAudio, sendMessage } from "@/app/actions/messages";
 
 const VoiceRecorder = dynamic(
   () => import("./voice-recorder").then((Comp) => Comp.VoiceRecorder),

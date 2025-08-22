@@ -4,7 +4,7 @@ import TableUsers from "@/components/table-users";
 import { TitlePage } from "@/components/title-page";
 
 export default async function UsersPage() {
-  const [users] = await listUsers({});
+  const [users] = await listUsers();
   return (
     <ContainerPage>
       <TitlePage>Usuários</TitlePage>

@@ -108,7 +108,11 @@ export class Cart {
   }
 
   upsertProduct(product: CartProduct) {
-    if (this.status.is("order")) {
+    if (
+      this.status.is("finished") ||
+      this.status.is("expired") ||
+      this.status.is("shipped")
+    ) {
       throw new Error(
         "O pedido já está fechado e já não pode mais adicionar produtos"
       );
@@ -225,7 +229,9 @@ ${this.total.toLocaleString("pt-BR", {
 
   static create(props: Cart.CreateProps) {
     if (!props.client || !props.attendant) {
-      throw new Error("Informações faltando, verifique.");
+      throw new Error(
+        `Informações faltando, verifique: client: ${JSON.stringify(props.client ?? "{}", null, 2)} | attendant: ${JSON.stringify(props.attendant ?? "{}", null, 2)}`
+      );
     }
 
     return new Cart({

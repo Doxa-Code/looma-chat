@@ -1,5 +1,5 @@
 import { Product } from "@looma/core/domain/value-objects/product";
-import { CartsRepository } from "@looma/core/infra/repositories/carts-repository";
+import { CartsDatabaseRepository } from "@looma/core/infra/repositories/carts-repository";
 import type { SQSEvent, SQSHandler } from "aws-lambda";
 import z from "zod";
 
@@ -9,7 +9,7 @@ const finishCartValidate = z.object({
   workspaceId: z.string(),
 });
 
-const cartsRepository = CartsRepository.instance();
+const cartsRepository = CartsDatabaseRepository.instance();
 
 export const handler: SQSHandler = async (event: SQSEvent) => {
   for (const record of event.Records) {

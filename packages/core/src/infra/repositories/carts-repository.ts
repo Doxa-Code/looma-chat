@@ -1,5 +1,5 @@
-import { Cart } from "@looma/core/domain/entities/cart";
-import { CartProduct } from "@looma/core/domain/entities/cart-product";
+import { Cart } from "../../domain/entities/cart";
+import { CartProduct } from "../../domain/entities/cart-product";
 import { and, eq, or, sql } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import {
@@ -15,7 +15,7 @@ import { PaymentMethodValue } from "../../domain/value-objects/payment-method";
 import { asc } from "drizzle-orm";
 import { desc } from "drizzle-orm";
 
-export class CartsRepository {
+export class CartsDatabaseRepository {
   private timestampToDate(timestamp: number) {
     return new Date(timestamp * 1000);
   }
@@ -659,6 +659,6 @@ export class CartsRepository {
     return result.filter((c) => c !== null);
   }
   static instance() {
-    return new CartsRepository();
+    return new CartsDatabaseRepository();
   }
 }

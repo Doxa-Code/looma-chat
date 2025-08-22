@@ -1,9 +1,11 @@
 "use client";
 
-import { markLastMessagesContactAsViewed } from "@/app/actions/conversations";
 import { Conversation } from "@looma/core/domain/entities/conversation";
 import { Message } from "@looma/core/domain/entities/message";
-import { useServerActionMutation } from "@/hooks/server-action-hooks";
+import {
+  useServerActionMutation,
+  useServerActionQuery,
+} from "@/hooks/server-action-hooks";
 import { useSSE } from "@/hooks/use-sse";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useRef, useState } from "react";
@@ -14,6 +16,8 @@ import { ChatSidebar } from "./chat-sidebar";
 import { ContainerMessages } from "./container-messages";
 import { User } from "@looma/core/domain/entities/user";
 import { Logo } from "../logo";
+import { markLastMessagesContactAsViewed } from "@/app/actions/messages";
+import { listAllConversations } from "@/app/actions/conversations";
 
 type Props = {
   conversations: Conversation.Raw[];
@@ -23,6 +27,10 @@ type Props = {
 
 export function Chat(props: Props) {
   const containerMessages = useRef<HTMLDivElement>(null);
+  const { data } = useServerActionQuery(listAllConversations, {
+    input: undefined,
+    queryKey: ["list-conversations"],
+  });
   const [conversations, setConversations] = useState<
     Map<string, Conversation.Raw>
   >(new Map(props.conversations.map((c) => [c.id, c])));
@@ -92,6 +100,12 @@ export function Chat(props: Props) {
       setConversation(conversations.get(conversation.id) ?? null);
     }
   }, [conversations]);
+
+  useEffect(() => {
+    if (data?.length) {
+      setConversations(new Map(data?.map((c) => [c.id, c])));
+    }
+  }, [data]);
 
   useEffect(() => {
     setMessages(conversation?.messages ?? []);

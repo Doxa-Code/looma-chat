@@ -4,7 +4,7 @@ import { JWTTokenDriver } from "@looma/core/infra/drivers/token-driver";
 import { cookies } from "next/headers";
 import { createServerAction } from "zsa";
 import { COOKIE_TOKEN_NAME, COOKIE_WORKSPACE_NAME } from "../constants";
-import { UsersRepository } from "@looma/core/infra/repositories/users-repository";
+import { UsersDatabaseRepository } from "@looma/core/infra/repositories/users-repository";
 
 export async function checkPassword(password: string, encrypted: string) {
   return BcryptPasswordDriver.instance().compare(password, encrypted);
@@ -25,7 +25,7 @@ export async function getUserAuthenticateId() {
 }
 
 export const getUserAuthenticate = createServerAction().handler(async () => {
-  const usersRepository = UsersRepository.instance();
+  const usersRepository = UsersDatabaseRepository.instance();
   const userId = await getUserAuthenticateId();
   if (!userId) return null;
 

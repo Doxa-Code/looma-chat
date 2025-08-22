@@ -53,7 +53,7 @@ function PaginationLink({
       aria-current={isActive ? "page" : undefined}
       data-slot="pagination-link"
       data-active={isActive}
-      className={cx(buttonVariants({}), className)}
+      className={cx(buttonVariants(), className)}
       {...props}
     />
   );

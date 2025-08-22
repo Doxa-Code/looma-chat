@@ -1,9 +1,9 @@
 import { and, eq } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import { settings } from "../database/schemas";
-import { Setting } from "@looma/core/domain/value-objects/setting";
+import { Setting } from "../../domain/value-objects/setting";
 
-export class SettingsRepository {
+export class SettingsDatabaseRepository {
   async retrieveSettingsByWorkspaceId(workspaceId: string) {
     if (!workspaceId) return null;
 
@@ -20,6 +20,8 @@ export class SettingsRepository {
         vectorNamespace: settings.vectorNamespace,
         knowledgeBase: settings.knowledgeBase,
         aiEnabled: settings.aiEnabled,
+        queueURL: settings.queueURL,
+        openingHours: settings.openingHours,
       })
       .from(settings)
       .where(eq(settings.workspaceId, workspaceId));
@@ -56,6 +58,8 @@ export class SettingsRepository {
         knowledgeBase: input.knowledgeBase,
         aiEnabled: input.aiEnabled,
         workspaceId: setting?.workspaceId || workspaceId,
+        queueURL: input.queueURL,
+        openingHours: input.openingHours,
       })
       .onConflictDoUpdate({
         set: {
@@ -68,6 +72,8 @@ export class SettingsRepository {
           knowledgeBase: input.knowledgeBase,
           aiEnabled: input.aiEnabled,
           vectorNamespace: input.vectorNamespace,
+          queueURL: input.queueURL,
+          openingHours: input.openingHours,
         },
         target: settings.id,
       });
@@ -88,6 +94,8 @@ export class SettingsRepository {
         knowledgeBase: settings.knowledgeBase,
         aiEnabled: settings.aiEnabled,
         workspaceId: settings.workspaceId,
+        queueURL: settings.queueURL,
+        openingHours: settings.openingHours,
       })
       .from(settings)
       .where(and(eq(settings.wabaId, wabaId), eq(settings.phoneId, phoneId)));
@@ -101,6 +109,6 @@ export class SettingsRepository {
   }
 
   static instance() {
-    return new SettingsRepository();
+    return new SettingsDatabaseRepository();
   }
 }

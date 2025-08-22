@@ -1,13 +1,11 @@
 "use server";
+import { ChangeClientAddress } from "@looma/core/application/command/change-client-address";
 import { NotFound } from "@looma/core/domain/errors/not-found";
-import { Address } from "@looma/core/domain/value-objects/address";
-import { ClientsRepository } from "@looma/core/infra/repositories/clients-repository";
+import { ClientsDatabaseRepository } from "@looma/core/infra/repositories/clients-repository";
 import z from "zod";
 import { securityProcedure } from "./../procedure";
-import { AddressesRepository } from "@looma/core/infra/repositories/addresses-repository";
 
-const clientsRepository = ClientsRepository.instance();
-const addressesRepository = AddressesRepository.instance();
+const clientsRepository = ClientsDatabaseRepository.instance();
 
 export const changeClientAddress = securityProcedure(["manage:carts"])
   .input(
@@ -26,21 +24,12 @@ export const changeClientAddress = securityProcedure(["manage:carts"])
     })
   )
   .handler(async ({ input, ctx }) => {
-    const client = await clientsRepository.retrieveByPhone(
-      input.phone,
-      ctx.membership.workspaceId
-    );
-
-    if (!client) throw NotFound.instance("Client");
-
-    const newAddress = Address.create({
-      id: client.address?.id,
-      ...input.address,
+    const changeClientAddress = ChangeClientAddress.instance();
+    await changeClientAddress.execute({
+      address: input.address,
+      phone: input.phone,
+      workspaceId: ctx.membership.workspaceId,
     });
-
-    await addressesRepository.upsertAddress(newAddress);
-
-    return;
   });
 
 export const retrieveClient = securityProcedure(["manage:carts"])
@@ -55,7 +44,7 @@ export const retrieveClient = securityProcedure(["manage:carts"])
       ctx.membership.workspaceId
     );
 
-    if (!client) throw NotFound.instance("Client");
+    if (!client) throw NotFound.throw("Client");
 
     return client;
   });

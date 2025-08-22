@@ -1,12 +1,12 @@
-import { Membership } from "@looma/core/domain/entities/membership";
-import { User } from "@looma/core/domain/entities/user";
-import { Sector } from "@looma/core/domain/value-objects/sector";
-import { Workspace } from "@looma/core/domain/value-objects/workspace";
+import { Membership } from "../../domain/entities/membership";
+import { User } from "../../domain/entities/user";
+import { Sector } from "../../domain/value-objects/sector";
+import { Workspace } from "../../domain/value-objects/workspace";
 import bcrypt from "bcrypt";
 import "dotenv/config";
-import { MembershipsRepository } from "../repositories/membership-repository";
-import { SectorsRepository } from "../repositories/sectors-respository";
-import { UsersRepository } from "../repositories/users-repository";
+import { MembershipsDatabaseRepository } from "../repositories/membership-repository";
+import { SectorsDatabaseRepository } from "../repositories/sectors-respository";
+import { UsersDatabaseRepository } from "../repositories/users-repository";
 import { WorkspacesRepository } from "../repositories/workspaces-repository";
 
 const USER_DATA = {
@@ -17,10 +17,10 @@ const USER_DATA = {
   type: "superuser" as const,
 };
 
-const sectorRepository = SectorsRepository.instance();
-const usersRepository = UsersRepository.instance();
+const sectorRepository = SectorsDatabaseRepository.instance();
+const usersRepository = UsersDatabaseRepository.instance();
 const workspacesRepository = WorkspacesRepository.instance();
-const membershipsRepository = MembershipsRepository.instance();
+const membershipsRepository = MembershipsDatabaseRepository.instance();
 
 (async () => {
   // TODO: RESOLVER

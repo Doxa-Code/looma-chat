@@ -13,7 +13,7 @@ export function useSSE<T extends { type: string } = any>(props: SSEOptions<T>) {
     url,
     onMessage,
     onError,
-    reconnectInterval = 5000,
+    reconnectInterval = 2000,
     heartbeatTimeout = 30000,
   } = props;
   const eventSourceRef = useRef<EventSource | null>(null);

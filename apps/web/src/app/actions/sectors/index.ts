@@ -1,11 +1,11 @@
 "use server";
 
-import { SectorsRepository } from "@looma/core/infra/repositories/sectors-respository";
-import { securityProcedure } from "../procedure";
+import { UpsertSector } from "@looma/core/application/command/upsert-sector";
+import { SectorsDatabaseRepository } from "@looma/core/infra/repositories/sectors-respository";
 import z from "zod";
-import { Sector } from "@looma/core/domain/value-objects/sector";
+import { securityProcedure } from "../procedure";
 
-const sectorsRepository = SectorsRepository.instance();
+const sectorsRepository = SectorsDatabaseRepository.instance();
 
 export const listSectors = securityProcedure([
   "manage:sectors",
@@ -29,6 +29,10 @@ export const upsertSector = securityProcedure([
     })
   )
   .handler(async ({ ctx, input }) => {
-    const sector = Sector.create(input.name, input.id);
-    await sectorsRepository.upsert(ctx.membership.workspaceId, sector!);
+    const upsertSector = UpsertSector.instance();
+    await upsertSector.execute({
+      id: input.id,
+      name: input.name,
+      workspaceId: ctx.membership.workspaceId,
+    });
   });

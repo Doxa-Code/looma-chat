@@ -5,7 +5,7 @@ import { User } from "../../domain/entities/user";
 import { Sector } from "../../domain/value-objects/sector";
 import { PolicyName } from "../../domain/services/authorization-service";
 
-export class UsersRepository {
+export class UsersDatabaseRepository {
   async retrieveUserByEmail(email: string): Promise<User | null> {
     const db = createDatabaseConnection();
 
@@ -194,6 +194,6 @@ export class UsersRepository {
   }
 
   static instance() {
-    return new UsersRepository();
+    return new UsersDatabaseRepository();
   }
 }

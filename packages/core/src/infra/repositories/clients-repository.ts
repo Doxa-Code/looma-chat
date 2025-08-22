@@ -1,12 +1,12 @@
-import { Client } from "@looma/core/domain/entities/client";
+import { Client } from "../../domain/entities/client";
 import { createDatabaseConnection } from "../database";
 import { addresses, clients, contacts } from "../database/schemas";
 import { eq } from "drizzle-orm";
-import { Address } from "@looma/core/domain/value-objects/address";
-import { Contact } from "@looma/core/domain/value-objects/contact";
+import { Address } from "../../domain/value-objects/address";
+import { Contact } from "../../domain/value-objects/contact";
 import { and } from "drizzle-orm";
 
-export class ClientsRepository {
+export class ClientsDatabaseRepository {
   async retrieveByPhone(
     phone: string,
     workspaceId: string
@@ -136,6 +136,6 @@ export class ClientsRepository {
   }
 
   static instance() {
-    return new ClientsRepository();
+    return new ClientsDatabaseRepository();
   }
 }

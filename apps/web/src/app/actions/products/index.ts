@@ -1,9 +1,9 @@
 "use server";
-import { ProductsRepository } from "@looma/core/infra/repositories/products-repository";
+import { ProductsDatabaseRepository } from "@looma/core/infra/repositories/products-repository";
 import z from "zod";
 import { securityProcedure } from "../procedure";
 
-const productsRepository = ProductsRepository.instance();
+const productsRepository = ProductsDatabaseRepository.instance();
 
 export const listAllProducts = securityProcedure(["view:products"])
   .input(

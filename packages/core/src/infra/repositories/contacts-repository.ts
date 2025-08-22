@@ -1,9 +1,9 @@
-import { Contact } from "@looma/core/domain/value-objects/contact";
+import { Contact } from "../../domain/value-objects/contact";
 import { eq } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import { contacts } from "../database/schemas";
 
-export class ContactsRepository {
+export class ContactsDatabaseRepository {
   async retrieve(phone: string) {
     const db = createDatabaseConnection();
     const response = await db
@@ -35,6 +35,6 @@ export class ContactsRepository {
       });
   }
   static instance() {
-    return new ContactsRepository();
+    return new ContactsDatabaseRepository();
   }
 }

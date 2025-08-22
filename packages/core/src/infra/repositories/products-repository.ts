@@ -1,4 +1,4 @@
-import { Product } from "@looma/core/domain/value-objects/product";
+import { Product } from "../../domain/value-objects/product";
 import { and, asc, eq, ilike, inArray, isNotNull } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import { products } from "../database/schemas";
@@ -11,7 +11,7 @@ type ListProps = {
   searchTerm?: string;
 };
 
-export class ProductsRepository {
+export class ProductsDatabaseRepository {
   async upsert(product: Product, workspaceId: string) {
     const db = createDatabaseConnection();
     await db
@@ -155,6 +155,6 @@ export class ProductsRepository {
     }));
   }
   static instance() {
-    return new ProductsRepository();
+    return new ProductsDatabaseRepository();
   }
 }

@@ -1,7 +1,7 @@
 import { Client } from "@looma/core/domain/entities/client";
 import { Address } from "@looma/core/domain/value-objects/address";
 import { Contact } from "@looma/core/domain/value-objects/contact";
-import { ClientsRepository } from "@looma/core/infra/repositories/clients-repository";
+import { ClientsDatabaseRepository } from "@looma/core/infra/repositories/clients-repository";
 import type { SQSEvent, SQSHandler } from "aws-lambda";
 import z from "zod";
 
@@ -32,7 +32,7 @@ const clientValidate = z.object({
   }),
 });
 
-const clientsRepository = ClientsRepository.instance();
+const clientsRepository = ClientsDatabaseRepository.instance();
 
 export const handler: SQSHandler = async (event: SQSEvent) => {
   for (const record of event.Records) {

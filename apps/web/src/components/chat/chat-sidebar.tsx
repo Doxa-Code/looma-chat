@@ -45,45 +45,49 @@ export const ChatSidebar: React.FC<Props> = (props) => {
       <SidebarContent>
         <SidebarGroup className="px-0">
           <SidebarGroupContent className="bg-white">
-            {props.conversations.map((c) => (
-              <div
-                key={c.id}
-                data-active={c.id === props.conversation?.id}
-                onClick={() => {
-                  props.selectConversation(c);
-                }}
-                className="hover:bg-sidebar-accent data-[active=true]:bg-primary/10 cursor-pointer hover:text-sidebar-accent-foreground flex items-center gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap"
-              >
-                <div>
-                  <Avatar className="h-13 w-13 bg-white border">
-                    <AvatarImage src={c.contact?.thumbnail ?? ""} />
-                    <AvatarFallback className="border">
-                      <User2 className="stroke-1 size-5" />
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-                <div className="flex flex-col justify-between w-full gap-1">
-                  <div className="flex w-full justify-between items-center">
-                    <span className="font-semibold select-none">
-                      {c.contact?.name}
-                    </span>
-                    <span className="text-muted-foreground select-none !text-[10px]">
-                      {c.lastMessage &&
-                        formatLastMessagemTime(c?.lastMessage?.createdAt)}
+            {props.conversations
+              .sort((a, b) =>
+                a.lastMessage?.createdAt! > b.lastMessage?.createdAt! ? -1 : 1
+              )
+              .map((c) => (
+                <div
+                  key={c.id}
+                  data-active={c.id === props.conversation?.id}
+                  onClick={() => {
+                    props.selectConversation(c);
+                  }}
+                  className="hover:bg-sidebar-accent data-[active=true]:bg-primary/10 cursor-pointer hover:text-sidebar-accent-foreground flex items-center gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap"
+                >
+                  <div>
+                    <Avatar className="h-13 w-13 bg-white border">
+                      <AvatarImage src={c.contact?.thumbnail ?? ""} />
+                      <AvatarFallback className="border">
+                        <User2 className="stroke-1 size-5" />
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <div className="flex flex-col justify-between w-full gap-1">
+                    <div className="flex w-full justify-between items-center">
+                      <span className="font-semibold select-none">
+                        {c.contact?.name}
+                      </span>
+                      <span className="text-muted-foreground select-none !text-[10px]">
+                        {c.lastMessage &&
+                          formatLastMessagemTime(c?.lastMessage?.createdAt)}
+                      </span>
+                    </div>
+                    <span
+                      data-unviewed={
+                        c.lastMessage?.status !== "viewed" &&
+                        c.lastMessage?.sender?.type === "contact"
+                      }
+                      className="line-clamp-1 truncate whitespace-normal data-[unviewed=true]:font-bold text-muted-foreground text-xs"
+                    >
+                      {c.teaser}
                     </span>
                   </div>
-                  <span
-                    data-unviewed={
-                      c.lastMessage?.status !== "viewed" &&
-                      c.lastMessage?.sender?.type === "contact"
-                    }
-                    className="line-clamp-1 truncate whitespace-normal data-[unviewed=true]:font-bold text-muted-foreground text-xs"
-                  >
-                    {c.teaser}
-                  </span>
                 </div>
-              </div>
-            ))}
+              ))}
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

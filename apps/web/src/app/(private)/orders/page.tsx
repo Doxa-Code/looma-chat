@@ -3,7 +3,7 @@ import { CartList } from "@/components/cart-list";
 import { TitlePage } from "@/components/title-page";
 
 export default async function OrdersPage() {
-  const [data] = await listCarts({});
+  const [data] = await listCarts();
   const carts = data ?? [];
   return (
     <>

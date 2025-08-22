@@ -12,6 +12,11 @@ type TypingProps = {
   channel: string;
 };
 
+type ViewProps = {
+  lastMessageId: string;
+  channel: string;
+};
+
 type SendMessageAudioProps = {
   channel: string;
   to: string;
@@ -19,12 +24,13 @@ type SendMessageAudioProps = {
 };
 
 interface MessageDriver {
-  sendMessageText(data: SendMessageTextProps): Promise<string>;
+  sendMessageText(data: SendMessageTextProps): Promise<string | null>;
   sendMessageAudio(data: SendMessageAudioProps): Promise<{
     id: string;
     mediaId: string;
   }>;
   sendTyping(data: TypingProps): Promise<void>;
+  viewMessage(data: ViewProps): Promise<void>;
   downloadMedia(
     channel: string,
     mediaId: string
@@ -88,7 +94,18 @@ export class MetaMessageDriver implements MessageDriver {
       .catch((err) => console.log(JSON.stringify(err, null, 2)));
   }
 
-  async sendMessageText(data: SendMessageTextProps): Promise<string> {
+  async viewMessage(data: ViewProps): Promise<void> {
+    await this.client
+      .post(`/${data.channel}/messages`, {
+        messaging_product: "whatsapp",
+        status: "read",
+        message_id: data.lastMessageId,
+      })
+      .catch((err) => console.log(JSON.stringify(err, null, 2)));
+  }
+
+  async sendMessageText(data: SendMessageTextProps): Promise<string | null> {
+    if (!data.content) return null;
     const response = await this.client.post<{
       messages: {
         id: string;

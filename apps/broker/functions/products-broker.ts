@@ -3,7 +3,7 @@ import { Product } from "@looma/core/domain/value-objects/product";
 import z from "zod";
 import { ProductsRepository } from "@looma/core/infra/repositories/products-repository";
 import { createEmbedding, createPineconeClient } from "../helpers/vector-store";
-import { SettingsRepository } from "@looma/core/infra/repositories/settings-repository";
+import { SettingsDatabaseRepository } from "@looma/core/infra/repositories/settings-repository";
 
 const productValidate = z.object({
   workspaceId: z.string(),
@@ -22,7 +22,7 @@ const productValidate = z.object({
 
 export const handler: SQSHandler = async (event: SQSEvent) => {
   const productsRepository = ProductsRepository.instance();
-  const settingsRepository = SettingsRepository.instance();
+  const settingsRepository = SettingsDatabaseRepository.instance();
 
   for (const record of event.Records) {
     const body = JSON.parse(record.body) as Product.Props;

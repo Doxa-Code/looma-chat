@@ -1,24 +1,21 @@
 "use server";
-import { Cart } from "@looma/core/domain/entities/cart";
-import { CartProduct } from "@looma/core/domain/entities/cart-product";
-import { Client } from "@looma/core/domain/entities/client";
+import { sseEmitter } from "@/lib/sse";
+import { CancelCart } from "@looma/core/application/command/cancel-cart";
+import { RemoveProductFromCart } from "@looma/core/application/command/remove-product-from-cart";
+import { SetCartAddress } from "@looma/core/application/command/set-cart-address";
+import { SetCartPayment } from "@looma/core/application/command/set-cart-payment";
+import { UpsertProductOnCart } from "@looma/core/application/command/upsert-product-on-cart";
+import { ShowCart } from "@looma/core/application/queries/show-cart";
 import { NotFound } from "@looma/core/domain/errors/not-found";
-import { Address } from "@looma/core/domain/value-objects/address";
 import { PaymentMethod } from "@looma/core/domain/value-objects/payment-method";
-import { SQSMessagingDriver } from "@looma/core/infra/drivers/messaging-driver";
-import { CartsRepository } from "@looma/core/infra/repositories/carts-repository";
-import { ClientsRepository } from "@looma/core/infra/repositories/clients-repository";
-import { ConversationsRepository } from "@looma/core/infra/repositories/conversations-repository";
-import { ProductsRepository } from "@looma/core/infra/repositories/products-repository";
+import { CartsDatabaseRepository } from "@looma/core/infra/repositories/carts-repository";
+import { ConversationsDatabaseRepository } from "@looma/core/infra/repositories/conversations-repository";
 import z from "zod";
 import { securityProcedure } from "./../procedure";
+import { CloseCart } from "@looma/core/application/command/close-cart";
 
-const conversationsRepository = ConversationsRepository.instance();
-const cartsRepository = CartsRepository.instance();
-const productsRepository = ProductsRepository.instance();
-const clientsRepository = ClientsRepository.instance();
-
-const messaging = SQSMessagingDriver.instance();
+const conversationsRepository = ConversationsDatabaseRepository.instance();
+const cartsRepository = CartsDatabaseRepository.instance();
 
 export const listCarts = securityProcedure([
   "view:carts",
@@ -42,14 +39,14 @@ export const retrieveOpenCart = securityProcedure([
       input.conversationId
     );
 
-    if (!conversation) throw NotFound.instance("Conversation");
+    if (!conversation) throw NotFound.throw("Conversation");
 
     let cart = await cartsRepository.retrieveOpenCartByConversationId(
       input.conversationId,
       ctx.membership.workspaceId
     );
 
-    if (!cart) throw NotFound.instance("Cart");
+    if (!cart) throw NotFound.throw("Cart");
 
     return cart.raw();
   });
@@ -63,63 +60,13 @@ export const upsertProductOnCart = securityProcedure(["manage:carts"])
     })
   )
   .handler(async ({ input, ctx }) => {
-    const conversation = await conversationsRepository.retrieve(
-      input.conversationId
-    );
-    if (!conversation) throw NotFound.instance("Conversation");
-
-    let client = await clientsRepository.retrieveByPhone(
-      conversation.contact.phone,
-      ctx.membership.workspaceId
-    );
-
-    if (!client) {
-      client = Client.create(conversation.contact);
-
-      await clientsRepository.upsert(client, ctx.membership.workspaceId);
-    }
-
-    let cart = await cartsRepository.retrieveOpenCartByConversationId(
-      input.conversationId,
-      ctx.membership.workspaceId
-    );
-
-    if (!cart) {
-      cart = Cart.create({
-        attendant: conversation.attendant!,
-        client,
-      });
-    }
-
-    const product = await productsRepository.retrieve(input.productId);
-
-    if (!product) throw NotFound.instance("Product");
-
-    const cartProduct = CartProduct.create({
-      product,
+    const upsertProductOnCart = UpsertProductOnCart.instance();
+    const cart = await upsertProductOnCart.execute({
+      conversationId: input.conversationId,
+      productId: input.productId,
       quantity: input.quantity,
+      workspaceId: ctx.membership.workspaceId,
     });
-
-    cart.upsertProduct(cartProduct);
-
-    await cartsRepository.upsert(cart, conversation.id);
-
-    if (cart.status.is("order")) {
-      await messaging.sendDataToQueue({
-        queueName: "orderCart",
-        data: {
-          cartId: cart.id,
-          cartProduct: {
-            id: cartProduct.id,
-            quantity: cartProduct.quantity,
-            price: cartProduct.price,
-          },
-        },
-        workspaceId: ctx.membership.workspaceId,
-        operation: "upsertProduct",
-      });
-    }
-
     return cart.raw();
   });
 
@@ -131,101 +78,26 @@ export const removeProductFromCart = securityProcedure(["manage:carts"])
     })
   )
   .handler(async ({ input, ctx }) => {
-    const conversation = await conversationsRepository.retrieve(
-      input.conversationId
-    );
-    if (!conversation) throw NotFound.instance("Conversation");
-
-    const cart = await cartsRepository.retrieveOpenCartByConversationId(
-      input.conversationId,
-      ctx.membership.workspaceId
-    );
-
-    if (!cart) throw NotFound.instance("Cart");
-
-    cart.removeProduct(input.productId);
-
-    await cartsRepository.upsert(cart, conversation.id);
-
-    if (cart.status.is("order")) {
-      await messaging.sendDataToQueue({
-        queueName: "orderCart",
-        data: {
-          cartId: cart.id,
-          productId: input.productId,
-        },
-        workspaceId: ctx.membership.workspaceId,
-        operation: "removeProduct",
-      });
-    }
-  });
-
-export const orderCart = securityProcedure(["manage:carts"])
-  .input(
-    z.object({
-      conversationId: z.string(),
-    })
-  )
-  .handler(async ({ input, ctx }) => {
-    const cart = await cartsRepository.retrieveOpenCartByConversationId(
-      input.conversationId,
-      ctx.membership.workspaceId
-    );
-
-    if (!cart) throw NotFound.instance("Cart");
-
-    const conversation = await conversationsRepository.retrieve(
-      input.conversationId
-    );
-
-    if (!conversation) throw NotFound.instance("Conversation");
-
-    cart.order();
-
-    await messaging.sendDataToQueue({
-      queueName: "orderCart",
-      data: {
-        cart: cart.raw(),
-        total: cart.total,
-      },
+    const removeProductFromCart = RemoveProductFromCart.instance();
+    await removeProductFromCart.execute({
+      conversationId: input.conversationId,
+      productId: input.productId,
       workspaceId: ctx.membership.workspaceId,
-      operation: "orderCart",
     });
-
-    await cartsRepository.upsert(cart, conversation.id);
-
-    conversation.close();
-
-    await conversationsRepository.upsert(
-      conversation,
-      ctx.membership.workspaceId
-    );
-
-    return cart.raw();
   });
 
-export const expireCart = securityProcedure(["manage:carts"])
+export const closeCart = securityProcedure(["manage:carts"])
   .input(
     z.object({
       conversationId: z.string(),
     })
   )
   .handler(async ({ input, ctx }) => {
-    const conversation = await conversationsRepository.retrieve(
-      input.conversationId
-    );
-    if (!conversation) throw NotFound.instance("Conversation");
-
-    const cart = await cartsRepository.retrieveOpenCartByConversationId(
-      input.conversationId,
-      ctx.membership.workspaceId
-    );
-
-    if (!cart) throw NotFound.instance("Cart");
-
-    cart.expire();
-
-    await cartsRepository.upsert(cart, conversation.id);
+    const closeCart = CloseCart.instance();
+    await closeCart.execute({
+      conversationId: input.conversationId,
+      workspaceId: ctx.membership.workspaceId,
+    });
   });
 
 export const cancelCart = securityProcedure(["manage:carts"])
@@ -236,28 +108,12 @@ export const cancelCart = securityProcedure(["manage:carts"])
     })
   )
   .handler(async ({ input, ctx }) => {
-    const conversation = await conversationsRepository.retrieve(
-      input.conversationId
-    );
-    if (!conversation) throw NotFound.instance("Conversation");
-
-    const cart = await cartsRepository.retrieveOpenCartByConversationId(
-      input.conversationId,
-      ctx.membership.workspaceId
-    );
-
-    if (!cart) throw NotFound.instance("Cart");
-
-    cart.cancel(input.reason);
-
-    await messaging.sendDataToQueue({
-      queueName: "cancelCart",
-      data: cart.id,
+    const cancelCart = CancelCart.instance();
+    await cancelCart.execute({
+      conversationId: input.conversationId,
+      reason: input.reason,
       workspaceId: ctx.membership.workspaceId,
-      operation: "cancelCart",
     });
-
-    await cartsRepository.upsert(cart, conversation.id);
   });
 
 export const setCartAddress = securityProcedure(["manage:carts"])
@@ -277,45 +133,12 @@ export const setCartAddress = securityProcedure(["manage:carts"])
     })
   )
   .handler(async ({ input, ctx }) => {
-    const conversation = await conversationsRepository.retrieve(
-      input.conversationId
-    );
-
-    if (!conversation) throw NotFound.instance("Conversation");
-
-    let client = await clientsRepository.retrieveByPhone(
-      conversation.contact.phone,
-      ctx.membership.workspaceId
-    );
-
-    if (!client) {
-      client = Client.create(conversation.contact);
-
-      await clientsRepository.upsert(client, ctx.membership.workspaceId);
-    }
-
-    let cart = await cartsRepository.retrieveOpenCartByConversationId(
-      input.conversationId,
-      ctx.membership.workspaceId
-    );
-
-    if (!cart) {
-      cart = Cart.create({
-        attendant: conversation.attendant!,
-        client,
-      });
-    }
-
-    const newAddress = Address.create(input.address);
-
-    if (!client.address) {
-      client.setAddress(newAddress);
-      await clientsRepository.upsert(client, ctx.membership.workspaceId);
-    }
-
-    cart.address = newAddress;
-
-    await cartsRepository.upsert(cart, conversation.id);
+    const setCartAddress = SetCartAddress.instance();
+    await setCartAddress.execute({
+      address: input.address,
+      conversationId: input.conversationId,
+      workspaceId: ctx.membership.workspaceId,
+    });
   });
 
 export const setPaymentMethod = securityProcedure(["manage:carts"])
@@ -327,22 +150,31 @@ export const setPaymentMethod = securityProcedure(["manage:carts"])
     })
   )
   .handler(async ({ input, ctx }) => {
-    const conversation = await conversationsRepository.retrieve(
-      input.conversationId
-    );
-    if (!conversation) throw NotFound.instance("Conversation");
+    const setCartPayment = SetCartPayment.instance();
+    await setCartPayment.execute({
+      conversationId: input.conversationId,
+      paymentChange: input.paymentChange,
+      paymentMethod: input.paymentMethod,
+      workspaceId: ctx.membership.workspaceId,
+    });
+  });
 
-    const cart = await cartsRepository.retrieveOpenCartByConversationId(
-      input.conversationId,
-      ctx.membership.workspaceId
-    );
+export const showCart = securityProcedure([
+  "manage:carts",
+  "send:message",
+  "view:conversation",
+  "view:conversations",
+])
+  .input(z.object({ conversationId: z.string() }))
+  .handler(async ({ input, ctx }) => {
+    const showCart = ShowCart.instance();
 
-    if (!cart) throw NotFound.instance("Cart");
+    const { cart, conversation } = await showCart.execute({
+      conversationId: input.conversationId,
+      workspaceId: ctx.membership.workspaceId,
+    });
 
-    const paymentMethod = PaymentMethod.create(input.paymentMethod);
+    sseEmitter.emit("message", conversation.raw());
 
-    cart.setPaymentMethod(paymentMethod);
-    cart.setPaymentChange(input.paymentChange);
-
-    await cartsRepository.upsert(cart, conversation.id);
+    return cart.formatted;
   });

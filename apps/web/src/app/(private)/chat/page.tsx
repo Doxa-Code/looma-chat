@@ -6,9 +6,9 @@ import { retrieveSettings } from "@/app/actions/settings";
 export const revalidate = 0;
 
 export default async function Page() {
-  const [conversations] = await listAllConversations({});
+  const [conversations] = await listAllConversations();
   const [userAuthenticated] = await getUserAuthenticate();
-  const [settings] = await retrieveSettings({});
+  const [settings] = await retrieveSettings();
 
   return (
     <main className="w-full !overflow-y-hidden flex p-10 flex-1">

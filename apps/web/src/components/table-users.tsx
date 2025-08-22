@@ -63,7 +63,7 @@ export type UserPayload = {
 };
 
 export default function TableUsers(props: Props) {
-  const [rowSelection, setRowSelection] = useState({});
+  const [rowSelection, setRowSelection] = useState();
   const { data: users } = useServerActionQuery<any, any>(listUsers, {
     input: undefined,
     queryKey: ["list-users"],
@@ -331,7 +331,7 @@ export default function TableUsers(props: Props) {
                   type: row.original?.type,
                   sectorId: row.original.sector?.id,
                 });
-                setRowSelection({});
+                setRowSelection();
               }}
               className="px-2 py-1.5 disabled:bg-muted font-normal text-xs disabled:text-muted-foreground disabled:cursor-not-allowed"
             >
@@ -340,7 +340,7 @@ export default function TableUsers(props: Props) {
 
             <RegisterPermissions
               onClear={() => {
-                setRowSelection({});
+                setRowSelection();
               }}
               disabled={Object.keys(rowSelection).length > 1}
               userPermissions={
@@ -358,7 +358,7 @@ export default function TableUsers(props: Props) {
 
             <Button
               onClick={() => {
-                setRowSelection({});
+                setRowSelection();
               }}
               className="px-2 py-1.5 text-xs border-amber-100 hover:bg-amber-200 text-amber-700 bg-amber-100 font-normal"
               variant="ghost"
@@ -393,7 +393,7 @@ export default function TableUsers(props: Props) {
           });
           setUsersToRemove([]);
           setOpenModal(null);
-          setRowSelection({});
+          setRowSelection();
         }}
       />
     </div>

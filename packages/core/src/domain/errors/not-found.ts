@@ -3,7 +3,7 @@ export class NotFound extends Error {
     super(resource ? `Not found: ${resource}` : "Not found");
     this.name = "NotFound";
   }
-  static instance(resource?: string) {
+  static throw(resource?: string) {
     return new NotFound(resource);
   }
 }

@@ -1,10 +1,10 @@
-import { Conversation } from "@looma/core/domain/entities/conversation";
-import { Message } from "@looma/core/domain/entities/message";
-import { Attendant } from "@looma/core/domain/value-objects/attendant";
-import { Contact } from "@looma/core/domain/value-objects/contact";
-import { Sector } from "@looma/core/domain/value-objects/sector";
-import { Sender } from "@looma/core/domain/value-objects/sender";
-import { eq, or, sql } from "drizzle-orm";
+import { Conversation } from "../../domain/entities/conversation";
+import { Message } from "../../domain/entities/message";
+import { Attendant } from "../../domain/value-objects/attendant";
+import { Contact } from "../../domain/value-objects/contact";
+import { Sector } from "../../domain/value-objects/sector";
+import { Sender } from "../../domain/value-objects/sender";
+import { and, eq, or, sql, ne } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import {
   contacts,
@@ -13,11 +13,8 @@ import {
   sectors,
   users,
 } from "../database/schemas";
-import { and } from "drizzle-orm";
-import { desc } from "drizzle-orm";
-import { asc } from "drizzle-orm";
 
-export class ConversationsRepository {
+export class ConversationsDatabaseRepository {
   private fullQuery(db: any) {
     return {
       where: (
@@ -178,7 +175,8 @@ export class ConversationsRepository {
     const [conversation] = await this.fullQuery(db).where(
       and(
         eq(conversations.contactPhone, phone),
-        eq(conversations.channel, channel)
+        eq(conversations.channel, channel),
+        ne(conversations.status, "closed")
       )
     );
 
@@ -189,6 +187,7 @@ export class ConversationsRepository {
 
   async listBySectorAndAttendantId(
     attendantId: string,
+    workspaceId: string,
     sectorId?: string
   ): Promise<Conversation[]> {
     if (!attendantId) return [];
@@ -196,12 +195,20 @@ export class ConversationsRepository {
     const db = createDatabaseConnection();
 
     const list = await this.fullQuery(db).where(
-      sectorId
-        ? or(
-            eq(conversations.sectorId, sectorId),
-            eq(conversations.attendantId, attendantId)
-          )
-        : eq(conversations.attendantId, attendantId)
+      and(
+        eq(conversations.workspaceId, workspaceId),
+        or(
+          eq(conversations.status, "open"),
+          eq(conversations.status, "waiting"),
+          eq(conversations.status, "expired")
+        ),
+        sectorId
+          ? or(
+              eq(conversations.sectorId, sectorId),
+              eq(conversations.attendantId, attendantId)
+            )
+          : eq(conversations.attendantId, attendantId)
+      )
     );
 
     return list.map((c) => this.toConversation(c));
@@ -305,6 +312,6 @@ export class ConversationsRepository {
   }
 
   static instance() {
-    return new ConversationsRepository();
+    return new ConversationsDatabaseRepository();
   }
 }

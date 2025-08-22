@@ -5,38 +5,25 @@ import {
   AuthorizationService,
   PolicyName,
 } from "@looma/core/domain/services/authorization-service";
-import { MembershipsRepository } from "@looma/core/infra/repositories/membership-repository";
-import { UsersRepository } from "@looma/core/infra/repositories/users-repository";
+import { MembershipsDatabaseRepository } from "@looma/core/infra/repositories/membership-repository";
+import { UsersDatabaseRepository } from "@looma/core/infra/repositories/users-repository";
 import z from "zod";
 import { createServerActionProcedure } from "zsa";
 import { getUserAuthenticate, getWorkspaceSelected } from "./security";
 
 const authorizationService = AuthorizationService.instance();
-const membershipsRepository = MembershipsRepository.instance();
-const usersRepository = UsersRepository.instance();
+const membershipsRepository = MembershipsDatabaseRepository.instance();
+const usersRepository = UsersDatabaseRepository.instance();
 
 export const securityProcedure = (permissions?: PolicyName[]) =>
   createServerActionProcedure()
-    .input(
-      z
-        .object({
-          userId: z.string().optional(),
-          workspaceId: z.string().optional(),
-        })
-        .optional()
-    )
     .handler(async ({ input }) => {
       let user: User | null;
       let workspaceId: string | null;
 
-      if (input?.userId && input?.workspaceId) {
-        user = await usersRepository.retrieve(input.userId);
-        workspaceId = input.workspaceId;
-      } else {
-        const [userAuth] = await getUserAuthenticate();
-        user = userAuth;
-        workspaceId = await getWorkspaceSelected();
-      }
+      const [userAuth] = await getUserAuthenticate();
+      user = userAuth;
+      workspaceId = await getWorkspaceSelected();
 
       if (!user || !workspaceId) throw NotAuthorized.throw();
 
@@ -46,7 +33,7 @@ export const securityProcedure = (permissions?: PolicyName[]) =>
           workspaceId
         );
 
-      if (!membership?.id) throw NotFound.instance("workspace");
+      if (!membership?.id) throw NotFound.throw("workspace");
 
       const isAllowed = authorizationService.can(
         permissions!,
