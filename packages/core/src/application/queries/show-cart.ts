@@ -54,7 +54,7 @@ export class ShowCart {
       to: conversation.contact.phone,
     });
 
-    if (!messageId) return;
+    if (!messageId) throw NotFound.throw("Message ID");
 
     const message = Message.create({
       content: cart.formatted,
