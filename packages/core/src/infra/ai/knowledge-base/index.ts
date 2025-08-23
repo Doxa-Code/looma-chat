@@ -3,26 +3,33 @@ import pdf2md from "@opendocsg/pdf2md";
 import { embedMany } from "ai";
 import * as fs from "node:fs";
 import path from "node:path";
-import { pinecone, pineconeVector } from "../config/vectors/pinecone-vector";
 import { azureEmbeddings } from "../config/llms/azure";
-import { SettingsDatabaseRepository } from "../../infra/repositories/settings-repository";
+import { SettingsDatabaseRepository } from "../../repositories/settings-repository";
+import { pgVector } from "../config/vectors/pg-vector";
 
 const files = ["docs/faq.md", "docs/products.md"];
 
-const indexName = "looma-knowledge-base";
 const settingsRepository = SettingsDatabaseRepository.instance();
 
 const settings = await settingsRepository.retrieveSettingsByWorkspaceId("");
 
-await pinecone
-  .index(indexName)
-  .deleteNamespace(settings?.vectorNamespace ?? "")
-  .catch(() => {});
+const indexName = `knowledge-base-${settings?.vectorNamespace}`;
+const infos = await pgVector
+  .getIndexInfo({
+    indexName,
+  })
+  .catch(() => null);
 
-await pineconeVector.createIndex({
-  indexName,
-  dimension: 1536,
-});
+if (!infos) {
+  await pgVector.createIndex({
+    indexName,
+    dimension: 1536,
+  });
+} else {
+  await pgVector.truncateIndex({
+    indexName,
+  });
+}
 
 await Promise.all(
   files.map(async (filePath) => {
@@ -39,7 +46,7 @@ await Promise.all(
       }),
       values: chunks.map((chunk) => chunk.text),
     });
-    await pineconeVector.upsert({
+    await pgVector.upsert({
       indexName,
       vectors: embeddings,
       metadata: chunks.map((chunk) => ({
@@ -68,7 +75,7 @@ await Promise.all(
       }),
       values: chunks.map((chunk) => chunk.text),
     });
-    await pineconeVector.upsert({
+    await pgVector.upsert({
       indexName,
       vectors: embeddings,
       metadata: chunks.map((chunk) => ({

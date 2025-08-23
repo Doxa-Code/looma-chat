@@ -1,57 +1,20 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
-import { I as InvalidCreation, C as Client, A as Attendant, a as Address, N as NotFound, b as ConversationsDatabaseRepository, c as ClientsDatabaseRepository, M as Message } from './conversations-repository.mjs';
+import { I as InvalidCreation, C as Client, A as Attendant, a as Address, N as NotFound, b as ConversationsDatabaseRepository, c as ClientsDatabaseRepository, M as Message } from '../conversations-repository.mjs';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 import { randomUUID } from 'node:crypto';
 import { and, eq, sql, or, desc, asc } from 'drizzle-orm';
-import { c as createDatabaseConnection, p as productsOnCart, a as addresses, b as carts, u as users, d as contacts, e as clients, f as conversations, s as settings } from './schemas.mjs';
-import { P as ProductsDatabaseRepository } from './products-repository.mjs';
+import { c as createDatabaseConnection, p as productsOnCart, a as addresses, b as carts, u as users, d as contacts, e as clients, f as conversations, s as settings } from '../schemas.mjs';
+import { P as ProductsDatabaseRepository } from '../products-repository.mjs';
 import axios from 'axios';
 import FormData from 'form-data';
-import { s as saveMessageOnThread } from './index2.mjs';
-
-class Setting {
-  constructor(wabaId, phoneId, attendantName, businessName, locationAvailable, paymentMethods, vectorNamespace, knowledgeBase, aiEnabled, queueURL) {
-    this.wabaId = wabaId;
-    this.phoneId = phoneId;
-    this.attendantName = attendantName;
-    this.businessName = businessName;
-    this.locationAvailable = locationAvailable;
-    this.paymentMethods = paymentMethods;
-    this.vectorNamespace = vectorNamespace;
-    this.knowledgeBase = knowledgeBase;
-    this.aiEnabled = aiEnabled;
-    this.queueURL = queueURL;
-  }
-  raw() {
-    return {
-      wabaId: this.wabaId,
-      phoneId: this.phoneId,
-      attendantName: this.attendantName,
-      businessName: this.businessName,
-      locationAvailable: this.locationAvailable,
-      paymentMethods: this.paymentMethods,
-      vectorNamespace: this.vectorNamespace,
-      knowledgeBase: this.knowledgeBase,
-      aiEnabled: this.aiEnabled,
-      queueURL: this.queueURL
-    };
-  }
-  static create(props) {
-    return new Setting(
-      props?.wabaId ?? "",
-      props?.phoneId ?? "",
-      props?.attendantName ?? "Looma AI",
-      props?.businessName ?? "",
-      props?.locationAvailable ?? "",
-      props?.paymentMethods ?? "",
-      props?.vectorNamespace ?? "",
-      props?.knowledgeBase ?? "",
-      props?.aiEnabled ?? true,
-      props?.queueURL ?? ""
-    );
-  }
-}
+import { s as saveMessageOnThread } from '../index2.mjs';
+import '/Users/fernandosouza/dev/looma/node_modules/.pnpm/drizzle-orm@0.44.4_@libsql+client@0.15.10_@opentelemetry+api@1.9.0_@types+pg@8.15.5_@upstash+_pohuuurtoropy5iivcwxc6dgde/node_modules/drizzle-orm/postgres-js/index.cjs';
+import 'postgres';
+import '/Users/fernandosouza/dev/looma/node_modules/.pnpm/drizzle-orm@0.44.4_@libsql+client@0.15.10_@opentelemetry+api@1.9.0_@types+pg@8.15.5_@upstash+_pohuuurtoropy5iivcwxc6dgde/node_modules/drizzle-orm/pg-core/index.cjs';
+import '@mastra/memory';
+import '@ai-sdk/azure';
+import '@mastra/pg';
 
 class SQSMessagingDriver {
   async sendDataToQueue(data) {
@@ -922,6 +885,52 @@ class CartsDatabaseRepository {
   }
 }
 
+class Setting {
+  constructor(wabaId, phoneId, attendantName, businessName, locationAvailable, paymentMethods, vectorNamespace, knowledgeBase, aiEnabled, queueURL, openingHours) {
+    this.wabaId = wabaId;
+    this.phoneId = phoneId;
+    this.attendantName = attendantName;
+    this.businessName = businessName;
+    this.locationAvailable = locationAvailable;
+    this.paymentMethods = paymentMethods;
+    this.vectorNamespace = vectorNamespace;
+    this.knowledgeBase = knowledgeBase;
+    this.aiEnabled = aiEnabled;
+    this.queueURL = queueURL;
+    this.openingHours = openingHours;
+  }
+  raw() {
+    return {
+      wabaId: this.wabaId,
+      phoneId: this.phoneId,
+      attendantName: this.attendantName,
+      businessName: this.businessName,
+      locationAvailable: this.locationAvailable,
+      paymentMethods: this.paymentMethods,
+      vectorNamespace: this.vectorNamespace,
+      knowledgeBase: this.knowledgeBase,
+      aiEnabled: this.aiEnabled,
+      queueURL: this.queueURL,
+      openingHours: this.openingHours
+    };
+  }
+  static create(props) {
+    return new Setting(
+      props?.wabaId ?? "",
+      props?.phoneId ?? "",
+      props?.attendantName ?? "Looma AI",
+      props?.businessName ?? "",
+      props?.locationAvailable ?? "",
+      props?.paymentMethods ?? "",
+      props?.vectorNamespace ?? "",
+      props?.knowledgeBase ?? "",
+      props?.aiEnabled ?? true,
+      props?.queueURL ?? "",
+      props?.openingHours ?? ""
+    );
+  }
+}
+
 class SettingsDatabaseRepository {
   async retrieveSettingsByWorkspaceId(workspaceId) {
     if (!workspaceId) return null;
@@ -936,7 +945,8 @@ class SettingsDatabaseRepository {
       vectorNamespace: settings.vectorNamespace,
       knowledgeBase: settings.knowledgeBase,
       aiEnabled: settings.aiEnabled,
-      queueURL: settings.queueURL
+      queueURL: settings.queueURL,
+      openingHours: settings.openingHours
     }).from(settings).where(eq(settings.workspaceId, workspaceId));
     if (!setting) return null;
     return Setting.create(setting);
@@ -960,7 +970,8 @@ class SettingsDatabaseRepository {
       knowledgeBase: input.knowledgeBase,
       aiEnabled: input.aiEnabled,
       workspaceId: setting?.workspaceId || workspaceId,
-      queueURL: input.queueURL
+      queueURL: input.queueURL,
+      openingHours: input.openingHours
     }).onConflictDoUpdate({
       set: {
         wabaId: input.wabaId,
@@ -972,7 +983,8 @@ class SettingsDatabaseRepository {
         knowledgeBase: input.knowledgeBase,
         aiEnabled: input.aiEnabled,
         vectorNamespace: input.vectorNamespace,
-        queueURL: input.queueURL
+        queueURL: input.queueURL,
+        openingHours: input.openingHours
       },
       target: settings.id
     });
@@ -990,7 +1002,8 @@ class SettingsDatabaseRepository {
       knowledgeBase: settings.knowledgeBase,
       aiEnabled: settings.aiEnabled,
       workspaceId: settings.workspaceId,
-      queueURL: settings.queueURL
+      queueURL: settings.queueURL,
+      openingHours: settings.openingHours
     }).from(settings).where(and(eq(settings.wabaId, wabaId), eq(settings.phoneId, phoneId)));
     if (!setting) return null;
     return {
@@ -1328,6 +1341,13 @@ class MetaMessageDriver {
       }
     }).catch((err) => console.log(JSON.stringify(err, null, 2)));
   }
+  async viewMessage(data) {
+    await this.client.post(`/${data.channel}/messages`, {
+      messaging_product: "whatsapp",
+      status: "read",
+      message_id: data.lastMessageId
+    }).catch((err) => console.log(JSON.stringify(err, null, 2)));
+  }
   async sendMessageText(data) {
     if (!data.content) return null;
     const response = await this.client.post(`/${data.channel}/messages`, {
@@ -1397,6 +1417,7 @@ class ShowCart {
       content: cart.formatted,
       to: conversation.contact.phone
     });
+    if (!messageId) throw NotFound.throw("Message ID");
     const message = Message.create({
       content: cart.formatted,
       createdAt: /* @__PURE__ */ new Date(),
@@ -1423,18 +1444,28 @@ class ShowCart {
 const getLastCartTool = createTool({
   id: "get-last-cart-tool",
   description: "Use para buscar o ultimo pedido realizado",
-  execute: async ({ runtimeContext }) => {
+  execute: async ({ runtimeContext, resourceId, threadId }) => {
     const lastCart = runtimeContext.get("lastCart");
-    console.log({ lastCart });
-    return lastCart ? lastCart.formatted : "N\xE3o h\xE1 pedido realizado";
+    const response = lastCart ? lastCart.formatted : "N\xE3o h\xE1 pedido realizado";
+    await saveMessageOnThread({
+      content: response,
+      resourceId,
+      threadId
+    });
+    return response;
   }
 });
 const getCurrentCartTool = createTool({
   id: "get-current-cart-tool",
   description: "Use para buscar o pedido atual",
-  execute: async ({ runtimeContext }) => {
+  execute: async ({ runtimeContext, resourceId, threadId }) => {
     const currentCart = runtimeContext.get("currentCart");
-    console.log({ currentCart });
+    const response = currentCart ? currentCart.formatted : "N\xE3o h\xE1 pedido aberto";
+    await saveMessageOnThread({
+      content: response,
+      resourceId,
+      threadId
+    });
     return currentCart ? currentCart.formatted : "N\xE3o h\xE1 pedido aberto";
   }
 });
@@ -1537,6 +1568,10 @@ const setAddressCartTool = createTool({
       conversationId: runtimeContext.get("conversationId"),
       workspaceId: runtimeContext.get("workspaceId")
     });
+    const response = cart.address?.validate();
+    if (!response?.isValid) {
+      return `Endere\xE7o salvo por\xE9m tem campos faltantes: ${response?.missingFields.join(", ")}`;
+    }
     return cart.formatted;
   }
 });
@@ -1559,4 +1594,4 @@ const setPaymentMethodCartTool = createTool({
   }
 });
 
-export { Setting as S, getLastCartTool as a, setPaymentMethodCartTool as b, cancelCartTool as c, setAddressCartTool as d, closeCartTool as e, addProductOnCartTool as f, getCurrentCartTool as g, removeProductFromCartTool as r, showCartTool as s };
+export { addProductOnCartTool, cancelCartTool, closeCartTool, getCurrentCartTool, getLastCartTool, removeProductFromCartTool, setAddressCartTool, setPaymentMethodCartTool, showCartTool };

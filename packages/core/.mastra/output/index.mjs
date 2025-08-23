@@ -2,18 +2,17 @@ import { evaluate } from '@mastra/core/eval';
 import { registerHook, AvailableHooks } from '@mastra/core/hooks';
 import { TABLE_EVALS } from '@mastra/core/storage';
 import { checkEvalStorageFields } from '@mastra/core/utils';
+import { OpenInferenceOTLPTraceExporter, isOpenInferenceSpan } from '@arizeai/openinference-mastra';
 import { Mastra } from '@mastra/core/mastra';
-import { m as memoryWithVector, a as azure, b as azureLooma, p as pineconeVector } from './index2.mjs';
 import { PinoLogger } from '@mastra/loggers';
 import { Agent } from '@mastra/core/agent';
-import { S as Setting, g as getCurrentCartTool, a as getLastCartTool, c as cancelCartTool, s as showCartTool, b as setPaymentMethodCartTool, d as setAddressCartTool, e as closeCartTool, r as removeProductFromCartTool, f as addProductOnCartTool } from './cart-tools.mjs';
-import { closeConversationTool } from './tools/a71c0999-711e-4b43-ba76-3608880662d5.mjs';
-import { stockTool, promotionProductsTool } from './tools/08e52949-4cd3-4c02-88d8-ad89b723e1f5.mjs';
-import { OpenInferenceOTLPTraceExporter, isOpenInferenceSpan } from '@arizeai/openinference-mastra';
-import { createWorkflow } from '@mastra/core/workflows';
+import { m as memoryWithVector, a as azure, p as pgVector } from './index2.mjs';
+import { createTool, generateEmptyFromSchema, Telemetry } from '@mastra/core';
 import z, { z as z$1, ZodFirstPartyTypeKind } from 'zod';
-import { Agent as Agent$1, createStep, generateEmptyFromSchema, Telemetry } from '@mastra/core';
-import { consultingCepTool } from './tools/4c3af83e-9c83-48c6-897e-f6c9c5b39983.mjs';
+import { retrieveClientTool, closeConversationTool } from './tools/cee67780-756c-43e2-86c0-784c14029b20.mjs';
+import { promotionProductsTool, stockTool } from './tools/44d7ab65-b1a4-43da-b12a-bf1778134d9f.mjs';
+import { getCurrentCartTool, getLastCartTool, cancelCartTool, showCartTool, setPaymentMethodCartTool, setAddressCartTool, closeCartTool, removeProductFromCartTool, addProductOnCartTool } from './tools/9b43c1ca-ab33-4aa1-83e0-0b005e83509f.mjs';
+import { consultingCepTool } from './tools/16fa4b83-59a0-4e31-9930-26ba2c8855b7.mjs';
 import crypto$1, { randomUUID } from 'crypto';
 import { readFile } from 'fs/promises';
 import { join } from 'path/posix';
@@ -33,19 +32,18 @@ import { tools } from './tools.mjs';
 import '@mastra/memory';
 import '@ai-sdk/azure';
 import '@mastra/pg';
-import '@pinecone-database/pinecone';
 import './conversations-repository.mjs';
 import './schemas.mjs';
 import '/Users/fernandosouza/dev/looma/node_modules/.pnpm/drizzle-orm@0.44.4_@libsql+client@0.15.10_@opentelemetry+api@1.9.0_@types+pg@8.15.5_@upstash+_pohuuurtoropy5iivcwxc6dgde/node_modules/drizzle-orm/postgres-js/index.cjs';
 import 'postgres';
 import '/Users/fernandosouza/dev/looma/node_modules/.pnpm/drizzle-orm@0.44.4_@libsql+client@0.15.10_@opentelemetry+api@1.9.0_@types+pg@8.15.5_@upstash+_pohuuurtoropy5iivcwxc6dgde/node_modules/drizzle-orm/pg-core/index.cjs';
 import 'drizzle-orm';
+import 'ai';
+import './products-repository.mjs';
 import '@aws-sdk/client-sqs';
 import 'node:crypto';
-import './products-repository.mjs';
 import 'axios';
 import 'form-data';
-import 'ai';
 
 
 // -- Shims --
@@ -55,169 +53,89 @@ import cjsModule from 'node:module';
 const __filename = cjsUrl.fileURLToPath(import.meta.url);
 const __dirname = cjsPath.dirname(__filename);
 const require = cjsModule.createRequire(import.meta.url);
-const stylePrompt = `## DIRETRIZES DE ESTILO DE RESPOSTA
-    - Escreva em **portugu\xEAs informal e natural**, com leveza e empatia.
-    - Sempre use **par\xE1grafos completos**. Substitua bullet points por quebra de linha.
-    - Responda com **at\xE9 20 palavras**, mantendo o texto direto e fluido.
-    - Comece as frases com **letra min\xFAscula**, exeto nomes pr\xF3prios, como em conversas reais de WhatsApp.
-    - N\xE3o use formalidades como \u201CPrezado\u201D ou \u201CCaro cliente\u201D.
-    - Pode usar abrevia\xE7\xF5es, como \u201Cvc\u201D, \u201Cpra\u201D, \u201Ct\xE1\u201D, desde que n\xE3o prejudique a clareza.
-    - N\xE3o use emojis (o tom j\xE1 deve transmitir simpatia sem precisar deles).
-    - N\xE3o cite muitas vezes o nome/apelido do cliente durante a conversa pra n\xE3o parecer falso.`;
-
 const prompt$1 = ({ runtimeContext }) => {
-  const settings = runtimeContext.get("settings") ?? Setting.create();
   return `
-    voc\xEA \xE9 a ${settings.attendantName}, atendente da farm\xE1cia ${settings.businessName} no WhatsApp.
-
-    voc\xEA receber\xE1 uma mensagem do cliente ${runtimeContext.get("contactName")}.
-
-    seu objetivo:
-    - Identifique o fluxo atual do cliente:
-      - Inicio de atendimento
-      - Pedido
-      - D\xFAvida sobre produto e/ou pol\xEDtica da farm\xE1cia
-      - Cancelamento de pedido
-    - S\xF3 avance para a pr\xF3xima etapa se a atual for conclu\xEDda.
-    - Continue a conversa guiando o cliente de forma breve e clara.
-
-    ## FLUXO DE INICIO DE ATENDIMENTO
-    - Busque o ultimo pedido com \`getLastCartTool\`
-    - Caso tenha ultimo pedido e ele tiver sido criado a pouco tempo, n\xE3o cumprimente o cliente, continue a converssa normalmente.
-    - Sen\xE3o, inicie a conversa educadamente, cumprimentando da seguinte maneira: 
-    - Cumprimente o cliente usando "bom dia" ou "boa tarde" ou "boa noite", conforme o hor\xE1rio atual:
-      - das 04:00 as 12:00 - Bom dia
-      - das 12:00 as 18:00 - Boa tarde
-      - das 18:00 as 04:00 - Boa noite
-    - mesmo que o cliente erre no cumprimento, use a forma certa.
-    - Se preferir, pode usar "ol\xE1" ou "oii" em tom amig\xE1vel.
-    - Depois, diga o primeiro nome do cliente que \xE9 ${runtimeContext.get("contactName")} (use apelido se ele permitir).
-
-    ## FLUXO DE PEDIDOS
-    1. Produtos
-      - se o produto tiver dosagens/tamanhos, refina a solicita\xE7\xE3o dando op\xE7\xF5es de dosagens/tamanhos dispon\xEDveis em estoque para o cliente escolher antes de prosseguir.
-      - apresente uma lista de 3 op\xE7\xF5es, para o cliente, da seguinte forma: Nome do produto - Pre\xE7o - Pre\xE7o promocional (se houver) - benef\xEDcio, do pre\xE7o mais caro ao mais barato.
-      - se o cliente n\xE3o informar quantidade do produto no inicio, n\xE3o pergunte a quantidade, sempre assuma 1.
-      - se o produto for passivo de receita obrigat\xF3ria, pe\xE7a a foto da receita pra continuar.
-      - valide se todas as informa\xE7\xF5es da receitas est\xE3o corretas.
-      - se for uma receita vencida ou inv\xE1lida, informe educadamente que n\xE3o pode adicionar o produto ao pedido.
-      - use \`addProductOnCartTool\` para adicionar ao pedido.
-      - repita o processo de adicionar produtos no pedido, perguntando ao cliente "algo mais?", at\xE9 que o cliente informe que n\xE3o deseja mais nada.
-      - ao final da sele\xE7\xE3o de produtos, sem perguntar ao cliente:
-        - apresente promo\xE7\xF5es dispon\xEDveis que sejam relevantes ao pedido do cliente, usando \`promotionProductsTool\` para buscar os produtos complementares em promo\xE7\xE3o e ofere\xE7a ao cliente.
-        - fa\xE7a mais de uma pesquisa na ferramenta \`promotionProductsTool\` se necess\xE1rio, para encontrar e oferecer os melhores produtos e mais relevantes ao cliente.
-      - use ferramentas auxiliares quando necess\xE1rio:
-        - \`removeProductFromCartTool\` para remover produtos do pedido.
-    2. Endere\xE7o
-      - Busque o pedido atual com \`getCurrentCartTool\` e o ultimo pedido com \`getLastCartTool\`
-      - Caso tenha qualquer endere\xE7o cadastrado no pedido atual, confirme se esse seria o endere\xE7o de entrega.
-      - Caso n\xE3o tenha endere\xE7o no pedido atual:
-        - Cheque se tem endere\xE7o no ultimo pedido feito, caso sim, confirme se o cliente deseja manter o endere\xE7o de entrega.
-        - Sen\xE3o, Pergunte o cep e o n\xFAmero da casa do cliente pra adicionar o endere\xE7o de entrega no pedido.
-        - Pesquise o endere\xE7o com \`consultingCepTool\`.
-        - Se n\xE3o encontrar o endere\xE7o com o cep, pergunte ao cliente o endere\xE7o completo.
-        - Pesquise o endere\xE7o com \`consultingCepTool\`
-        - cheque se esse endere\xE7o est\xE1 dentro da regi\xE3o de entrega da farm\xE1cia (${settings.locationAvailable}).
-        - Caso n\xE3o estiver dentro das regi\xF5es de entrega, informe ao cliente, educadamente, que n\xE3o conseguir\xE1 atende-lo por conta da regi\xE3o e finalize o atendimento usando a ferramenta \`closeConversationTool\`.
-      -  Se estiver tudo certo, registre com \`setAddressCartTool\`.
-    3. Pagamento
-      - Caso tenha qualquer forma de pagamento cadastrada no pedido atual, confirme se o cliente deseja manter aquela forma de pagamento.
-      - Caso n\xE3o tenha forma de pagamento no pedido atual:
-        - Cheque se tem forma de pagamento no ultimo pedido feito, caso sim, confirme se o cliente deseja manter a forma de pagamento do ultimo pedido.
-        - Sen\xE3o, pergunte ao cliente quais das formas de pagamento (${settings.paymentMethods}) ele deseja.
-        - Registre com \`setPaymentMethodCartTool\`
-    4. Finaliza\xE7\xE3o
-      - envie o resumo do carrinho para o cliente com \`showCartTool\` e pe\xE7a pra ele confirmar o pedido antes de finalizar.
-      - se o cliente confirmar que est\xE1 tudo certo, finalize com \`closeCartTool\`.
+    voc\xEA \xE9 um atendente de farm\xE1cia no WhatsApp respons\xE1vel somente de tirar d\xFAvidas sobre a pol\xEDtica da farm\xE1cia.
     
-    ## FLUXO DE CANCELAMENTO
-    1. confirme sempre se o cliente deseja realmente cancelar o pedido.
-    2. verifique o status do pedido usando \`retrieveCartTool\`:
-      - se o pedido j\xE1 estiver cancelado ou n\xE3o existir, informe ao cliente que n\xE3o h\xE1 pedido ativo pra cancelar.
-      - se o status do pedido for expirado, informe ao cliente que o pedido foi cancelado automaticamente pelo sistema e j\xE1 n\xE3o est\xE1 mais ativo.
-      - se o status do pedido for finalizado, informe ao cliente que n\xE3o h\xE1 possibilidade de cancelamento do pedido finalizado.
-      - se o status do pedido for shipped, informe ao cliente que o pedido foi entregue e n\xE3o h\xE1 como cancelar.
-      - se houver um pedido ativo com possibilidade de cancelamento, pergunte ao cliente se deseja mesmo cancelar esse pedido.
-    3. se o cliente confirmar e tiver a possibilidade de cancelar, use \`cancelCartTool\` para cancelar o pedido.
-    4. depois do cancelamento, comunique de forma clara e simp\xE1tica que o pedido foi cancelado com sucesso.
-    5. ofere\xE7a ajuda extra, como iniciar um novo pedido ou tirar d\xFAvidas.
+    ## Base de conhecimento da farm\xE1cia
+      ${runtimeContext.get("settings").knowledgeBase}
 
-    
-    ${stylePrompt}
-
-    ## REGRAS QUE NAO PODEM SER IGNORADAS
-    - Seja o mais breve sem perder informa\xE7\xF5es importante nas itera\xE7\xF5es
-    - Nunca pule etapas.
-
-    ## INFORMA\xC7OES RELEVANTES
-    - Agora s\xE3o exatamente ${(/* @__PURE__ */ new Date()).toLocaleString("pt-BR")} hor\xE1rio local.
-
-    ## POLITICAS DA FARMACIA
-    ${settings.knowledgeBase}
+    ## Regras que n\xE3o podem ser ignoradas:
+      - Nunca responda qualquer solicita\xE7\xE3o com o seus pr\xF3prios conhecimentos, sempre se baseie na base de conhecimento da farm\xE1cia.
   `.trim();
 };
 
-const loomaAgent = new Agent({
-  name: "Looma Agent",
+const faqAgent = new Agent({
+  name: "FAQ Agent",
   instructions: prompt$1,
   model: azure("gpt-4.1"),
-  memory: memoryWithVector,
-  tools: {
-    stockTool,
-    addProductOnCartTool,
-    removeProductFromCartTool,
-    closeCartTool,
-    setAddressCartTool,
-    setPaymentMethodCartTool,
-    showCartTool,
-    cancelCartTool,
-    closeConversationTool,
-    getLastCartTool,
-    getCurrentCartTool
+  memory: memoryWithVector
+});
+const faqAgentTool = createTool({
+  description: "Use para chamar o agente de FAQ",
+  id: "faq-agent-tool",
+  inputSchema: z.object({
+    question: z.string()
+  }),
+  async execute({ context, ...props }) {
+    const runtimeContext = props.runtimeContext;
+    const response = await faqAgent.generate(context.question, {
+      runtimeContext,
+      memory: runtimeContext.get("agentOptions").memory,
+      telemetry: runtimeContext.get("agentOptions").telemetry
+    });
+    return response.text;
   }
 });
 
 const prompt = ({ runtimeContext }) => {
   return `
-    voc\xEA \xE9 a atendente de farm\xE1cia no WhatsApp.
-    voc\xEA receber\xE1 uma mensagem do cliente.
+    voc\xEA \xE9 um atendente de farm\xE1cia no WhatsApp.
     siga o fluxo a seguir sem pular nenhum passo:
-    se a conversa estiver iniciando, cumprimente o cliente educadamente mesmo se o cliente n\xE3o cumprimentar: Ex.: "oi [NOME DO CONTATO], tudo bem?"
+    se a conversa estiver iniciando, cumprimente o cliente educadamente mesmo se o cliente n\xE3o cumprimentar: 
+    Ex.: "oi [NOME DO CONTATO], tudo bem?"
+    Cumprimente o cliente usando "bom dia" ou "boa tarde" ou "boa noite", conforme o hor\xE1rio atual:
+    - das 04:00 as 12:00 - Bom dia
+    - das 12:00 as 18:00 - Boa tarde
+    - das 18:00 as 04:00 - Boa noite
+
     1. Produtos
      - se o produto tiver dosagens/tamanhos, refina a solicita\xE7\xE3o dando op\xE7\xF5es de dosagens/tamanhos dispon\xEDveis em estoque para o cliente escolher antes de prosseguir.
-     - apresente uma lista de 3 op\xE7\xF5es, para o cliente, da seguinte forma: Nome do produto - Pre\xE7o - Pre\xE7o promocional (se houver) - benef\xEDcio, do pre\xE7o mais caro ao mais barato.
-     - se o cliente n\xE3o informar quantidade do produto no inicio, n\xE3o pergunte a quantidade, sempre assuma 1.
+     - apresente uma lista de 3 op\xE7\xF5es, para o cliente do pre\xE7o mais caro ao mais barato.
+     - se o cliente n\xE3o informar quantidade do produto no inicio, sempre assuma 1.
      - se o produto for passivo de receita obrigat\xF3ria, pe\xE7a a foto da receita pra continuar.
-     - valide se todas as informa\xE7\xF5es da receitas est\xE3o corretas.
+     - quando o cliente mandar a foto da receita, valide se todas as informa\xE7\xF5es da receitas est\xE3o corretas.
      - se for uma receita vencida ou inv\xE1lida, informe educadamente que n\xE3o pode adicionar o produto ao pedido.
-     - use a ferramenta para adicionar ao pedido.
+     - adicione o produto ao pedido.
      - repita o processo de adicionar produtos no pedido, perguntando ao cliente "algo mais?", at\xE9 que o cliente informe que n\xE3o deseja mais nada.
-     - ao final da sele\xE7\xE3o de produtos, sem perguntar ao cliente:
-     - apresente promo\xE7\xF5es dispon\xEDveis que sejam relevantes ao pedido do cliente, usando a ferramenta para buscar os produtos complementares em promo\xE7\xE3o e ofere\xE7a ao cliente.
-     - fa\xE7a mais de uma pesquisa na ferramenta, se necess\xE1rio, para encontrar e oferecer os melhores produtos e mais relevantes ao cliente.
-     - use ferramentas auxiliares quando necess\xE1rio:
-     - Use a ferramenta para remover produtos do pedido.
-    2. Endere\xE7o
-     - Busque o pedido atual e o ultimo pedido com as ferramentas
-     - Caso tenha qualquer endere\xE7o cadastrado no pedido atual, confirme se esse seria o endere\xE7o de entrega.
-     - Caso n\xE3o tenha endere\xE7o no pedido atual:
-     - Cheque se tem endere\xE7o no ultimo pedido feito, caso sim, confirme se o cliente deseja manter o endere\xE7o de entrega.
-     - Sen\xE3o, Pergunte o cep e o n\xFAmero da casa do cliente pra adicionar o endere\xE7o de entrega no pedido.
-     - Pesquise o endere\xE7o com a ferramenta.
-     - Se n\xE3o encontrar o endere\xE7o com o cep, pergunte ao cliente o endere\xE7o completo.
-     - Pesquise o endere\xE7o com a ferramenta
-     - cheque se esse endere\xE7o est\xE1 dentro da regi\xE3o de entrega da farm\xE1cia.
-     - Caso n\xE3o estiver dentro das regi\xF5es de entrega, informe ao cliente, educadamente, que n\xE3o conseguir\xE1 atende-lo por conta da regi\xE3o e finalize o atendimento usando a ferramenta.
-     - Se estiver tudo certo, registre com a ferramenta.
-    3. Pagamento
-     - Caso tenha qualquer forma de pagamento cadastrada no pedido atual, confirme se o cliente deseja manter aquela forma de pagamento.
-     - Caso n\xE3o tenha forma de pagamento no pedido atual:
-     - Cheque se tem forma de pagamento no ultimo pedido feito, caso sim, confirme se o cliente deseja manter a forma de pagamento do ultimo pedido.
-     - Sen\xE3o, pergunte ao cliente quais das formas de pagamento ele deseja.
-     - Registre com a ferramenta
-    4. Finaliza\xE7\xE3o
-     - envie o resumo do carrinho para o cliente com a ferramenta e pe\xE7a pra ele confirmar o pedido antes de finalizar.
-     - se o cliente confirmar que est\xE1 tudo certo, finalize com a ferramenta.
+     - remova o produto do pedido quando solicitado pelo cliente.
+
+    2. Promo\xE7\xF5es
+     - ao final da sele\xE7\xE3o de produtos, sem perguntar ao cliente, apresente promo\xE7\xF5es dispon\xEDveis que sejam relacionados aos produtos do pedido do cliente.
+     - caso n\xE3o encontre nenhuma promo\xE7\xE3o, somente prossiga.
+
+    3. Endere\xE7o
+     - busque o pedido atual e o ultimo pedido.
+     - caso tenha endere\xE7o cadastrado no pedido atual, confirme com o cliente se \xE9 o endere\xE7o de entrega.
+     - caso n\xE3o tenha endere\xE7o no pedido atual, cheque se tem endere\xE7o no ultimo pedido feito, se houver confirme se o cliente deseja usar o mesmo endere\xE7o no pedido atual.
+     - sen\xE3o, pergunte o cep e o n\xFAmero da casa do cliente pra adicionar o endere\xE7o de entrega no pedido.
+     - pesquise o endere\xE7o, e caso n\xE3o encontrar, pergunte ao cliente o endere\xE7o completo.
+     - cheque se esse endere\xE7o est\xE1 dentro da regi\xE3o de entrega da farm\xE1cia, caso n\xE3o estiver, informe ao cliente educadamente que n\xE3o conseguir\xE1 atende-lo por conta da regi\xE3o e finalize o atendimento.
+     - se estiver tudo certo, registre o endere\xE7o.
+
+    4. Pagamento
+     - caso tenha forma de pagamento cadastrada no pedido atual, confirme se o cliente deseja usar essa forma de pagamento.
+     - caso n\xE3o tenha forma de pagamento no pedido atual, cheque se tem forma de pagamento no ultimo pedido feito e confirme se o cliente deseja usar a mesma forma no pedido atual.
+     - sen\xE3o, pergunte ao cliente quais das formas de pagamento ele deseja.
+     - registre a forma de pagamento
+
+    5. Finaliza\xE7\xE3o
+     - obrigat\xF3riamente, envie o resumo do carrinho para o cliente e pe\xE7a pra ele conferir se o pedido est\xE1 correto antes de finalizar.
+     - finalize o pedido.
+
+    6. Cancelamento
+     - antes cancelar o pedido, pergunte ao cliente o motivo do cancelamento.
+     - cancele o pedido.
 
     ## DIRETRIZES DE ESTILO DE RESPOSTA
      - Escreva em **portugu\xEAs informal e natural**, com leveza e empatia.
@@ -228,172 +146,56 @@ const prompt = ({ runtimeContext }) => {
      - Pode usar abrevia\xE7\xF5es, como \u201Cvc\u201D, \u201Cpra\u201D, \u201Ct\xE1\u201D, desde que n\xE3o prejudique a clareza.
      - N\xE3o use emojis (o tom j\xE1 deve transmitir simpatia sem precisar deles).
      - N\xE3o cite muitas vezes o nome/apelido do cliente durante a conversa pra n\xE3o parecer falso
+     - Seja super simpatica usando at\xE9 mesmo tecnicas de rapport
 
     ## Informa\xE7\xF5es relevantes
+     - Seu nome \xE9 ${runtimeContext.get("settings")?.attendantName}
+     - O horario de funcionamento da farm\xE1cia \xE9 ${runtimeContext.get("settings")?.openingHours}
+     - Voc\xEA est\xE1 na ${runtimeContext.get("settings")?.businessName}
      - Agora s\xE3o ${(/* @__PURE__ */ new Date()).toLocaleString("pt-BR")} hor\xE1rio local
-     - O nome do cliente \xE9 ${runtimeContext.get("contactName").split(" ").at(0)}
-     - A farm\xE1cia s\xF3 atende nas localidades: ${runtimeContext.get("settings").locationAvailable}
-     - A farm\xE1cia s\xF3 disponibiliza os seguinte forma de pagamentos: ${runtimeContext.get("settings").paymentMethods}
+     - O nome do cliente \xE9 ${runtimeContext.get("contactName")?.split(" ")?.at(0)}
+     - A farm\xE1cia s\xF3 atende nas localidades: ${runtimeContext.get("settings")?.locationAvailable}
+     - A farm\xE1cia s\xF3 disponibiliza os seguinte forma de pagamentos: ${runtimeContext.get("settings")?.paymentMethods}
      ${!runtimeContext.get("lastCart") ? "" : `
         - No \xFAltimo pedido o cliente informou o endere\xE7o ${runtimeContext.get("lastCart")?.address?.fullAddress()} e a forma de pagamento ${runtimeContext.get("lastCart")?.paymentMethod?.value}
       `}
+
+     ## Regras que n\xE3o podem ser ignoradas:
+     - Todas as perguntas relacionadas a politica da empresa, devem ser redirecionadas ao agente de FAQ.
   `.trim();
 };
 
-const orquestOutputSchema = z.object({
-  flow: z.enum(["relation", "order", "faq", "cancel"]),
-  input: z.string().describe("questionamento do cliente")
-});
-const orquestAgent = new Agent$1({
-  instructions: `
-      Voce \xE9 um orquestrador de atendimento de uma farmacia e deve somente identificar qual o fluxo que o cliente est\xE1 e qual o passo:
-      Fluxo: 
-        Relacionamento
-        Pedido
-        Duvidas e politicas da farmacia
-        Cancelamento
-    `,
-  model: azure("gpt-4.1"),
-  name: "Orquest Agent",
-  memory: memoryWithVector
-});
-const orquestStep = createStep({
-  id: "orquest",
-  inputSchema: z.object({
-    input: z.string()
-  }),
-  outputSchema: orquestOutputSchema,
-  async execute({ inputData, runtimeContext }) {
-    const context = runtimeContext;
-    const { memory, telemetry } = context.get("agentOptions");
-    const { object } = await orquestAgent.generate(inputData.input, {
-      output: orquestOutputSchema,
-      runtimeContext,
-      memory,
-      telemetry
-    });
-    return object;
-  }
-});
-
-const orderAgent = new Agent({
-  name: "Order Agent",
+const loomaAgent = new Agent({
+  name: "Looma Agent",
   instructions: prompt,
-  model: azureLooma("looma-order"),
+  model: azure("looma-order"),
   memory: memoryWithVector,
   tools: {
-    getLastCartTool,
     stockTool,
-    addProductOnCartTool,
     promotionProductsTool,
+    addProductOnCartTool,
     removeProductFromCartTool,
-    getCurrentCartTool,
-    consultingCepTool,
-    closeConversationTool,
+    closeCartTool,
     setAddressCartTool,
     setPaymentMethodCartTool,
     showCartTool,
-    closeCartTool
+    cancelCartTool,
+    closeConversationTool,
+    getLastCartTool,
+    getCurrentCartTool,
+    consultingCepTool,
+    retrieveClientTool,
+    faqAgentTool
   }
 });
-const orderStep = createStep({
-  id: "order-step",
-  inputSchema: orquestOutputSchema,
-  outputSchema: z.object({
-    output: z.string()
-  }),
-  async execute({ inputData, runtimeContext }) {
-    const context = runtimeContext;
-    const { memory, telemetry } = context.get("agentOptions");
-    const { text } = await orderAgent.generate(inputData.input, {
-      runtimeContext,
-      telemetry,
-      memory
-    });
-    return {
-      output: text
-    };
-  }
-});
-
-const systemPrompt = ({
-  runtimeContext
-}) => `voc\xEA \xE9 a ${runtimeContext.get("settings")?.attendantName}, atendente da farm\xE1cia ${runtimeContext.get("settings")?.businessName} no WhatsApp.
-    voc\xEA receber\xE1 uma mensagem do cliente ${runtimeContext.get("contactName")}.`;
-
-const relationshipAgent = new Agent$1({
-  instructions: ({ runtimeContext }) => `
-    ${systemPrompt({ runtimeContext })}
-    - Busque o ultimo pedido com \`getLastCartTool\`
-    - Caso tenha ultimo pedido e ele tiver sido criado a pouco tempo, n\xE3o cumprimente o cliente, continue a converssa normalmente.
-    - Sen\xE3o, inicie a conversa educadamente, cumprimentando da seguinte maneira: 
-    - Cumprimente o cliente usando "bom dia" ou "boa tarde" ou "boa noite", conforme o hor\xE1rio atual:
-      - das 04:00 as 12:00 - Bom dia
-      - das 12:00 as 18:00 - Boa tarde
-      - das 18:00 as 04:00 - Boa noite
-    - mesmo que o cliente erre no cumprimento, use a forma certa.
-    - Se preferir, pode usar "ol\xE1" ou "oii" em tom amig\xE1vel.
-    - Depois, diga o primeiro nome do cliente que \xE9 ${runtimeContext.get("contactName")} (use apelido se ele permitir).
-    ${stylePrompt}
-  `,
-  model: azure("gpt-4.1"),
-  name: "relationship-agent",
-  tools: {
-    getLastCartTool
-  }
-});
-const relationshipStep = createStep({
-  id: "relationship-step",
-  inputSchema: orquestOutputSchema,
-  outputSchema: z.object({
-    output: z.string()
-  }),
-  async execute({ inputData, runtimeContext }) {
-    const context = runtimeContext;
-    const { memory, telemetry } = context.get("agentOptions");
-    const { text } = await relationshipAgent.generate(inputData.input, {
-      runtimeContext,
-      memory,
-      telemetry
-    });
-    return {
-      output: text
-    };
-  }
-});
-
-const loomaWorkflow = createWorkflow({
-  id: "looma-workflow",
-  description: "Looma workflow",
-  inputSchema: z$1.object({
-    input: z$1.string()
-  }),
-  outputSchema: z$1.object({
-    output: z$1.string()
-  })
-}).then(orquestStep).branch([
-  [async ({ inputData }) => inputData.flow === "relation", relationshipStep],
-  [async ({ inputData }) => inputData.flow === "order", orderStep],
-  [async ({ inputData }) => inputData.flow === "faq", relationshipStep],
-  [async ({ inputData }) => inputData.flow === "cancel", relationshipStep]
-]).map(async ({ inputData }) => {
-  const key = Object.keys(inputData).filter((key2) => !!inputData[key2]).at(0);
-  if (!key) return "";
-  return inputData[key].output;
-}).commit();
 
 const mastra = new Mastra({
   agents: {
     loomaAgent,
-    orquestAgent,
-    relationshipAgent,
-    orderAgent
+    faqAgent
   },
   vectors: {
-    pinecone: pineconeVector
-  },
-  workflows: {
-    loomaWorkflow
+    pgVector
   },
   telemetry: {
     serviceName: "LoomaAI",
@@ -410,7 +212,6 @@ const mastra = new Mastra({
     }
   },
   logger: new PinoLogger({
-    // level: "info",
     level: "debug",
     name: "LoomaAI",
     formatters: {

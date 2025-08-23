@@ -4,9 +4,9 @@ import {
 } from "@arizeai/openinference-mastra";
 import { Mastra } from "@mastra/core/mastra";
 import { PinoLogger } from "@mastra/loggers";
-import { loomaAgent } from "./agents/looma-agent";
-import { pineconeVector } from "./config/vectors/pinecone-vector";
 import { faqAgent } from "./agents/faq-agent";
+import { loomaAgent } from "./agents/looma-agent";
+import { pgVector } from "./config/vectors/pg-vector";
 
 export const mastra = new Mastra({
   agents: {
@@ -14,7 +14,7 @@ export const mastra = new Mastra({
     faqAgent,
   },
   vectors: {
-    pinecone: pineconeVector,
+    pgVector: pgVector,
   },
   telemetry: {
     serviceName: "LoomaAI",

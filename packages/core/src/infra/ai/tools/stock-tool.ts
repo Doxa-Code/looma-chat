@@ -2,7 +2,7 @@ import { createTool } from "@mastra/core/tools";
 import { embed } from "ai";
 import { z } from "zod";
 import { azureEmbeddings } from "../config/llms/azure";
-import { pinecone } from "../config/vectors/pinecone-vector";
+import { pgVector } from "../config/vectors/pg-vector";
 import { saveMessageOnThread } from "../utils";
 import { Setting } from "../../../domain/value-objects/setting";
 import { ProductsDatabaseRepository } from "../../repositories/products-repository";
@@ -14,67 +14,65 @@ export const stockTool = createTool({
     query: z.string(),
   }),
   async execute({ context, runtimeContext, threadId, resourceId }) {
-    const { embedding } = await embed({
-      model: azureEmbeddings.textEmbeddingModel("text-embedding-3-small", {
-        dimensions: 1536,
-      }),
-      value: context.query,
-    });
+    try {
+      const { embedding } = await embed({
+        model: azureEmbeddings.textEmbeddingModel("text-embedding-3-small", {
+          dimensions: 1536,
+        }),
+        value: context.query,
+      });
 
-    const setting = runtimeContext.get("settings") as Setting;
+      const setting = runtimeContext.get("settings") as Setting;
 
-    const response = await pinecone
-      .index<{
-        id: string;
-        description: string;
-        manufactory: string;
-      }>("products")
-      .namespace(setting.vectorNamespace)
-      .query({
+      const response = await pgVector.query({
+        indexName: `products-${setting.vectorNamespace}`.replace(/-/gim, "_"),
+        queryVector: embedding,
         topK: 30,
-        vector: embedding,
-        includeMetadata: true,
       });
 
-    const vectorProducts = response.matches.map((m: any) => m.metadata);
+      const vectorProducts = response.map((m) => m.metadata);
 
-    if (!vectorProducts.length) return [];
+      if (!vectorProducts.length) return [];
 
-    const productsRepository = ProductsDatabaseRepository.instance();
+      const productsRepository = ProductsDatabaseRepository.instance();
 
-    const products = await productsRepository.listByIds(
-      vectorProducts.map((i) => i?.id ?? ""),
-      runtimeContext.get("workspaceId")
-    );
+      const products = await productsRepository.listByIds(
+        vectorProducts.map((i) => i?.id ?? ""),
+        runtimeContext.get("workspaceId")
+      );
 
-    let result =
-      "id,descrição,código,marca,preço,estoque,preço promocional,inicio da promoção,fim da promoção\n";
+      let result =
+        "id,descrição,código,marca,preço,estoque,preço promocional,inicio da promoção,fim da promoção\n";
 
-    result += products
-      .filter((p) => p.stock > 0)
-      .sort((a, b) => (a.price > b.price ? 1 : -1))
-      .map((p) => [
-        p.id,
-        p.description,
-        p.code,
-        p.manufactory,
-        p.price,
-        p.stock,
-        p.promotionPrice,
-        p.promotionStart,
-        `${p.promotionEnd}\n`,
-      ])
-      .join(",");
+      result += products
+        .filter((p) => p.stock > 0)
+        .sort((a, b) => (a.price > b.price ? 1 : -1))
+        .map((p) => [
+          p.id,
+          p.description,
+          p.code,
+          p.manufactory,
+          p.price,
+          p.stock,
+          p.promotionPrice,
+          p.promotionStart,
+          `${p.promotionEnd}\n`,
+        ])
+        .join(",");
 
-    if (threadId && resourceId) {
-      await saveMessageOnThread({
-        content: result,
-        resourceId,
-        threadId,
-      });
+      if (threadId && resourceId) {
+        await saveMessageOnThread({
+          content: result,
+          resourceId,
+          threadId,
+        });
+      }
+
+      return result;
+    } catch (err) {
+      console.log(err);
+      return [];
     }
-
-    return result;
   },
 });
 
@@ -86,49 +84,62 @@ export const promotionProductsTool = createTool({
     query: z.string().describe("Nome de produtos próximo aos do pedido."),
   }),
   async execute({ context, runtimeContext, threadId, resourceId }) {
-    const { embedding } = await embed({
-      model: azureEmbeddings.textEmbeddingModel("text-embedding-3-small", {
-        dimensions: 1536,
-      }),
-      value: context.query,
-    });
-
-    const setting = runtimeContext.get("settings") as Setting;
-
-    const response = await pinecone
-      .index<{
-        id: string;
-        description: string;
-        manufactory: string;
-      }>("products")
-      .namespace(setting.vectorNamespace)
-      .query({
-        topK: 30,
-        vector: embedding,
-        includeMetadata: true,
+    try {
+      const { embedding } = await embed({
+        model: azureEmbeddings.textEmbeddingModel("text-embedding-3-small", {
+          dimensions: 1536,
+        }),
+        value: context.query,
       });
 
-    const vectorProducts = response.matches.map((m) => m.metadata);
+      const setting = runtimeContext.get("settings") as Setting;
 
-    if (!vectorProducts.length) return [];
+      const response = await pgVector.query({
+        indexName: `products-${setting.vectorNamespace}`,
+        queryVector: embedding,
+        topK: 30,
+      });
 
-    const productsRepository = ProductsDatabaseRepository.instance();
+      const vectorProducts = response.map((m) => m.metadata);
 
-    const products = await productsRepository.listByIds(
-      vectorProducts.map((i) => i?.id ?? ""),
-      runtimeContext.get("workspaceId")
-    );
+      if (!vectorProducts.length) return [];
 
-    const result = products
-      .filter((p) => p.stock > 0)
-      .sort((a, b) => (a.price > b.price ? 1 : -1));
+      const productsRepository = ProductsDatabaseRepository.instance();
 
-    await saveMessageOnThread({
-      content: result,
-      resourceId,
-      threadId,
-    });
+      const products = await productsRepository.listByIds(
+        vectorProducts.map((i) => i?.id ?? ""),
+        runtimeContext.get("workspaceId")
+      );
 
-    return result;
+      let result =
+        "id,descrição,código,marca,preço,estoque,preço promocional,inicio da promoção,fim da promoção\n";
+
+      result += products
+        .filter((p) => p.stock > 0 && p.promotionEnd !== null)
+        .sort((a, b) => (a.price > b.price ? 1 : -1))
+        .map((p) => [
+          p.id,
+          p.description,
+          p.code,
+          p.manufactory,
+          p.price,
+          p.stock,
+          p.promotionPrice,
+          p.promotionStart,
+          `${p.promotionEnd}\n`,
+        ])
+        .join(",");
+
+      await saveMessageOnThread({
+        content: result,
+        resourceId,
+        threadId,
+      });
+
+      return result;
+    } catch (err) {
+      console.log(err);
+      return [];
+    }
   },
 });

@@ -1,9 +1,10 @@
-import type { SQSEvent, SQSHandler } from "aws-lambda";
 import { Product } from "@looma/core/domain/value-objects/product";
-import z from "zod";
-import { ProductsRepository } from "@looma/core/infra/repositories/products-repository";
-import { createEmbedding, createPineconeClient } from "../helpers/vector-store";
+import { pgVector } from "@looma/core/infra/ai/config/vectors/pg-vector";
+import { ProductsDatabaseRepository } from "@looma/core/infra/repositories/products-repository";
 import { SettingsDatabaseRepository } from "@looma/core/infra/repositories/settings-repository";
+import type { SQSEvent, SQSHandler } from "aws-lambda";
+import z from "zod";
+import { createEmbedding } from "../helpers/vector-store";
 
 const productValidate = z.object({
   workspaceId: z.string(),
@@ -21,7 +22,7 @@ const productValidate = z.object({
 });
 
 export const handler: SQSHandler = async (event: SQSEvent) => {
-  const productsRepository = ProductsRepository.instance();
+  const productsRepository = ProductsDatabaseRepository.instance();
   const settingsRepository = SettingsDatabaseRepository.instance();
 
   for (const record of event.Records) {
@@ -55,19 +56,17 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       console.log(
         `${product.id} - Embedando descrição do produto, ${productAlreadyExists?.description ?? "Produto não existe"}, ${product.description}`
       );
-      const vectorStore = createPineconeClient(settings?.vectorNamespace!);
       const { embedding } = await createEmbedding(product.description);
-      await vectorStore.upsert([
-        {
-          id: product.id,
-          values: embedding,
-          metadata: {
+      await pgVector.upsert({
+        indexName: `products-${settings.vectorNamespace}`.replace(/-/gim, "_"),
+        vectors: [embedding],
+        ids: [product.id],
+        metadata: [
+          {
             id: product.id,
-            description: product.description,
-            manufactory: product.manufactory,
           },
-        },
-      ]);
+        ],
+      });
     }
 
     await productsRepository.upsert(product, result.data.workspaceId);

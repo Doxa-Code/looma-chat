@@ -9,7 +9,6 @@ export type Context = {
   currentCart: Cart | null;
   settings: Setting;
   sectors: string;
-  databaseConfig: any;
   conversationId: string;
   workspaceId: string;
   userId: string;

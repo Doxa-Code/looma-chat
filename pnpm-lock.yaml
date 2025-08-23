@@ -20,12 +20,18 @@ importers:
 
   apps/broker:
     dependencies:
+      '@ai-sdk/azure':
+        specifier: ^1.3.25
+        version: 1.3.25(zod@4.0.17)
       '@looma/core':
         specifier: workspace:*
         version: link:../../packages/core
       '@pinecone-database/pinecone':
         specifier: ^6.1.2
         version: 6.1.2
+      ai:
+        specifier: ^4.3.19
+        version: 4.3.19(react@19.1.0)(zod@4.0.17)
       zod:
         specifier: ^4.0.17
         version: 4.0.17
@@ -328,9 +334,6 @@ importers:
       '@mastra/pg':
         specifier: ^0.14.0
         version: 0.14.0(@mastra/core@0.13.2(encoding@0.1.13)(openapi-types@12.1.3)(react@19.1.0)(zod@3.25.76))(pg-query-stream@4.10.3(pg@8.16.3))
-      '@mastra/pinecone':
-        specifier: ^0.11.3
-        version: 0.11.3(@mastra/core@0.13.2(encoding@0.1.13)(openapi-types@12.1.3)(react@19.1.0)(zod@3.25.76))
       '@mastra/rag':
         specifier: ^1.0.8
         version: 1.0.8(@mastra/core@0.13.2(encoding@0.1.13)(openapi-types@12.1.3)(react@19.1.0)(zod@3.25.76))(ai@4.3.19(react@19.1.0)(zod@3.25.76))(encoding@0.1.13)
@@ -346,9 +349,6 @@ importers:
       '@opentelemetry/exporter-trace-otlp-proto':
         specifier: 0.201.1
         version: 0.201.1(@opentelemetry/api@1.9.0)
-      '@pinecone-database/pinecone':
-        specifier: ^6.1.2
-        version: 6.1.2
       ai:
         specifier: ^4.3.19
         version: 4.3.19(react@19.1.0)(zod@3.25.76)
@@ -1492,11 +1492,6 @@ packages:
     peerDependencies:
       '@mastra/core': '>=0.13.0-0 <0.14.0-0'
 
-  '@mastra/pinecone@0.11.3':
-    resolution: {integrity: sha512-mcvhy4HX32+qDZz6Ixf//j3+N/TS3vfqHVUl0B05utxSownb3P1IWsKjp7af9d1xbP1H0qSeUPxNTCqowip10Q==}
-    peerDependencies:
-      '@mastra/core': '>=0.10.7-0 <0.14.0-0'
-
   '@mastra/rag@1.0.8':
     resolution: {integrity: sha512-nkB0AeZtW9z87U8IR6ghtax7C2ClF2kDFtLrBvpXrumtUaeRuoPfHJXdPtzPdC3055/z/iVaNgOgBCU/YBY7Bg==}
     peerDependencies:
@@ -2117,10 +2112,6 @@ packages:
 
   '@paralleldrive/cuid2@2.2.2':
     resolution: {integrity: sha512-ZOBkgDwEdoYVlSeRbYYXs0S9MejQofiVYoTbKzy/6GQa39/q5tQU2IX46+shYnUkpEl3wc+J6wRlar7r2EK2xA==}
-
-  '@pinecone-database/pinecone@3.0.3':
-    resolution: {integrity: sha512-0cAG0d/6knVZgVyXM1II4qG3dyOepLuAQsCXTOJomdA7iQxf+/Om9mq9Cw4QObr56oZ+lqtptlw5qz0BQaBX2Q==}
-    engines: {node: '>=18.0.0'}
 
   '@pinecone-database/pinecone@6.1.2':
     resolution: {integrity: sha512-ydIlbtgIIHFgBL08sPzua5ckmOgtjgDz8xg21CnP1fqnnEgDmOlnfd10MRKU+fvFRhDlh4Md37SwZDr0d4cBqg==}
@@ -7506,11 +7497,24 @@ snapshots:
       '@ai-sdk/provider-utils': 2.2.8(zod@3.25.76)
       zod: 3.25.76
 
+  '@ai-sdk/azure@1.3.25(zod@4.0.17)':
+    dependencies:
+      '@ai-sdk/openai': 1.3.24(zod@4.0.17)
+      '@ai-sdk/provider': 1.1.3
+      '@ai-sdk/provider-utils': 2.2.8(zod@4.0.17)
+      zod: 4.0.17
+
   '@ai-sdk/openai@1.3.24(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 1.1.3
       '@ai-sdk/provider-utils': 2.2.8(zod@3.25.76)
       zod: 3.25.76
+
+  '@ai-sdk/openai@1.3.24(zod@4.0.17)':
+    dependencies:
+      '@ai-sdk/provider': 1.1.3
+      '@ai-sdk/provider-utils': 2.2.8(zod@4.0.17)
+      zod: 4.0.17
 
   '@ai-sdk/provider-utils@2.2.8(zod@3.25.76)':
     dependencies:
@@ -7518,6 +7522,13 @@ snapshots:
       nanoid: 3.3.11
       secure-json-parse: 2.7.0
       zod: 3.25.76
+
+  '@ai-sdk/provider-utils@2.2.8(zod@4.0.17)':
+    dependencies:
+      '@ai-sdk/provider': 1.1.3
+      nanoid: 3.3.11
+      secure-json-parse: 2.7.0
+      zod: 4.0.17
 
   '@ai-sdk/provider@1.1.3':
     dependencies:
@@ -7533,12 +7544,29 @@ snapshots:
     optionalDependencies:
       zod: 3.25.76
 
+  '@ai-sdk/react@1.2.12(react@19.1.0)(zod@4.0.17)':
+    dependencies:
+      '@ai-sdk/provider-utils': 2.2.8(zod@4.0.17)
+      '@ai-sdk/ui-utils': 1.2.11(zod@4.0.17)
+      react: 19.1.0
+      swr: 2.3.6(react@19.1.0)
+      throttleit: 2.1.0
+    optionalDependencies:
+      zod: 4.0.17
+
   '@ai-sdk/ui-utils@1.2.11(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 1.1.3
       '@ai-sdk/provider-utils': 2.2.8(zod@3.25.76)
       zod: 3.25.76
       zod-to-json-schema: 3.24.6(zod@3.25.76)
+
+  '@ai-sdk/ui-utils@1.2.11(zod@4.0.17)':
+    dependencies:
+      '@ai-sdk/provider': 1.1.3
+      '@ai-sdk/provider-utils': 2.2.8(zod@4.0.17)
+      zod: 4.0.17
+      zod-to-json-schema: 3.24.6(zod@4.0.17)
 
   '@alloc/quick-lru@5.2.0': {}
 
@@ -8887,11 +8915,6 @@ snapshots:
       - pg-native
       - pg-query-stream
 
-  '@mastra/pinecone@0.11.3(@mastra/core@0.13.2(encoding@0.1.13)(openapi-types@12.1.3)(react@19.1.0)(zod@3.25.76))':
-    dependencies:
-      '@mastra/core': 0.13.2(encoding@0.1.13)(openapi-types@12.1.3)(react@19.1.0)(zod@3.25.76)
-      '@pinecone-database/pinecone': 3.0.3
-
   '@mastra/rag@1.0.8(@mastra/core@0.13.2(encoding@0.1.13)(openapi-types@12.1.3)(react@19.1.0)(zod@3.25.76))(ai@4.3.19(react@19.1.0)(zod@3.25.76))(encoding@0.1.13)':
     dependencies:
       '@mastra/core': 0.13.2(encoding@0.1.13)(openapi-types@12.1.3)(react@19.1.0)(zod@3.25.76)
@@ -9749,10 +9772,6 @@ snapshots:
   '@paralleldrive/cuid2@2.2.2':
     dependencies:
       '@noble/hashes': 1.8.0
-
-  '@pinecone-database/pinecone@3.0.3':
-    dependencies:
-      encoding: 0.1.13
 
   '@pinecone-database/pinecone@6.1.2': {}
 
@@ -11771,6 +11790,18 @@ snapshots:
     optionalDependencies:
       react: 19.1.0
 
+  ai@4.3.19(react@19.1.0)(zod@4.0.17):
+    dependencies:
+      '@ai-sdk/provider': 1.1.3
+      '@ai-sdk/provider-utils': 2.2.8(zod@4.0.17)
+      '@ai-sdk/react': 1.2.12(react@19.1.0)(zod@4.0.17)
+      '@ai-sdk/ui-utils': 1.2.11(zod@4.0.17)
+      '@opentelemetry/api': 1.9.0
+      jsondiffpatch: 0.6.0
+      zod: 4.0.17
+    optionalDependencies:
+      react: 19.1.0
+
   ajv@6.12.6:
     dependencies:
       fast-deep-equal: 3.1.3
@@ -12399,6 +12430,7 @@ snapshots:
   encoding@0.1.13:
     dependencies:
       iconv-lite: 0.6.3
+    optional: true
 
   end-of-stream@1.4.5:
     dependencies:
@@ -15661,6 +15693,10 @@ snapshots:
   zod-to-json-schema@3.24.6(zod@3.25.76):
     dependencies:
       zod: 3.25.76
+
+  zod-to-json-schema@3.24.6(zod@4.0.17):
+    dependencies:
+      zod: 4.0.17
 
   zod@3.24.2: {}
 

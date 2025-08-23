@@ -5,8 +5,6 @@ import { s as saveMessageOnThread } from '../index2.mjs';
 import '@mastra/memory';
 import '@ai-sdk/azure';
 import '@mastra/pg';
-import '@mastra/core';
-import '@pinecone-database/pinecone';
 
 const consultingCepTool = createTool({
   id: "consulting-cep-tool",

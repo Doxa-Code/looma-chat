@@ -36,6 +36,7 @@ const settings = pgTable("settings", {
   attendantName: text("attendant_name").notNull().default(""),
   businessName: text("business_name").notNull().default(""),
   locationAvailable: text("location_available").notNull().default(""),
+  openingHours: text("opening_hours").notNull().default(""),
   paymentMethods: text("payment_methods").notNull().default(""),
   vectorNamespace: text("vector_namespace").notNull().default(""),
   knowledgeBase: text("knowledge_base").notNull().default(""),

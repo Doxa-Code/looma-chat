@@ -77,14 +77,6 @@ export class LoomaAIDriver implements AIDriver {
               },
             },
           ],
-          [
-            "databaseConfig",
-            {
-              pinecone: {
-                namespace: props.settings.vectorNamespace,
-              },
-            },
-          ],
         ]);
 
         return context.with(

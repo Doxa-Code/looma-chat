@@ -61,13 +61,13 @@ export const prompt = ({ runtimeContext }: PromptProps) => {
      - Seja super simpatica usando até mesmo tecnicas de rapport
 
     ## Informações relevantes
-     - Seu nome é ${runtimeContext.get("settings").attendantName}
-     - O horario de funcionamento da farmácia é ${runtimeContext.get("settings").openingHours}
-     - Você está na ${runtimeContext.get("settings").businessName}
+     - Seu nome é ${runtimeContext.get("settings")?.attendantName}
+     - O horario de funcionamento da farmácia é ${runtimeContext.get("settings")?.openingHours}
+     - Você está na ${runtimeContext.get("settings")?.businessName}
      - Agora são ${new Date().toLocaleString("pt-BR")} horário local
-     - O nome do cliente é ${runtimeContext.get("contactName").split(" ").at(0)}
-     - A farmácia só atende nas localidades: ${runtimeContext.get("settings").locationAvailable}
-     - A farmácia só disponibiliza os seguinte forma de pagamentos: ${runtimeContext.get("settings").paymentMethods}
+     - O nome do cliente é ${runtimeContext.get("contactName")?.split(" ")?.at(0)}
+     - A farmácia só atende nas localidades: ${runtimeContext.get("settings")?.locationAvailable}
+     - A farmácia só disponibiliza os seguinte forma de pagamentos: ${runtimeContext.get("settings")?.paymentMethods}
      ${
        !runtimeContext.get("lastCart")
          ? ""

@@ -1,14 +1,14 @@
 import { Memory } from "@mastra/memory";
 import { azureEmbeddings } from "./llms/azure";
 import { storage } from "./storage";
-import { pineconeVector } from "./vectors/pinecone-vector";
+import { pgVector } from "./vectors/pg-vector";
 
 export const memoryWithVector = new Memory({
   embedder: azureEmbeddings.textEmbeddingModel("text-embedding-3-small", {
     dimensions: 1536,
   }),
   storage,
-  vector: pineconeVector,
+  vector: pgVector,
   options: {
     semanticRecall: {
       scope: "resource",
