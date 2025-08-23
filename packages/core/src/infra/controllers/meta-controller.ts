@@ -1,15 +1,33 @@
 import { MessagePayload } from "../../application/command/message-received";
 import { NotAuthorized } from "../../domain/errors/not-authorized";
 import { MetaMessageDriver } from "../drivers/message-driver";
+import { redis } from "../drivers/redis";
 import { ValidSignature } from "../helpers/valid-signature";
 
-const messageBuffers = new Map<
-  string,
-  {
-    messages: MessagePayload[];
-    timer?: NodeJS.Timeout;
+async function addMessageToBuffer(
+  key: string,
+  message: any,
+  flushFn: (msgs: any[]) => Promise<void>
+) {
+  const bufferKey = `buffer:${key}`;
+  const lockKey = `lock:${key}`;
+
+  await redis.rpush(bufferKey, JSON.stringify(message));
+
+  const gotLock = await redis.set(lockKey, "1", "EX", 6, "NX");
+
+  if (gotLock) {
+    setTimeout(async () => {
+      const msgs = await redis.lrange(bufferKey, 0, -1);
+      await redis.del(bufferKey);
+      await redis.del(lockKey);
+
+      if (msgs.length > 0) {
+        await flushFn(msgs.map((m) => JSON.parse(m)));
+      }
+    }, 5000);
   }
->();
+}
 
 export class MetaController {
   static create({ onChangeMessageStatus, onReceivedMessage }: ControllerProps) {
@@ -20,10 +38,7 @@ export class MetaController {
       const signature = request.headers.get("x-hub-signature-256");
 
       const isValid = await ValidSignature.valid(rawBody, signature);
-
-      if (!isValid) {
-        throw NotAuthorized.throw();
-      }
+      if (!isValid) throw NotAuthorized.throw();
 
       const [entry] = input.entry;
 
@@ -51,14 +66,13 @@ export class MetaController {
 
       const contactProfile = contacts?.at?.(0);
       const contactPhone = contactProfile?.wa_id;
+
       if (!contactPhone) return;
 
-      setTimeout(async () => {
-        await MetaMessageDriver.instance().viewMessage({
-          channel: phoneId,
-          lastMessageId: messagePayload.id,
-        });
-      }, 100);
+      await MetaMessageDriver.instance().viewMessage({
+        channel: phoneId,
+        lastMessageId: messagePayload.id,
+      });
 
       const debounceKey = [contactPhone, phoneId].join("-");
 
@@ -72,31 +86,19 @@ export class MetaController {
         type: messagePayload.type,
       };
 
-      let buffer = messageBuffers.get(debounceKey);
-
-      if (!buffer) {
-        buffer = { messages: [] };
-        messageBuffers.set(debounceKey, buffer);
-      }
-
-      buffer.messages.push(newMessage);
-
-      if (buffer.timer) clearTimeout(buffer.timer);
-
-      buffer.timer = setTimeout(async () => {
-        const messagesToSend = buffer.messages;
-        messageBuffers.delete(debounceKey);
-
-        if (!messagesToSend.length) return;
-
-        await onReceivedMessage({
-          channel: phoneId,
-          contactName: contactProfile?.profile?.name,
-          contactPhone,
-          wabaId,
-          messagePayloads: messagesToSend,
-        });
-      }, 5000);
+      await addMessageToBuffer(
+        debounceKey,
+        newMessage,
+        async (messagesToSend) => {
+          await onReceivedMessage({
+            channel: phoneId,
+            contactName: contactProfile?.profile?.name,
+            contactPhone,
+            wabaId,
+            messagePayloads: messagesToSend,
+          });
+        }
+      );
     };
   }
 }
