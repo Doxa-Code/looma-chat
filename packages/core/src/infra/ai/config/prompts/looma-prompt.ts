@@ -77,6 +77,6 @@ export const prompt = ({ runtimeContext }: PromptProps) => {
      }
 
      ## Regras que não podem ser ignoradas:
-     - Todas as perguntas que não são relacionadas a pedido ou produtos, devem ser redirecionadas ao agente de FAQ.
+     - Todas as perguntas relacionadas a politica da empresa, devem ser redirecionadas ao agente de FAQ.
   `.trim();
 };
