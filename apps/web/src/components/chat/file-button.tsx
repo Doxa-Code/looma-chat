@@ -26,9 +26,9 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useServerActionMutation } from "@/hooks/server-action-hooks";
 import { Spinner } from "flowbite-react";
-import { sendAudio } from "@/app/actions/conversations";
 import { useToast } from "@/hooks/use-toast";
 import { Message } from "@looma/core/domain/entities/message";
+import { sendAudio } from "@/app/actions/messages";
 
 type Props = {
   onAddMessage(message: Message.Props): void;

@@ -25,7 +25,7 @@ type SendMessageTextProps = {
 };
 
 interface MessageDriver {
-  sendMessageText(props: SendMessageTextProps): Promise<string>;
+  sendMessageText(props: SendMessageTextProps): Promise<string | null>;
 }
 
 export class ShowCart {
@@ -53,6 +53,8 @@ export class ShowCart {
       content: cart.formatted,
       to: conversation.contact.phone,
     });
+
+    if (!messageId) return;
 
     const message = Message.create({
       content: cart.formatted,
