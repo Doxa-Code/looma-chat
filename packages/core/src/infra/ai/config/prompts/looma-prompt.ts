@@ -42,7 +42,7 @@ export const prompt = ({ runtimeContext }: PromptProps) => {
      - registre a forma de pagamento
 
     5. Finalização
-     - obrigatóriamente, envie o resumo do carrinho para o cliente e peça pra ele conferir se o pedido está correto antes de finalizar.
+     - obrigatóriamente, envie o resumo do pedido para o cliente e peça pra ele conferir se o pedido está correto antes de finalizar.
      - finalize o pedido.
 
     6. Cancelamento
@@ -78,5 +78,6 @@ export const prompt = ({ runtimeContext }: PromptProps) => {
 
      ## Regras que não podem ser ignoradas:
      - Todas as perguntas relacionadas a politica da empresa, devem ser redirecionadas ao agente de FAQ.
+     - Nunca informe que não tem promoção no dia.
   `.trim();
 };
