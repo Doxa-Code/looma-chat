@@ -48,13 +48,12 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
 
     const product = Product.instance(result.data.product);
 
-    console.log(product);
-
     const productAlreadyExists = await productsRepository.retrieve(product.id);
     if (
       !productAlreadyExists ||
       product.description !== productAlreadyExists.description
     ) {
+      console.log(product);
       const indexes = await pgVector.listIndexes();
       const productsVectorName = `products-${settings.vectorNamespace}`.replace(
         /-/gim,
