@@ -53,12 +53,25 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       !productAlreadyExists ||
       product.description !== productAlreadyExists.description
     ) {
+      const indexes = await pgVector.listIndexes();
+      const productsVectorName = `products-${settings.vectorNamespace}`.replace(
+        /-/gim,
+        "_"
+      );
+
+      if (!indexes.includes(productsVectorName)) {
+        await pgVector.createIndex({
+          dimension: 1536,
+          indexName: productsVectorName,
+        });
+      }
+
       console.log(
         `${product.id} - Embedando descrição do produto, ${productAlreadyExists?.description ?? "Produto não existe"}, ${product.description}`
       );
       const { embedding } = await createEmbedding(product.description);
       await pgVector.upsert({
-        indexName: `products-${settings.vectorNamespace}`.replace(/-/gim, "_"),
+        indexName: productsVectorName,
         vectors: [embedding],
         ids: [product.id],
         metadata: [
