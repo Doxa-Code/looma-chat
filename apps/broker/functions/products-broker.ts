@@ -6,6 +6,11 @@ import type { SQSEvent, SQSHandler } from "aws-lambda";
 import z from "zod";
 import { createEmbedding } from "../helpers/vector-store";
 
+function normalize(vector: number[]) {
+  const norm = Math.sqrt(vector.reduce((acc, val) => acc + val * val, 0));
+  return vector.map((val) => val / norm);
+}
+
 const productValidate = z.object({
   workspaceId: z.string(),
   product: z.object({
@@ -53,8 +58,8 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       !productAlreadyExists ||
       product.description !== productAlreadyExists.description
     ) {
-      console.log(product);
       const indexes = await pgVector.listIndexes();
+      console.log(product);
       const productsVectorName = `products-${settings.vectorNamespace}`.replace(
         /-/gim,
         "_"
@@ -64,16 +69,19 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
         await pgVector.createIndex({
           dimension: 1536,
           indexName: productsVectorName,
+          metric: "cosine",
         });
       }
 
       console.log(
         `${product.id} - Embedando descrição do produto, ${productAlreadyExists?.description ?? "Produto não existe"}, ${product.description}`
       );
-      const { embedding } = await createEmbedding(product.description);
+      const value = `${product.description} | ${product.manufactory}`;
+      const { embedding } = await createEmbedding(value);
+      const normalizedEmbedding = normalize(embedding);
       await pgVector.upsert({
         indexName: productsVectorName,
-        vectors: [embedding],
+        vectors: [normalizedEmbedding],
         ids: [product.id],
         metadata: [
           {

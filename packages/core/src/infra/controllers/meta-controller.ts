@@ -1,7 +1,7 @@
 import { MessagePayload } from "../../application/command/message-received";
 import { NotAuthorized } from "../../domain/errors/not-authorized";
 import { MetaMessageDriver } from "../drivers/message-driver";
-import { redis } from "../drivers/redis";
+import { getRedisClient } from "../drivers/redis";
 import { ValidSignature } from "../helpers/valid-signature";
 
 async function addMessageToBuffer(
@@ -9,6 +9,7 @@ async function addMessageToBuffer(
   message: any,
   flushFn: (msgs: any[]) => Promise<void>
 ) {
+  const redis = getRedisClient();
   const bufferKey = `buffer:${key}`;
   const lockKey = `lock:${key}`;
 

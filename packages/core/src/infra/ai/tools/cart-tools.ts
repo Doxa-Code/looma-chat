@@ -153,7 +153,7 @@ export const setAddressCartTool = createTool({
       .nullable()
       .describe("Complemento do endereço"),
   }),
-  execute: async ({ runtimeContext, context }) => {
+  execute: async ({ runtimeContext, context, resourceId, threadId }) => {
     const setCartAddress = SetCartAddress.instance();
     const cart = await setCartAddress.execute({
       address: context,
@@ -162,7 +162,13 @@ export const setAddressCartTool = createTool({
     });
     const response = cart.address?.validate();
     if (!response?.isValid) {
-      return `Endereço salvo porém tem campos faltantes: ${response?.missingFields.join(", ")}`;
+      const result = `Endereço ${cart.address?.fullAddress()} salvo porém com campos faltantes: ${response?.missingFields.join(", ")}`;
+      await saveMessageOnThread({
+        content: result,
+        resourceId,
+        threadId,
+      });
+      return result;
     }
     return cart.formatted;
   },

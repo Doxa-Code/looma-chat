@@ -34,10 +34,25 @@ export default $config({
       fifo: true,
     });
 
-    productsQueue.subscribe({
-      handler: "functions/products-broker.handler",
-      environment,
-    });
+    productsQueue.subscribe(
+      {
+        handler: "functions/products-broker.handler",
+        environment,
+        versioning: true,
+        concurrency: {
+          provisioned: 5,
+        },
+      },
+      {
+        transform: {
+          eventSourceMapping: {
+            scalingConfig: {
+              maximumConcurrency: 5,
+            },
+          },
+        },
+      }
+    );
 
     const clientsQueue = new sst.aws.Queue("ClientsBroker");
 

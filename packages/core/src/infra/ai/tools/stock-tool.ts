@@ -7,11 +7,16 @@ import { saveMessageOnThread } from "../utils";
 import { Setting } from "../../../domain/value-objects/setting";
 import { ProductsDatabaseRepository } from "../../repositories/products-repository";
 
+function normalize(vector: number[]) {
+  const norm = Math.sqrt(vector.reduce((acc, val) => acc + val * val, 0));
+  return vector.map((val) => val / norm);
+}
+
 export const stockTool = createTool({
   id: "stock-tool",
   description: "use para verificar se o produto está em estoque",
   inputSchema: z.object({
-    query: z.string(),
+    productName: z.string().describe("Nome do produto"),
   }),
   async execute({ context, runtimeContext, threadId, resourceId }) {
     try {
@@ -19,18 +24,18 @@ export const stockTool = createTool({
         model: azureEmbeddings.textEmbeddingModel("text-embedding-3-small", {
           dimensions: 1536,
         }),
-        value: context.query,
+        value: context.productName,
       });
 
       const setting = runtimeContext.get("settings") as Setting;
 
-      const response = await pgVector.query({
+      const normalizeEmbedding = normalize(embedding);
+
+      const vectorProducts = await pgVector.query({
         indexName: `products-${setting.vectorNamespace}`.replace(/-/gim, "_"),
-        queryVector: embedding,
+        queryVector: normalizeEmbedding,
         topK: 30,
       });
-
-      const vectorProducts = response.map((m) => m.metadata);
 
       if (!vectorProducts.length) return [];
 
@@ -41,12 +46,19 @@ export const stockTool = createTool({
         runtimeContext.get("workspaceId")
       );
 
+      const productsWithStock = products
+        .filter((p) => p.stock > 0)
+        .sort((a, b) => (a.price > b.price ? 1 : -1));
+
+      console.log({ products, productsWithStock });
+
+      if (!productsWithStock.length)
+        return "Nenhum produto solicitado em estoque!";
+
       let result =
         "id,descrição,código,marca,preço,estoque,preço promocional,inicio da promoção,fim da promoção\n";
 
-      result += products
-        .filter((p) => p.stock > 0)
-        .sort((a, b) => (a.price > b.price ? 1 : -1))
+      result += productsWithStock
         .map((p) => [
           p.id,
           p.description,
