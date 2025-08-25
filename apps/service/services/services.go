@@ -9,6 +9,7 @@ import (
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/debug"
 
+	"looma-service/config"
 	"looma-service/services/carts"
 	"looma-service/services/clients"
 	"looma-service/services/products"
@@ -53,8 +54,13 @@ loop:
 	return false, 0
 }
 
-func Run() {
+func Run(cliente, unidade string) {
 	name := "Looma Service"
+
+	if err := config.Load(cliente, unidade); err != nil {
+		log.Fatalf("Erro ao carregar configuração: %v", err)
+	}
+	log.Printf("Configurações carregadas para %s", config.Env.Client.QueueName)
 
 	isService, err := svc.IsWindowsService()
 

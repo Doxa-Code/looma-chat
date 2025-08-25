@@ -7,6 +7,11 @@ import (
 	services "looma-service/services"
 )
 
+var (
+	Cliente string
+	Unidade string
+)
+
 func main() {
-	services.Run()
+	services.Run(Cliente, Unidade)
 }

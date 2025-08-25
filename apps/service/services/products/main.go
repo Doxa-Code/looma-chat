@@ -6,7 +6,6 @@ package products
 import (
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -14,8 +13,10 @@ import (
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/debug"
 
+	"looma-service/config"
 	"looma-service/utils"
 	"looma-service/utils/database"
+	"looma-service/utils/formatter"
 )
 
 var logger *utils.Logger
@@ -58,7 +59,6 @@ loop:
 }
 
 func runMonitorLoopWithStop(stop <-chan struct{}) {
-	utils.CheckEnvironments(logger)
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 
@@ -70,7 +70,7 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 		case <-ticker.C:
 			logger.SendLog("info", "Iniciando o processo de checagem de mudanças")
 
-			query := `SELECT * FROM doxacode_produtos;`
+			query := config.Env.Client.Queries.ProductWatcher
 
 			columns, rows, err := database.Query(query, logger)
 
@@ -90,6 +90,9 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 
 			for rows.Next() {
 				id, rowMap := database.CreateRowMap("codigo", columns, rows, logger)
+				if val, ok := rowMap["preco"]; !ok || val == nil {
+					rowMap["preco"] = 0
+				}
 				hash := utils.CreateHash(rowMap, logger)
 
 				if oldHash, exists := hashes[id]; !exists || oldHash != hash {
@@ -104,7 +107,7 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 					hashes[id] = hash
 					utils.SaveHashes(hashesPath, hashes, logger)
 
-					jsonPayload, err := utils.BuildProductPayloadJSON(rowMap, os.Getenv("WORKSPACE_ID"))
+					jsonPayload, err := formatter.BuildProductPayloadJSON(rowMap, config.Env.Client.WorkspaceId)
 					if err != nil {
 						logger.SendLog("error", fmt.Sprintf("Erro: %v", err))
 					} else {
@@ -120,10 +123,8 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 func StartWatcher(stop <-chan struct{}, isService bool) {
 	logger = &utils.Logger{
 		Lw: &utils.LokiWriter{
-			Job: os.Getenv("QUEUE_NAME") + "-products-watcher"},
+			Job: config.Env.Client.QueueName + "-products-watcher"},
 		IsService: isService}
-
-	utils.LoadEnvironments()
 
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 

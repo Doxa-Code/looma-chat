@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"golang.org/x/sys/windows/svc/eventlog"
+
+	"looma-service/config"
 )
 
 type LokiWriter struct {
@@ -40,7 +42,7 @@ func (w *LokiWriter) Write(level string, p []byte) (n int, err error) {
 		}
 
 		body, _ := json.Marshal(payload)
-		resp, err := http.Post(os.Getenv("LOKI_URL"), "application/json", bytes.NewBuffer(body))
+		resp, err := http.Post(config.Env.Common.LokiUrl, "application/json", bytes.NewBuffer(body))
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Erro enviando para Loki: %v\n", err)
 			return

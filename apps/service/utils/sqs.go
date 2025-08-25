@@ -6,15 +6,29 @@ import (
 	"log"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
+	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/google/uuid"
+
+	"looma-service/config"
 )
 
 func createClient(queueName string, logger *Logger) (*sqs.Client, string, context.Context) {
 	ctx := context.TODO()
-	cfg, err := config.LoadDefaultConfig(ctx)
+	cfg, err := awsConfig.LoadDefaultConfig(ctx,
+		awsConfig.WithRegion(config.Env.Common.AwsRegion),
+		awsConfig.WithCredentialsProvider(
+			aws.CredentialsProviderFunc(func(ctx context.Context) (aws.Credentials, error) {
+				return aws.Credentials{
+					AccessKeyID:     config.Env.Common.AwsAccessKeyId,
+					SecretAccessKey: config.Env.Common.AwsSecretAccessKey,
+					SessionToken:    "", // só se tiver
+					Source:          "common.json",
+				}, nil
+			}),
+		),
+	)
 	if err != nil {
 		log.Fatalf("Erro carregando AWS config: %v", err)
 	}
@@ -27,10 +41,10 @@ func createClient(queueName string, logger *Logger) (*sqs.Client, string, contex
 	clientSQS := sqs.NewFromConfig(cfg)
 
 	queueURLS := map[string]string{
-		"productsQueue": "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-ProductsBrokerQueue.fifo",
-		"clientsQueue":  "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-ClientsBrokerQueue-nbvctnoe",
-		"cartQueue":     "https://sqs.us-east-1.amazonaws.com/557130579131/looma-b-production-CartBrokerc2d27d7a1c04451bb7f9548f2faf3bd3Queue-medtarhu.fifo",
-		"finishCart":    "https://sqs.us-east-1.amazonaws.com/557130579131/looma-broker-production-FinishCartQueue-cbwecnfv",
+		"productsQueue": config.Env.Common.CommonQueues.ProductsQueue,
+		"clientsQueue":  config.Env.Common.CommonQueues.ClientsQueue,
+		"finishCart":    config.Env.Common.CommonQueues.FinishCart,
+		"cartQueue":     config.Env.Client.CartsQueueUrl,
 	}
 
 	return clientSQS, queueURLS[queueName], ctx

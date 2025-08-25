@@ -4,10 +4,8 @@
 package carts
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -15,8 +13,10 @@ import (
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/debug"
 
+	"looma-service/config"
 	"looma-service/utils"
 	"looma-service/utils/database"
+	"looma-service/utils/formatter"
 )
 
 var logger *utils.Logger
@@ -59,7 +59,6 @@ loop:
 }
 
 func runMonitorLoopWithStop(stop <-chan struct{}) {
-	utils.CheckEnvironments(logger)
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 
@@ -71,7 +70,7 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 		case <-ticker.C:
 			logger.SendLog("info", "Iniciando o processo de checagem de mudanças")
 
-			query := `SELECT * FROM sdp_pedidos;`
+			query := config.Env.Client.Queries.CartsWatcher
 
 			columns, rows, err := database.Query(query, logger)
 			if err != nil {
@@ -96,12 +95,13 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 					hashes[id] = hash
 					utils.SaveHashes(hashesPath, hashes, logger)
 
-					jsonBytes, err := json.Marshal(rowMap)
+					jsonPayload, err := formatter.BuildCartPayloadJSON(rowMap, config.Env.Client.WorkspaceId)
+					logger.SendLog("debug", string(jsonPayload))
 					if err != nil {
-						log.Fatalf("Erro ao converter para JSON: %v", err)
+						logger.SendLog("error", fmt.Sprintf("Erro: %v", err))
+					} else {
+						utils.SendMessage(string(jsonPayload), "finishCart", logger, false)
 					}
-
-					utils.SendMessage(string(jsonBytes), "finishCart", logger, false)
 				}
 			}
 			logger.SendLog("info", "Finalizou loop de verificação de mudanças")
@@ -112,10 +112,8 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 func StartWatcher(stop <-chan struct{}, isService bool) {
 	logger = &utils.Logger{
 		Lw: &utils.LokiWriter{
-			Job: os.Getenv("QUEUE_NAME") + "-carts-watcher"},
+			Job: config.Env.Client.QueueName + "-carts-watcher"},
 		IsService: isService}
-
-	utils.LoadEnvironments()
 
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
