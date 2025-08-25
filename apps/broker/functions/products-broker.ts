@@ -48,6 +48,8 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
 
     const product = Product.instance(result.data.product);
 
+    console.log(product);
+
     const productAlreadyExists = await productsRepository.retrieve(product.id);
     if (
       !productAlreadyExists ||
@@ -77,6 +79,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
         metadata: [
           {
             id: product.id,
+            description: product.description,
           },
         ],
       });
