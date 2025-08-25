@@ -88,15 +88,37 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 			logger.SendLog("info", fmt.Sprintf("Número de colunas: %d", len(columns)))
 			logger.SendLog("info", "Entrando no loop rows.Next()")
 
+			// --- 1. Monta um slice com os itens da query ---
+			type Item struct {
+				ID     string
+				RowMap map[string]interface{}
+			}
+			var items []Item
+
 			for rows.Next() {
 				id, rowMap := database.CreateRowMap("codigo", columns, rows, logger)
 				if val, ok := rowMap["preco"]; !ok || val == nil {
 					rowMap["preco"] = 0
 				}
-				hash := utils.CreateHash(rowMap, logger)
+				items = append(items, Item{ID: id, RowMap: rowMap})
+			}
 
-				if oldHash, exists := hashes[id]; !exists || oldHash != hash {
-					logger.SendLog("info", fmt.Sprintf("Mudança detectada para Id %s: %+v", id, rowMap))
+			// --- 2. Remove duplicados pelo ID ---
+			unique := map[string]bool{}
+			var filtered []Item
+			for _, item := range items {
+				if !unique[item.ID] {
+					unique[item.ID] = true
+					filtered = append(filtered, item)
+				}
+			}
+
+			// --- 3. Processa apenas os itens únicos ---
+			for _, item := range filtered {
+				hash := utils.CreateHash(item.RowMap, logger)
+
+				if oldHash, exists := hashes[item.ID]; !exists || oldHash != hash {
+					logger.SendLog("info", fmt.Sprintf("Mudança detectada para Id %s: %+v", item.ID, item.RowMap))
 
 					if exists {
 						logger.SendLog("debug", fmt.Sprintf("Hash antigo: %s | Hash novo: %s", oldHash, hash))
@@ -104,10 +126,10 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 						logger.SendLog("debug", fmt.Sprintf("Nenhum hash antigo encontrado | Hash novo: %s", hash))
 					}
 
-					hashes[id] = hash
+					hashes[item.ID] = hash
 					utils.SaveHashes(hashesPath, hashes, logger)
 
-					jsonPayload, err := formatter.BuildProductPayloadJSON(rowMap, config.Env.Client.WorkspaceId)
+					jsonPayload, err := formatter.BuildProductPayloadJSON(item.RowMap, config.Env.Client.WorkspaceId)
 					if err != nil {
 						logger.SendLog("error", fmt.Sprintf("Erro: %v", err))
 					} else {
@@ -115,6 +137,7 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 					}
 				}
 			}
+
 			logger.SendLog("info", "Finalizou loop de verificação de mudanças")
 		}
 	}
