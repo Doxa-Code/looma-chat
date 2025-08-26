@@ -48,6 +48,7 @@ export const handler = async (event: APIGatewayEvent) => {
   }
   return await MetaController.create({
     async onChangeMessageStatus({ messageId, status }) {
+      console.log("CHANGE MESSAGE STATUS: ", { messageId, status });
       const changeStatusMessage = ChangeStatusMessage.instance();
       const conversation = await changeStatusMessage.execute({
         messageId,
@@ -58,17 +59,21 @@ export const handler = async (event: APIGatewayEvent) => {
       }
     },
     async onReceivedMessage(props) {
+      console.log("RECEIVED MESSAGE: ", props);
       const messageReceived = MessageReceived.instance();
       const response = await messageReceived.execute(props);
       if (!response) return;
       try {
-        await refreshConversation(response?.conversation?.id);
-        await typingConversation(response?.conversation?.id);
         const sendMessageToLooma = SendMessageToLooma.instance();
-        const conversation = await sendMessageToLooma.execute({
-          conversationId: response?.conversation?.id,
-          workspaceId: response?.workspaceId,
-        });
+        const [conversation] = await Promise.all([
+          sendMessageToLooma.execute({
+            conversationId: response?.conversation?.id,
+            workspaceId: response?.workspaceId,
+          }),
+          refreshConversation(response?.conversation?.id),
+          typingConversation(response?.conversation?.id),
+        ]);
+
         if (conversation) {
           await refreshConversation(conversation?.id);
         }

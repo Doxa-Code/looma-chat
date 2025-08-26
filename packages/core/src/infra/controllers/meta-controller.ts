@@ -3,7 +3,6 @@ import { NotAuthorized } from "../../domain/errors/not-authorized";
 import { MetaMessageDriver } from "../drivers/message-driver";
 import { getRedisClient } from "../drivers/redis";
 import { ValidSignature } from "../helpers/valid-signature";
-import { setTimeout } from "node:timers/promises";
 
 async function addMessageToBuffer(
   key: string,
@@ -19,14 +18,18 @@ async function addMessageToBuffer(
   const gotLock = await redis.set(lockKey, "1", "EX", 6, "NX");
 
   if (gotLock) {
-    await setTimeout(5000);
-    const msgs = await redis.lrange(bufferKey, 0, -1);
-    await redis.del(bufferKey);
-    await redis.del(lockKey);
+    return await new Promise((resolve) => {
+      setTimeout(async () => {
+        const msgs = await redis.lrange(bufferKey, 0, -1);
+        await redis.del(bufferKey);
+        await redis.del(lockKey);
 
-    if (msgs.length > 0) {
-      await flushFn(msgs.map((m) => JSON.parse(m)));
-    }
+        if (msgs.length > 0) {
+          await flushFn(msgs.map((m) => JSON.parse(m)));
+        }
+        resolve(null);
+      }, 5000);
+    });
   }
 }
 
@@ -70,36 +73,38 @@ export class MetaController {
 
       if (!contactPhone) return;
 
-      await MetaMessageDriver.instance().viewMessage({
-        channel: phoneId,
-        lastMessageId: messagePayload.id,
-      });
+      await Promise.all([
+        await MetaMessageDriver.instance().viewMessage({
+          channel: phoneId,
+          lastMessageId: messagePayload.id,
+        }),
+        await (async () => {
+          const debounceKey = [contactPhone, phoneId].join("-");
+          const newMessage: MessagePayload = {
+            content:
+              messagePayload?.text?.body ??
+              messagePayload?.audio?.id ??
+              messagePayload?.image?.id,
+            id: messagePayload.id,
+            timestamp: Number(messagePayload.timestamp),
+            type: messagePayload.type,
+          };
 
-      const debounceKey = [contactPhone, phoneId].join("-");
-
-      const newMessage: MessagePayload = {
-        content:
-          messagePayload?.text?.body ??
-          messagePayload?.audio?.id ??
-          messagePayload?.image?.id,
-        id: messagePayload.id,
-        timestamp: Number(messagePayload.timestamp),
-        type: messagePayload.type,
-      };
-
-      await addMessageToBuffer(
-        debounceKey,
-        newMessage,
-        async (messagesToSend) => {
-          await onReceivedMessage({
-            channel: phoneId,
-            contactName: contactProfile?.profile?.name,
-            contactPhone,
-            wabaId,
-            messagePayloads: messagesToSend,
-          });
-        }
-      );
+          await addMessageToBuffer(
+            debounceKey,
+            newMessage,
+            async (messagesToSend) => {
+              await onReceivedMessage({
+                channel: phoneId,
+                contactName: contactProfile?.profile?.name,
+                contactPhone,
+                wabaId,
+                messagePayloads: messagesToSend,
+              });
+            }
+          );
+        })(),
+      ]);
     };
   }
 }

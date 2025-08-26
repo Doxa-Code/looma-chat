@@ -60,7 +60,7 @@ export class MessageReceived {
       conversation = Conversation.create(contact, input.channel);
     }
 
-    for (const messagePayload of input.messagePayloads) {
+    input.messagePayloads.map((messagePayload) => {
       const message = Message.create({
         content: messagePayload.content,
         id: messagePayload.id,
@@ -68,13 +68,10 @@ export class MessageReceived {
         sender: contact,
         type: messagePayload.type,
       });
-
-      if (conversation.messages.some((m) => m.id === message.id)) continue;
-
+      if (conversation.messages.some((m) => m.id === message.id)) return;
       message.markAsDelivered();
-
       conversation.addMessage(message);
-    }
+    });
 
     await this.conversationsRepository.upsert(conversation, workspaceId);
 
