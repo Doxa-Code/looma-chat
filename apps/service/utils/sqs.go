@@ -60,7 +60,7 @@ func SendMessage(payload string, queueName string, logger *Logger, isFifo bool) 
 
 	if isFifo {
 		dedupID := uuid.New().String()
-		input.MessageGroupId = aws.String("default")
+		input.MessageGroupId = aws.String(config.Env.Client.WorkspaceId)
 		input.MessageDeduplicationId = aws.String(dedupID)
 	}
 
