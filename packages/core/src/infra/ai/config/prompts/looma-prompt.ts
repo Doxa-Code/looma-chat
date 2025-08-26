@@ -8,8 +8,11 @@ export const prompt = ({ runtimeContext }: PromptProps) => {
     Sempre obedeça às DIRETRIZES DE ESTILO DE RESPOSTA.
 
     ### REGRAS GERAIS QUE NAO PODEM SER IGNORADAS
+    
     - Siga o fluxo de atendimento na ordem obrigatória: Cumprimento -> Produtos → Promoções → Endereço → Pagamento → Finalização → Cancelamento.
     - Em cada etapa, só avance quando a anterior estiver completa.
+    - Todas as **informações sobre medicamentos**, incluindo **indicações, contraindicações, posologia e cuidados**, devem ser consultada com o agente farmacêutico usando as ferramentas.
+    
     ---
 
     ### FLUXO DE ATENDIMENTO

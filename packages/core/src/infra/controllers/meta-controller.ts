@@ -10,26 +10,53 @@ async function addMessageToBuffer(
   flushFn: (msgs: any[]) => Promise<void>
 ) {
   const redis = getRedisClient();
+
   const bufferKey = `buffer:${key}`;
   const lockKey = `lock:${key}`;
+  const messageIdKey = `processed:${message.id}`;
 
+  // 1️⃣ Deduplicação: ignora mensagens já processadas
+  const isDuplicate = await redis.get(messageIdKey);
+  if (isDuplicate) return;
+
+  // Marca como processada por 1 hora
+  await redis.set(messageIdKey, "1", "EX", 3600);
+
+  // 2️⃣ Adiciona ao buffer
   await redis.rpush(bufferKey, JSON.stringify(message));
 
-  const gotLock = await redis.set(lockKey, "1", "EX", 6, "NX");
+  // 3️⃣ Tenta criar lock NX
+  const gotLock = await redis.set(lockKey, "1", "NX");
 
   if (gotLock) {
-    return await new Promise((resolve) => {
-      setTimeout(async () => {
-        const msgs = await redis.lrange(bufferKey, 0, -1);
-        await redis.del(bufferKey);
-        await redis.del(lockKey);
+    // 4️⃣ Lock criado, define expiração
+    await redis.set(lockKey, "1", "EX", 5);
 
-        if (msgs.length > 0) {
-          await flushFn(msgs.map((m) => JSON.parse(m)));
+    // Função para processar o buffer quando não houver novas mensagens
+    const processBuffer = async () => {
+      while (true) {
+        const ttl = await redis.ttl(lockKey);
+        if (ttl && ttl > 0) {
+          await new Promise((res) => setTimeout(res, 500));
+        } else {
+          break;
         }
-        resolve(null);
-      }, 5000);
-    });
+      }
+
+      // 5️⃣ Lê o buffer e limpa
+      const msgs = await redis.lrange(bufferKey, 0, -1);
+      await redis.del(bufferKey);
+      await redis.del(lockKey);
+
+      if (msgs.length > 0) {
+        await flushFn(msgs.map((m) => JSON.parse(m)));
+      }
+    };
+
+    processBuffer().catch(console.error);
+  } else {
+    // 6️⃣ Lock já existe: reseta o TTL para adiar o flush
+    await redis.expire(lockKey, 5);
   }
 }
 

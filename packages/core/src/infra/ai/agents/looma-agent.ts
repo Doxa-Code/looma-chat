@@ -3,11 +3,6 @@ import { azure } from "../config/llms/azure";
 import { memoryWithVector } from "../config/memories";
 import { prompt } from "../config/prompts/looma-prompt";
 import {
-  closeConversationTool,
-  retrieveClientTool,
-} from "../tools/conversation-tools";
-import { promotionProductsTool, stockTool } from "../tools/stock-tool";
-import {
   addProductOnCartTool,
   cancelCartTool,
   closeCartTool,
@@ -19,7 +14,12 @@ import {
   showCartTool,
 } from "../tools/cart-tools";
 import { consultingCepTool } from "../tools/consulting-cep-tool";
-import { faqAgentTool } from "./faq-agent";
+import {
+  closeConversationTool,
+  retrieveClientTool,
+} from "../tools/conversation-tools";
+import { promotionProductsTool, stockTool } from "../tools/stock-tool";
+import { pharmaAgentTool } from "./pharma-agent";
 
 export const loomaAgent = new Agent({
   name: "Looma Agent",
@@ -43,6 +43,6 @@ export const loomaAgent = new Agent({
     getCurrentCartTool,
     consultingCepTool,
     retrieveClientTool,
-    faqAgentTool,
+    pharmaAgentTool,
   },
 });
