@@ -40,10 +40,6 @@ export default $config({
       environment,
       url: true,
       timeout: `900 seconds`,
-      versioning: true,
-      concurrency: {
-        provisioned: 1,
-      },
       permissions: [
         {
           actions: ["sqs:*"],
