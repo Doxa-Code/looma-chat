@@ -163,7 +163,11 @@ export class Cart {
   }
 
   removeProduct(productId: string) {
-    if (this.status.is("order")) {
+    if (
+      this.status.is("finished") ||
+      this.status.is("expired") ||
+      this.status.is("shipped")
+    ) {
       throw new Error(
         "O pedido já está fechado e já não pode mais remover produtos"
       );
@@ -225,6 +229,10 @@ ${this.total.toLocaleString("pt-BR", {
 
   setPaymentChange(paymentChange?: number) {
     this.paymentChange = paymentChange ?? null;
+  }
+
+  hasProduct(productId: string) {
+    return this._products.has(productId);
   }
 
   static create(props: Cart.CreateProps) {

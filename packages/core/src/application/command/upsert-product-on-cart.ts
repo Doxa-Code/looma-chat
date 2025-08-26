@@ -31,7 +31,7 @@ interface CartsRepository {
 }
 
 interface ProductsRepository {
-  retrieve(productId: string): Promise<Product | null>;
+  retrieve(productId: string, workspaceId: string): Promise<Product | null>;
 }
 
 type SendDataToQueueProps = {
@@ -90,7 +90,10 @@ export class UpsertProductOnCart {
       });
     }
 
-    const product = await this.productsRepository.retrieve(input.productId);
+    const product = await this.productsRepository.retrieve(
+      input.productId,
+      input.workspaceId
+    );
 
     if (!product) throw NotFound.throw("Product");
 

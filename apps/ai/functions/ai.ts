@@ -21,13 +21,19 @@ const clientLoomaChat = axios.create({
 });
 
 const refreshConversation = async (conversationId: string) =>
-  await clientLoomaChat.get(`/conversation/${conversationId}/refresh`);
+  await clientLoomaChat
+    .get(`/conversation/${conversationId}/refresh`)
+    .catch(() => {});
 
 const typingConversation = async (conversationId: string) =>
-  await clientLoomaChat.get(`/conversation/${conversationId}/typing`);
+  await clientLoomaChat
+    .get(`/conversation/${conversationId}/typing`)
+    .catch(() => {});
 
 const untypingConversation = async (conversationId: string) =>
-  await clientLoomaChat.get(`/conversation/${conversationId}/untyping`);
+  await clientLoomaChat
+    .get(`/conversation/${conversationId}/untyping`)
+    .catch((err) => {});
 
 export const handler = async (event: APIGatewayEvent) => {
   if (

@@ -16,7 +16,7 @@ export const getLastCartTool = createTool({
   description: "Use para buscar o ultimo pedido realizado",
   execute: async ({ runtimeContext, resourceId, threadId }) => {
     const lastCart = runtimeContext.get("lastCart") as Cart;
-    const response = lastCart ? lastCart.formatted : "Não há pedido realizado";
+    const response = lastCart ? lastCart : "Não há pedido realizado";
     await saveMessageOnThread({
       content: response,
       resourceId,
@@ -30,10 +30,10 @@ export const getCurrentCartTool = createTool({
   id: "get-current-cart-tool",
   description: "Use para buscar o pedido atual",
   execute: async ({ runtimeContext, resourceId, threadId }) => {
-    const currentCart = runtimeContext.get("currentCart") as Cart;
-    const response = currentCart
-      ? currentCart.formatted
-      : "Não há pedido aberto";
+    const currentCart =
+      (runtimeContext.get("currentCart") as Cart) ||
+      (runtimeContext.get("lastCart") as Cart);
+    const response = currentCart ? currentCart : "Não há pedido aberto";
 
     await saveMessageOnThread({
       content: response,
@@ -41,7 +41,7 @@ export const getCurrentCartTool = createTool({
       threadId,
     });
 
-    return currentCart ? currentCart.formatted : "Não há pedido aberto";
+    return response;
   },
 });
 
@@ -56,7 +56,7 @@ export const closeCartTool = createTool({
         workspaceId: runtimeContext.get("workspaceId"),
       });
 
-      return cart.formatted;
+      return cart.raw();
     } catch (err) {
       console.log(err);
       return err;
@@ -80,7 +80,7 @@ export const cancelCartTool = createTool({
       workspaceId: runtimeContext.get("workspaceId"),
       reason: context.reason,
     });
-    return cart.formatted;
+    return cart.raw();
   },
 });
 
@@ -94,7 +94,7 @@ export const showCartTool = createTool({
       workspaceId: runtimeContext.get("workspaceId"),
     });
     await saveMessageOnThread({
-      content: cart.formatted,
+      content: cart,
       resourceId,
       threadId,
     });
@@ -118,7 +118,8 @@ export const addProductOnCartTool = createTool({
       quantity: context.quantity,
       workspaceId: runtimeContext.get("workspaceId"),
     });
-    return cart.formatted;
+    console.log("ADD PRODUCT: ", { cart: cart.raw(), context });
+    return cart.raw();
   },
 });
 
@@ -135,7 +136,8 @@ export const removeProductFromCartTool = createTool({
       productId: context.productId,
       workspaceId: runtimeContext.get("workspaceId"),
     });
-    return cart.formatted;
+    console.log("REMOVE PRODUCT: ", { cart: cart.raw(), context });
+    return cart.raw();
   },
 });
 
@@ -174,7 +176,10 @@ export const setAddressCartTool = createTool({
       });
       return result;
     }
-    return cart.formatted;
+
+    console.log("SET ADDRESS: ", { cart: cart.raw(), context });
+
+    return cart.raw();
   },
 });
 
@@ -195,6 +200,8 @@ export const setPaymentMethodCartTool = createTool({
       paymentChange: context.paymentChange,
     });
 
-    return cart.formatted;
+    console.log("SET PAYMENT: ", { cart: cart.raw(), context });
+
+    return cart.raw();
   },
 });

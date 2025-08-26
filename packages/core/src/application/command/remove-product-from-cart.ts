@@ -60,6 +60,11 @@ export class RemoveProductFromCart {
 
     if (!cart) throw NotFound.throw("Cart");
 
+    if (!cart.hasProduct(input.productId))
+      throw NotFound.throw(
+        `produto com o id ${input.productId}, somente existe os seguintes produtos no carrinho: ${cart.products.map((p) => `id: ${p.id}, nome: ${p.description}`).join("\n")}. Tente remover com um id válido.`
+      );
+
     cart.removeProduct(input.productId);
 
     await this.cartsRepository.upsert(cart, conversation.id);

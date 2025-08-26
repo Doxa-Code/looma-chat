@@ -48,13 +48,13 @@ export class ProductsDatabaseRepository {
       promotionPrice: item.promotionPrice ? item.promotionPrice / 100 : 0,
     }));
   }
-  async retrieve(id: string): Promise<Product | null> {
+  async retrieve(id: string, workspaceId: string): Promise<Product | null> {
     const db = createDatabaseConnection();
 
     const [product] = await db
       .select()
       .from(products)
-      .where(eq(products.id, id));
+      .where(and(eq(products.id, id), eq(products.workspaceId, workspaceId)));
 
     if (!product) return null;
 

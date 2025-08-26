@@ -69,7 +69,7 @@ export class LoomaAIDriver implements AIDriver {
         ],
       ]);
 
-      const response = await looma.generate(props.content, {
+      const response = looma.streamVNext(props.content, {
         memory: {
           resource: threadId,
           thread: {
@@ -83,9 +83,12 @@ export class LoomaAIDriver implements AIDriver {
           recordOutputs: true,
         },
         runtimeContext,
+        maxSteps: 10,
+        temperature: 0.5,
+        topP: 0.7,
       });
 
-      const result = response.text;
+      const result = await response.text;
       return result;
     } catch (err: any) {
       console.log(err);

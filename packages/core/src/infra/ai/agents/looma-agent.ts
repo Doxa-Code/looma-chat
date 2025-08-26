@@ -24,7 +24,9 @@ import { faqAgentTool } from "./faq-agent";
 export const loomaAgent = new Agent({
   name: "Looma Agent",
   instructions: prompt,
-  model: azure("looma-ai"),
+  model: azure("looma-ai", {
+    parallelToolCalls: true,
+  }),
   memory: memoryWithVector,
   tools: {
     stockTool,

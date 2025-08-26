@@ -1,12 +1,11 @@
 import { createTool } from "@mastra/core/tools";
 import { embed } from "ai";
 import { z } from "zod";
+import { Setting } from "../../../domain/value-objects/setting";
+import { ProductsDatabaseRepository } from "../../repositories/products-repository";
 import { azureEmbeddings } from "../config/llms/azure";
 import { pgVector } from "../config/vectors/pg-vector";
 import { saveMessageOnThread } from "../utils";
-import { Setting } from "../../../domain/value-objects/setting";
-import { ProductsDatabaseRepository } from "../../repositories/products-repository";
-import { rerank } from "@mastra/rag";
 
 function normalize(vector: number[]) {
   const norm = Math.sqrt(vector.reduce((acc, val) => acc + val * val, 0));
@@ -20,6 +19,7 @@ export const stockTool = createTool({
     query: z.string().describe("Nome do produto e/ou apresentação"),
   }),
   async execute({ context, runtimeContext, threadId, resourceId }) {
+    console.log("STOCK PRODUCTS: ", { context });
     try {
       const { embedding } = await embed({
         model: azureEmbeddings.textEmbeddingModel("text-embedding-3-small", {
@@ -35,7 +35,7 @@ export const stockTool = createTool({
       const vectorProducts = await pgVector.query({
         indexName: `products-${setting.vectorNamespace}`.replace(/-/gim, "_"),
         queryVector: normalizeEmbedding,
-        topK: 100,
+        topK: 30,
         ef: 200,
         probes: 20,
       });
@@ -58,32 +58,13 @@ export const stockTool = createTool({
       if (!productsWithStock.length)
         return "Nenhum produto solicitado em estoque!";
 
-      let result =
-        "id,descrição,código,marca,preço,estoque,preço promocional,inicio da promoção,fim da promoção\n";
+      await saveMessageOnThread({
+        content: productsWithStock,
+        resourceId,
+        threadId,
+      });
 
-      result += productsWithStock
-        .map((p) => [
-          p.id,
-          p.description,
-          p.code,
-          p.manufactory,
-          p.price,
-          p.stock,
-          p.promotionPrice,
-          p.promotionStart,
-          `${p.promotionEnd}\n`,
-        ])
-        .join(",");
-
-      if (threadId && resourceId) {
-        await saveMessageOnThread({
-          content: result,
-          resourceId,
-          threadId,
-        });
-      }
-
-      return result;
+      return productsWithStock;
     } catch (err) {
       console.log(err);
       return [];
@@ -101,6 +82,7 @@ export const promotionProductsTool = createTool({
       .describe("Nome de produtos próximo aos itens do pedido do cliente."),
   }),
   async execute({ context, runtimeContext, threadId, resourceId }) {
+    console.log("PROMOTION PRODUCTS: ", { context });
     try {
       const { embedding } = await embed({
         model: azureEmbeddings.textEmbeddingModel("text-embedding-3-small", {
@@ -116,7 +98,7 @@ export const promotionProductsTool = createTool({
       const vectorProducts = await pgVector.query({
         indexName: `products-${setting.vectorNamespace}`.replace(/-/gim, "_"),
         queryVector: normalizeEmbedding,
-        topK: 100,
+        topK: 30,
         ef: 200,
         probes: 20,
       });
@@ -132,32 +114,20 @@ export const promotionProductsTool = createTool({
         runtimeContext.get("workspaceId")
       );
 
-      let result =
-        "id,descrição,código,marca,preço,estoque,preço promocional,inicio da promoção,fim da promoção\n";
-
-      result += products
+      const productsWithStock = products
         .filter((p) => p.stock > 0 && p.promotionEnd !== null)
-        .sort((a, b) => (a.price > b.price ? 1 : -1))
-        .map((p) => [
-          p.id,
-          p.description,
-          p.code,
-          p.manufactory,
-          p.price,
-          p.stock,
-          p.promotionPrice,
-          p.promotionStart,
-          `${p.promotionEnd}\n`,
-        ])
-        .join(",");
+        .sort((a, b) => (a.price > b.price ? 1 : -1));
+
+      if (!productsWithStock.length)
+        return "Nenhum produto solicitado em estoque!";
 
       await saveMessageOnThread({
-        content: result,
+        content: productsWithStock,
         resourceId,
         threadId,
       });
 
-      return result;
+      return productsWithStock;
     } catch (err) {
       console.log(err);
       return [];

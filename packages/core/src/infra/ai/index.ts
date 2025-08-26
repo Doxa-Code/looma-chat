@@ -31,7 +31,7 @@ export const mastra = new Mastra({
     },
   },
   logger: new PinoLogger({
-    level: "debug",
+    level: "info",
     name: "LoomaAI",
   }),
 });

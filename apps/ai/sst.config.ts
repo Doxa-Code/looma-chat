@@ -44,6 +44,13 @@ export default $config({
       concurrency: {
         provisioned: 1,
       },
+      permissions: [
+        {
+          actions: ["sqs:*"],
+          resources: ["*"],
+          effect: "allow",
+        },
+      ],
     });
 
     return {
