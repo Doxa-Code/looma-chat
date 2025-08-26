@@ -18,6 +18,34 @@ importers:
         specifier: 5.8.3
         version: 5.8.3
 
+  apps/ai:
+    dependencies:
+      '@ai-sdk/azure':
+        specifier: ^1.3.25
+        version: 1.3.25(zod@4.0.17)
+      '@looma/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      ai:
+        specifier: ^4.3.19
+        version: 4.3.19(react@19.1.0)(zod@4.0.17)
+      axios:
+        specifier: ^1.10.0
+        version: 1.11.0
+      zod:
+        specifier: ^4.0.17
+        version: 4.0.17
+    devDependencies:
+      '@looma/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
+      '@types/aws-lambda':
+        specifier: ^8.10.152
+        version: 8.10.152
+      sst:
+        specifier: ^3.17.10
+        version: 3.17.10
+
   apps/broker:
     dependencies:
       '@ai-sdk/azure':

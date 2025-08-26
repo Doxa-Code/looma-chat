@@ -4,6 +4,7 @@ import { SendMessageToLooma } from "@looma/core/application/command/send-message
 import { RegisterMessaging } from "@looma/core/application/queries/register-messaging";
 import { MetaController } from "@looma/core/infra/controllers/meta-controller";
 import type { APIGatewayEvent } from "aws-lambda";
+import axios from "axios";
 
 function getArrayBufferFromEvent(event: APIGatewayEvent): ArrayBuffer {
   const buffer = event.isBase64Encoded
@@ -14,6 +15,19 @@ function getArrayBufferFromEvent(event: APIGatewayEvent): ArrayBuffer {
     buffer.byteOffset + buffer.byteLength
   );
 }
+
+const clientLoomaChat = axios.create({
+  baseURL: "https://looma.doxacode.com.br/api",
+});
+
+const refreshConversation = async (conversationId: string) =>
+  await clientLoomaChat.get(`/conversation/${conversationId}/refresh`);
+
+const typingConversation = async (conversationId: string) =>
+  await clientLoomaChat.get(`/conversation/${conversationId}/typing`);
+
+const untypingConversation = async (conversationId: string) =>
+  await clientLoomaChat.get(`/conversation/${conversationId}/untyping`);
 
 export const handler = async (event: APIGatewayEvent) => {
   if (
@@ -33,33 +47,29 @@ export const handler = async (event: APIGatewayEvent) => {
         messageId,
         status,
       });
-      // if (conversation) {
-      //   sseEmitter.emit("message", conversation.raw());
-      // }
+      if (conversation) {
+        await refreshConversation(conversation.id);
+      }
     },
     async onReceivedMessage(props) {
+      const messageReceived = MessageReceived.instance();
+      const response = await messageReceived.execute(props);
+      if (!response) return;
       try {
-        const messageReceived = MessageReceived.instance();
-        console.log("MESSAGE RECEIVED:", { props });
-        const response = await messageReceived.execute(props);
-        console.log({ response });
-        if (!response) return;
-        // if (response.conversation) {
-        //   sseEmitter.emit("message", response?.conversation?.raw());
-        // }
-        // sseEmitter.emit("typing");
+        await refreshConversation(response?.conversation?.id);
+        await typingConversation(response?.conversation?.id);
         const sendMessageToLooma = SendMessageToLooma.instance();
         const conversation = await sendMessageToLooma.execute({
-          conversationId: response.conversation.id,
-          workspaceId: response.workspaceId,
+          conversationId: response?.conversation?.id,
+          workspaceId: response?.workspaceId,
         });
-        // if (conversation) {
-        //   sseEmitter.emit("message", conversation?.raw());
-        // }
-        // sseEmitter.emit("untyping");
+        if (conversation) {
+          await refreshConversation(conversation?.id);
+        }
+        await untypingConversation(response?.conversation?.id);
       } catch (err) {
         console.error({ err });
-        // sseEmitter.emit("untyping");
+        await untypingConversation(response?.conversation?.id);
       }
     },
   })({
