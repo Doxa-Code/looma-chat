@@ -3,6 +3,7 @@ import { NotAuthorized } from "../../domain/errors/not-authorized";
 import { MetaMessageDriver } from "../drivers/message-driver";
 import { getRedisClient } from "../drivers/redis";
 import { ValidSignature } from "../helpers/valid-signature";
+import { setTimeout } from "node:timers/promises";
 
 async function addMessageToBuffer(
   key: string,
@@ -18,15 +19,14 @@ async function addMessageToBuffer(
   const gotLock = await redis.set(lockKey, "1", "EX", 6, "NX");
 
   if (gotLock) {
-    setTimeout(async () => {
-      const msgs = await redis.lrange(bufferKey, 0, -1);
-      await redis.del(bufferKey);
-      await redis.del(lockKey);
+    await setTimeout(5000);
+    const msgs = await redis.lrange(bufferKey, 0, -1);
+    await redis.del(bufferKey);
+    await redis.del(lockKey);
 
-      if (msgs.length > 0) {
-        await flushFn(msgs.map((m) => JSON.parse(m)));
-      }
-    }, 5000);
+    if (msgs.length > 0) {
+      await flushFn(msgs.map((m) => JSON.parse(m)));
+    }
   }
 }
 

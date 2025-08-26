@@ -24,10 +24,10 @@ export default $config({
   },
   async run() {
     const environment = {
+      DATABASE_URL: process.env.DATABASE_URL!,
       AZURE_API_KEY: process.env.AZURE_API_KEY!,
       AZURE_ENDPOINT: process.env.AZURE_ENDPOINT!,
-      PINECONE_API_KEY: process.env.PINECONE_API_KEY!,
-      DATABASE_URL: process.env.DATABASE_URL!,
+      AZURE_API_VERSION: process.env.AZURE_API_VERSION!,
     };
 
     const productsQueue = new sst.aws.Queue("ProductsBroker", {
@@ -38,10 +38,6 @@ export default $config({
       {
         handler: "functions/products-broker.handler",
         environment,
-        versioning: true,
-        concurrency: {
-          provisioned: 5,
-        },
       },
       {
         transform: {
@@ -72,13 +68,13 @@ export default $config({
       (workspaceId) =>
         new sst.aws.Queue(`CartBroker-${workspaceId}`, {
           fifo: true,
-        }).url
+        })
     );
 
     return {
       productsQueue: productsQueue.url,
       clientsQueue: clientsQueue.url,
-      carts,
+      carts: carts.map((q) => q.url),
       finishCart: finishCart.url,
     };
   },

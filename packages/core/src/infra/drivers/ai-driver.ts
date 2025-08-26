@@ -88,6 +88,7 @@ export class LoomaAIDriver implements AIDriver {
       const result = response.text;
       return result;
     } catch (err: any) {
+      console.log(err);
       if (retry > 8) {
         return "";
       }

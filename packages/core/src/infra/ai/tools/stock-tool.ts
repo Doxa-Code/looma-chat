@@ -6,6 +6,7 @@ import { pgVector } from "../config/vectors/pg-vector";
 import { saveMessageOnThread } from "../utils";
 import { Setting } from "../../../domain/value-objects/setting";
 import { ProductsDatabaseRepository } from "../../repositories/products-repository";
+import { rerank } from "@mastra/rag";
 
 function normalize(vector: number[]) {
   const norm = Math.sqrt(vector.reduce((acc, val) => acc + val * val, 0));
@@ -16,7 +17,7 @@ export const stockTool = createTool({
   id: "stock-tool",
   description: "use para verificar se o produto está em estoque",
   inputSchema: z.object({
-    productName: z.string().describe("Nome do produto"),
+    query: z.string().describe("Nome do produto e/ou apresentação"),
   }),
   async execute({ context, runtimeContext, threadId, resourceId }) {
     try {
@@ -24,7 +25,7 @@ export const stockTool = createTool({
         model: azureEmbeddings.textEmbeddingModel("text-embedding-3-small", {
           dimensions: 1536,
         }),
-        value: context.productName,
+        value: context.query,
       });
 
       const setting = runtimeContext.get("settings") as Setting;
@@ -34,7 +35,9 @@ export const stockTool = createTool({
       const vectorProducts = await pgVector.query({
         indexName: `products-${setting.vectorNamespace}`.replace(/-/gim, "_"),
         queryVector: normalizeEmbedding,
-        topK: 30,
+        topK: 100,
+        ef: 200,
+        probes: 20,
       });
 
       if (!vectorProducts.length) return [];
@@ -42,15 +45,15 @@ export const stockTool = createTool({
       const productsRepository = ProductsDatabaseRepository.instance();
 
       const products = await productsRepository.listByIds(
-        vectorProducts.map((i) => i?.id ?? ""),
+        vectorProducts
+          .sort((a, b) => (a.score > b.score ? 1 : -1))
+          .map((i) => i?.id ?? ""),
         runtimeContext.get("workspaceId")
       );
 
       const productsWithStock = products
         .filter((p) => p.stock > 0)
         .sort((a, b) => (a.price > b.price ? 1 : -1));
-
-      console.log({ products, productsWithStock });
 
       if (!productsWithStock.length)
         return "Nenhum produto solicitado em estoque!";
@@ -93,7 +96,9 @@ export const promotionProductsTool = createTool({
   description:
     "use para consultar os produtos do estoque que estão em promoção",
   inputSchema: z.object({
-    query: z.string().describe("Nome de produtos próximo aos do pedido."),
+    query: z
+      .string()
+      .describe("Nome de produtos próximo aos itens do pedido do cliente."),
   }),
   async execute({ context, runtimeContext, threadId, resourceId }) {
     try {
@@ -106,20 +111,24 @@ export const promotionProductsTool = createTool({
 
       const setting = runtimeContext.get("settings") as Setting;
 
-      const response = await pgVector.query({
-        indexName: `products-${setting.vectorNamespace}`,
-        queryVector: embedding,
-        topK: 30,
-      });
+      const normalizeEmbedding = normalize(embedding);
 
-      const vectorProducts = response.map((m) => m.metadata);
+      const vectorProducts = await pgVector.query({
+        indexName: `products-${setting.vectorNamespace}`.replace(/-/gim, "_"),
+        queryVector: normalizeEmbedding,
+        topK: 100,
+        ef: 200,
+        probes: 20,
+      });
 
       if (!vectorProducts.length) return [];
 
       const productsRepository = ProductsDatabaseRepository.instance();
 
       const products = await productsRepository.listByIds(
-        vectorProducts.map((i) => i?.id ?? ""),
+        vectorProducts
+          .sort((a, b) => (a.score > b.score ? 1 : -1))
+          .map((i) => i?.id ?? ""),
         runtimeContext.get("workspaceId")
       );
 

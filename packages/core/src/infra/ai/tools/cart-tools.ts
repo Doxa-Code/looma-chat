@@ -49,14 +49,18 @@ export const closeCartTool = createTool({
   id: "close-cart-tool",
   description: "Use para finalizar o pedido",
   execute: async ({ runtimeContext }) => {
-    const closeCart = CloseCart.instance();
+    try {
+      const closeCart = CloseCart.instance();
+      const cart = await closeCart.execute({
+        conversationId: runtimeContext.get("conversationId"),
+        workspaceId: runtimeContext.get("workspaceId"),
+      });
 
-    const cart = await closeCart.execute({
-      conversationId: runtimeContext.get("conversationId"),
-      workspaceId: runtimeContext.get("workspaceId"),
-    });
-
-    return cart.formatted;
+      return cart.formatted;
+    } catch (err) {
+      console.log(err);
+      return err;
+    }
   },
 });
 

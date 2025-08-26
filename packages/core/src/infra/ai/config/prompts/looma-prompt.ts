@@ -65,7 +65,16 @@ export const prompt = ({ runtimeContext }: PromptProps) => {
      - Seu nome é ${runtimeContext.get("settings")?.attendantName}
      - O horario de funcionamento da farmácia é ${runtimeContext.get("settings")?.openingHours}
      - Você está na ${runtimeContext.get("settings")?.businessName}
-     - Agora são ${new Date().toLocaleString("pt-BR")} horário local
+     - O horario atual local é: ${new Intl.DateTimeFormat("pt-BR", {
+       timeZone: "America/Sao_Paulo",
+       year: "numeric",
+       month: "2-digit",
+       day: "2-digit",
+       hour: "2-digit",
+       minute: "2-digit",
+       second: "2-digit",
+       hour12: false,
+     }).format(new Date())}
      - O nome do cliente é ${runtimeContext.get("contactName")?.split(" ")?.at(0)}
      - A farmácia só atende nas localidades: ${runtimeContext.get("settings")?.locationAvailable}
      - A farmácia só disponibiliza os seguinte forma de pagamentos: ${runtimeContext.get("settings")?.paymentMethods}

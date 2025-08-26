@@ -1,13 +1,5 @@
-import { Pinecone } from "@pinecone-database/pinecone";
 import { createAzure } from "@ai-sdk/azure";
 import { embed } from "ai";
-
-const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY ?? "",
-});
-
-export const createPineconeClient = (namespace: string) =>
-  pinecone.index("products").namespace(namespace);
 
 const azureEmbeddings = createAzure({
   apiKey: process.env.AZURE_API_KEY || "",
