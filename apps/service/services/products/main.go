@@ -103,18 +103,14 @@ func runMonitorLoopWithStop(stop <-chan struct{}) {
 				items = append(items, Item{ID: id, RowMap: rowMap})
 			}
 
-			// --- 2. Remove duplicados pelo ID ---
+			// --- 2. Ignora IDs duplicados e processa itens únicos.---
 			unique := map[string]bool{}
-			var filtered []Item
 			for _, item := range items {
-				if !unique[item.ID] {
-					unique[item.ID] = true
-					filtered = append(filtered, item)
+				if unique[item.ID] {
+					continue
 				}
-			}
+				unique[item.ID] = true
 
-			// --- 3. Processa apenas os itens únicos ---
-			for _, item := range filtered {
 				hash := utils.CreateHash(item.RowMap, logger)
 
 				if oldHash, exists := hashes[item.ID]; !exists || oldHash != hash {
