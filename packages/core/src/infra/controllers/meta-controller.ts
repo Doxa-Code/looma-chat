@@ -17,6 +17,8 @@ async function addMessageToBuffer(
 
   // 1️⃣ Deduplicação: ignora mensagens já processadas
   const isDuplicate = await redis.get(messageIdKey);
+  console.log({ isDuplicate });
+
   if (isDuplicate) return;
 
   // Marca como processada por 1 hora
@@ -28,6 +30,8 @@ async function addMessageToBuffer(
   // 3️⃣ Tenta criar lock NX
   const gotLock = await redis.set(lockKey, "1", "NX");
 
+  console.log({ gotLock });
+
   if (gotLock) {
     // 4️⃣ Lock criado, define expiração
     await redis.set(lockKey, "1", "EX", 5);
@@ -36,15 +40,18 @@ async function addMessageToBuffer(
     const processBuffer = async () => {
       while (true) {
         const ttl = await redis.ttl(lockKey);
+        console.log({ ttl });
         if (ttl && ttl > 0) {
           await new Promise((res) => setTimeout(res, 500));
         } else {
+          console.log("PAROU");
           break;
         }
       }
 
       // 5️⃣ Lê o buffer e limpa
       const msgs = await redis.lrange(bufferKey, 0, -1);
+      console.log({ msgs });
       await redis.del(bufferKey);
       await redis.del(lockKey);
 
@@ -53,7 +60,7 @@ async function addMessageToBuffer(
       }
     };
 
-    processBuffer().catch(console.error);
+    await processBuffer().catch(console.error);
   } else {
     // 6️⃣ Lock já existe: reseta o TTL para adiar o flush
     await redis.expire(lockKey, 5);
