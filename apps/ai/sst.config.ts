@@ -40,6 +40,7 @@ export default $config({
       environment,
       url: true,
       timeout: `900 seconds`,
+      memory: "256 MB",
       permissions: [
         {
           actions: ["sqs:*"],

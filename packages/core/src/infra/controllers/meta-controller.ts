@@ -64,6 +64,8 @@ async function addMessageToBuffer(
   } else {
     // 6️⃣ Lock já existe: reseta o TTL para adiar o flush
     await redis.expire(lockKey, 5);
+    console.log("PAREI DE PROCESSAR");
+    return;
   }
 }
 
