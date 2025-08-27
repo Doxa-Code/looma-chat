@@ -53,7 +53,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
 
     const product = Product.instance(result.data.product);
 
-    const productAlreadyExists = await productsRepository.retrieve(product.id);
+    const productAlreadyExists = await productsRepository.retrieve(product.id, result.data.workspaceId);
     if (
       !productAlreadyExists ||
       product.description !== productAlreadyExists.description
