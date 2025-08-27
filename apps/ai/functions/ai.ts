@@ -46,7 +46,7 @@ export const handler = async (event: APIGatewayEvent) => {
       token: event.queryStringParameters["hub.verify_token"]!,
     });
   }
-  MetaController.create({
+  await MetaController.create({
     async onChangeMessageStatus({ messageId, status }) {
       console.log("CHANGE MESSAGE STATUS: ", { messageId, status });
       const changeStatusMessage = ChangeStatusMessage.instance();
