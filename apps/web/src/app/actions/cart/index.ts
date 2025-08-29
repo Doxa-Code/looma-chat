@@ -1,6 +1,6 @@
 "use server";
-import { sseEmitter } from "@/lib/sse";
 import { CancelCart } from "@looma/core/application/command/cancel-cart";
+import { CloseCart } from "@looma/core/application/command/close-cart";
 import { RemoveProductFromCart } from "@looma/core/application/command/remove-product-from-cart";
 import { SetCartAddress } from "@looma/core/application/command/set-cart-address";
 import { SetCartPayment } from "@looma/core/application/command/set-cart-payment";
@@ -12,7 +12,6 @@ import { CartsDatabaseRepository } from "@looma/core/infra/repositories/carts-re
 import { ConversationsDatabaseRepository } from "@looma/core/infra/repositories/conversations-repository";
 import z from "zod";
 import { securityProcedure } from "./../procedure";
-import { CloseCart } from "@looma/core/application/command/close-cart";
 
 const conversationsRepository = ConversationsDatabaseRepository.instance();
 const cartsRepository = CartsDatabaseRepository.instance();
@@ -169,12 +168,8 @@ export const showCart = securityProcedure([
   .handler(async ({ input, ctx }) => {
     const showCart = ShowCart.instance();
 
-    const { cart, conversation } = await showCart.execute({
+    await showCart.execute({
       conversationId: input.conversationId,
       workspaceId: ctx.membership.workspaceId,
     });
-
-    sseEmitter.emit("message", conversation.raw());
-
-    return cart.formatted;
   });
