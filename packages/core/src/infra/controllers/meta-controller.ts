@@ -1,81 +1,11 @@
 import { MessagePayload } from "../../application/command/message-received";
 import { NotAuthorized } from "../../domain/errors/not-authorized";
-import { MetaMessageDriver } from "../drivers/message-driver";
-import { getRedisClient } from "../drivers/redis";
 import { ValidSignature } from "../helpers/valid-signature";
-
-async function addMessageToBuffer(
-  key: string,
-  message: any,
-  flushFn: (msgs: any[]) => Promise<void>
-) {
-  const redis = getRedisClient();
-
-  const bufferKey = `buffer:${key}`;
-  const lockKey = `lock:${key}`;
-  const messageIdKey = `processed:${message.id}`;
-
-  // 1️⃣ Deduplicação: ignora mensagens já processadas
-  const isDuplicate = await redis.get(messageIdKey);
-  console.log({ isDuplicate });
-
-  if (isDuplicate) return;
-
-  // Marca como processada por 1 hora
-  await redis.set(messageIdKey, "1", "EX", 3600);
-
-  // 2️⃣ Adiciona ao buffer
-  await redis.rpush(bufferKey, JSON.stringify(message));
-
-  // 3️⃣ Tenta criar lock NX
-  const gotLock = await redis.set(lockKey, "1", "NX");
-
-  console.log({ gotLock });
-
-  if (gotLock) {
-    // 4️⃣ Lock criado, define expiração
-    await redis.set(lockKey, "1", "EX", 5);
-
-    // Função para processar o buffer quando não houver novas mensagens
-    const processBuffer = async () => {
-      while (true) {
-        const ttl = await redis.ttl(lockKey);
-        console.log({ ttl });
-        if (ttl && ttl > 0) {
-          await new Promise((res) => setTimeout(res, 500));
-        } else {
-          console.log("PAROU");
-          break;
-        }
-      }
-
-      // 5️⃣ Lê o buffer e limpa
-      const msgs = await redis.lrange(bufferKey, 0, -1);
-      console.log({ msgs });
-      await redis.del(bufferKey);
-      await redis.del(lockKey);
-
-      if (msgs.length > 0) {
-        await flushFn(msgs.map((m) => JSON.parse(m)));
-      }
-    };
-
-    await processBuffer().catch(console.error);
-  } else {
-    // 6️⃣ Lock já existe: reseta o TTL para adiar o flush
-    await redis.expire(lockKey, 5);
-    console.log("PAREI DE PROCESSAR");
-    return;
-  }
-}
 
 export class MetaController {
   static create({ onChangeMessageStatus, onReceivedMessage }: ControllerProps) {
-    return async ({ input, request }: HandleProps) => {
-      if (!request) throw NotAuthorized.throw();
-
-      const rawBody = await request.arrayBuffer();
-      const signature = request.headers.get("x-hub-signature-256");
+    return async ({ input, rawBody, signature }: HandleProps) => {
+      if (!rawBody || !signature) throw NotAuthorized.throw();
 
       const isValid = await ValidSignature.valid(rawBody, signature);
       if (!isValid) throw NotAuthorized.throw();
@@ -109,38 +39,23 @@ export class MetaController {
 
       if (!contactPhone) return;
 
-      await Promise.all([
-        await MetaMessageDriver.instance().viewMessage({
-          channel: phoneId,
-          lastMessageId: messagePayload.id,
-        }),
-        await (async () => {
-          const debounceKey = [contactPhone, phoneId].join("-");
-          const newMessage: MessagePayload = {
-            content:
-              messagePayload?.text?.body ??
-              messagePayload?.audio?.id ??
-              messagePayload?.image?.id,
-            id: messagePayload.id,
-            timestamp: Number(messagePayload.timestamp),
-            type: messagePayload.type,
-          };
+      const newMessage: MessagePayload = {
+        content:
+          messagePayload?.text?.body ??
+          messagePayload?.audio?.id ??
+          messagePayload?.image?.id,
+        id: messagePayload.id,
+        timestamp: Number(messagePayload.timestamp),
+        type: messagePayload.type,
+      };
 
-          await addMessageToBuffer(
-            debounceKey,
-            newMessage,
-            async (messagesToSend) => {
-              await onReceivedMessage({
-                channel: phoneId,
-                contactName: contactProfile?.profile?.name,
-                contactPhone,
-                wabaId,
-                messagePayloads: messagesToSend,
-              });
-            }
-          );
-        })(),
-      ]);
+      await onReceivedMessage({
+        channel: phoneId,
+        contactName: contactProfile?.profile?.name,
+        contactPhone,
+        wabaId,
+        messagePayload: newMessage,
+      });
     };
   }
 }
@@ -150,7 +65,7 @@ type OnReceivedMessageProps = {
   wabaId: string;
   contactName: string;
   contactPhone: string;
-  messagePayloads: MessagePayload[];
+  messagePayload: MessagePayload;
 };
 
 type OnChangeMessageStatusProps = {
@@ -165,5 +80,6 @@ type ControllerProps = {
 
 type HandleProps = {
   input?: any;
-  request?: any;
+  rawBody: ArrayBuffer;
+  signature: string;
 };

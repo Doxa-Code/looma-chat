@@ -9,6 +9,10 @@ declare module "sst" {
       "type": "sst.aws.Queue"
       "url": string
     }
+    "CartBroker-09c4ea3f-f5bb-4326-a1ad-563640e09432": {
+      "type": "sst.aws.Queue"
+      "url": string
+    }
     "CartBroker-c2d27d7a-1c04-451b-b7f9-548f2faf3bd3": {
       "type": "sst.aws.Queue"
       "url": string

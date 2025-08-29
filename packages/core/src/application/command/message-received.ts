@@ -60,18 +60,16 @@ export class MessageReceived {
       conversation = Conversation.create(contact, input.channel);
     }
 
-    input.messagePayloads.map((messagePayload) => {
-      const message = Message.create({
-        content: messagePayload.content,
-        id: messagePayload.id,
-        createdAt: new Date(messagePayload.timestamp * 1000),
-        sender: contact,
-        type: messagePayload.type,
-      });
-      if (conversation.messages.some((m) => m.id === message.id)) return;
-      message.markAsDelivered();
-      conversation.addMessage(message);
+    const message = Message.create({
+      content: input.messagePayload?.content,
+      id: input.messagePayload?.id,
+      createdAt: new Date(input.messagePayload?.timestamp * 1000),
+      sender: contact,
+      type: input.messagePayload?.type,
     });
+    if (conversation.messages.some((m) => m.id === message.id)) return;
+    message.markAsDelivered();
+    conversation.addMessage(message);
 
     await this.conversationsRepository.upsert(conversation, workspaceId);
 
@@ -99,5 +97,5 @@ type InputDTO = {
   channel: string;
   contactPhone: string;
   contactName: string;
-  messagePayloads: MessagePayload[];
+  messagePayload: MessagePayload;
 };

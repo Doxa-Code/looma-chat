@@ -21,8 +21,8 @@ const productValidate = z.object({
     price: z.number(),
     stock: z.number(),
     promotionPrice: z.number().nullable(),
-    promotionStart: z.date().nullable(),
-    promotionEnd: z.date().nullable(),
+    promotionStart: z.string().nullable(),
+    promotionEnd: z.string().nullable(),
   }),
 });
 
@@ -51,9 +51,20 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       return;
     }
 
-    const product = Product.instance(result.data.product);
+    const product = Product.instance({
+      ...result.data.product,
+      promotionStart: result.data.product.promotionStart
+        ? new Date(result.data.product.promotionStart)
+        : null,
+      promotionEnd: result.data.product.promotionEnd
+        ? new Date(result.data.product.promotionEnd)
+        : null,
+    });
 
-    const productAlreadyExists = await productsRepository.retrieve(product.id, result.data.workspaceId);
+    const productAlreadyExists = await productsRepository.retrieve(
+      product.id,
+      result.data.workspaceId
+    );
     if (
       !productAlreadyExists ||
       product.description !== productAlreadyExists.description

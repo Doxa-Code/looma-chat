@@ -5,6 +5,7 @@ import { ConversationsDatabaseRepository } from "@looma/core/infra/repositories/
 import z from "zod";
 import { securityProcedure } from "../procedure";
 import { createServerAction } from "zsa";
+import { Attendant } from "@looma/core/domain/value-objects/attendant";
 
 const conversationsRepository = ConversationsDatabaseRepository.instance();
 

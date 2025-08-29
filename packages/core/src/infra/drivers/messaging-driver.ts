@@ -1,35 +1,32 @@
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { randomUUID } from "node:crypto";
 
-type SendDataToQueueProps = {
-  queueURL: string;
-  data: unknown;
-  workspaceId: string;
-  operation: "orderCart" | "upsertProduct" | "removeProduct" | "cancelCart";
+type SendMessageToQueueProps = {
+  queueUrl: string;
+  body: string;
+  groupId: string;
+  messageId: string;
+  delay?: number;
 };
 
 interface MessagingDriver {
-  sendDataToQueue(data: SendDataToQueueProps): Promise<boolean>;
+  sendMessageToQueue(data: SendMessageToQueueProps): Promise<boolean>;
 }
 
 export class SQSMessagingDriver implements MessagingDriver {
-  async sendDataToQueue(data: SendDataToQueueProps): Promise<boolean> {
+  async sendMessageToQueue(data: SendMessageToQueueProps): Promise<boolean> {
     const sqsClient = new SQSClient({});
 
-    const params = {
-      QueueUrl: data.queueURL,
-      MessageBody: JSON.stringify({
-        data: data.data,
-        workspaceId: data.workspaceId,
-        operation: data.operation,
-      }),
-      MessageGroupId: "defaultGroup",
-      MessageDeduplicationId: randomUUID(),
-    };
-
-    const command = new SendMessageCommand(params);
+    const command = new SendMessageCommand({
+      QueueUrl: data.queueUrl,
+      MessageBody: data.body,
+      MessageGroupId: data.groupId,
+      MessageDeduplicationId: data.messageId,
+      DelaySeconds: data.delay,
+    });
+    console.log(command);
     const response = await sqsClient.send(command);
-    console.log(response);
+    console.log("MESSAGE SEND: ", response.$metadata.httpStatusCode);
 
     return true;
   }

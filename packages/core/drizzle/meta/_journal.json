@@ -176,6 +176,20 @@
       "when": 1755890243391,
       "tag": "0024_stormy_medusa",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1756356530229,
+      "tag": "0025_funny_romulus",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1756359162981,
+      "tag": "0026_rare_lester",
+      "breakpoints": true
     }
   ]
 }

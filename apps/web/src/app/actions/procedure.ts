@@ -6,18 +6,15 @@ import {
   PolicyName,
 } from "@looma/core/domain/services/authorization-service";
 import { MembershipsDatabaseRepository } from "@looma/core/infra/repositories/membership-repository";
-import { UsersDatabaseRepository } from "@looma/core/infra/repositories/users-repository";
-import z from "zod";
 import { createServerActionProcedure } from "zsa";
 import { getUserAuthenticate, getWorkspaceSelected } from "./security";
 
 const authorizationService = AuthorizationService.instance();
 const membershipsRepository = MembershipsDatabaseRepository.instance();
-const usersRepository = UsersDatabaseRepository.instance();
 
 export const securityProcedure = (permissions?: PolicyName[]) =>
   createServerActionProcedure()
-    .handler(async ({ input }) => {
+    .handler(async () => {
       let user: User | null;
       let workspaceId: string | null;
 

@@ -1,4 +1,4 @@
-import { primaryKey } from "drizzle-orm/pg-core";
+import { jsonb, primaryKey } from "drizzle-orm/pg-core";
 import {
   boolean,
   integer,
@@ -189,4 +189,11 @@ export const carts = pgTable("carts", {
   cancelReason: text("cancel_reason"),
   paymentMethod: text("payment_method"),
   paymentChange: integer("payment_change"),
+});
+
+export const messageBuffer = pgTable("message_buffer", {
+  id: text("message_id").primaryKey().notNull(),
+  content: text("content").notNull(),
+  sender: text("sender").notNull(),
+  timestamp: integer("timestamp").notNull(),
 });

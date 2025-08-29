@@ -4,6 +4,7 @@ const cartQueues = [
   "c2d27d7a-1c04-451b-b7f9-548f2faf3bd3",
   "c7c919ea-ad06-448d-947d-da9cb51de85c",
   "0543027b-7074-4d83-9eb3-3bbdbdfd6856",
+  "09c4ea3f-f5bb-4326-a1ad-563640e09432",
 ];
 
 export default $config({

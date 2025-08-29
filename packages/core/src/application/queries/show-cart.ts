@@ -68,10 +68,7 @@ export class ShowCart {
 
     await this.conversationsRepository.upsert(conversation, input.workspaceId);
 
-    return {
-      cart,
-      conversation,
-    };
+    return conversation;
   }
 
   static instance() {

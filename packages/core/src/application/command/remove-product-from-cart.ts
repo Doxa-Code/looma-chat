@@ -20,19 +20,15 @@ interface CartsRepository {
   upsert(cart: Cart, conversationId: string): Promise<void>;
 }
 
-type SendDataToQueueProps = {
-  queueURL: string;
-  data: {
-    cart: Cart.Raw;
-    total: number;
-    productId: string;
-  };
-  workspaceId: string;
-  operation: "removeProduct";
+type SendMessageToQueueProps = {
+  queueUrl: string;
+  body: string;
+  groupId: string;
+  messageId: string;
 };
 
 interface MessagingDriver {
-  sendDataToQueue(props: SendDataToQueueProps): Promise<boolean>;
+  sendMessageToQueue(data: SendMessageToQueueProps): Promise<boolean>;
 }
 
 interface SettingsRepository {
@@ -75,15 +71,19 @@ export class RemoveProductFromCart {
           input.workspaceId
         );
       if (settings?.queueURL) {
-        await this.messagingDriver.sendDataToQueue({
-          queueURL: settings.queueURL,
-          data: {
-            cart: cart.raw(),
-            productId: input.productId,
-            total: cart.total,
-          },
-          workspaceId: input.workspaceId,
-          operation: "removeProduct",
+        await this.messagingDriver.sendMessageToQueue({
+          queueUrl: settings.queueURL,
+          groupId: "defaultGroup",
+          messageId: crypto.randomUUID(),
+          body: JSON.stringify({
+            data: {
+              cart: cart.raw(),
+              productId: input.productId,
+              total: cart.total,
+            },
+            workspaceId: input.workspaceId,
+            operation: "removeProduct",
+          }),
         });
       }
     }

@@ -34,18 +34,15 @@ interface ProductsRepository {
   retrieve(productId: string, workspaceId: string): Promise<Product | null>;
 }
 
-type SendDataToQueueProps = {
-  queueURL: string;
-  data: {
-    cart: Cart.Raw;
-    total: number;
-  };
-  workspaceId: string;
-  operation: "upsertProduct";
+type SendMessageToQueueProps = {
+  queueUrl: string;
+  body: string;
+  groupId: string;
+  messageId: string;
 };
 
 interface MessagingDriver {
-  sendDataToQueue(props: SendDataToQueueProps): Promise<boolean>;
+  sendMessageToQueue(data: SendMessageToQueueProps): Promise<boolean>;
 }
 
 interface SettingsRepository {
@@ -112,14 +109,18 @@ export class UpsertProductOnCart {
           input.workspaceId
         );
       if (settings?.queueURL) {
-        await this.messagingDriver.sendDataToQueue({
-          queueURL: settings?.queueURL,
-          data: {
-            cart: cart.raw(),
-            total: cart.total,
-          },
-          workspaceId: input.workspaceId,
-          operation: "upsertProduct",
+        await this.messagingDriver.sendMessageToQueue({
+          queueUrl: settings.queueURL,
+          body: JSON.stringify({
+            data: {
+              cart: cart.raw(),
+              total: cart.total,
+            },
+            workspaceId: input.workspaceId,
+            operation: "upsertProduct",
+          }),
+          groupId: "defaultGroup",
+          messageId: crypto.randomUUID(),
         });
       }
     }

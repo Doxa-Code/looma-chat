@@ -26,6 +26,7 @@
     "@mastra/pg": "^0.14.0",
     "@mastra/rag": "^1.0.8",
     "@mastra/voice-azure": "^0.10.6",
+    "@modelcontextprotocol/sdk": "^1.17.4",
     "@opendocsg/pdf2md": "^0.2.1",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/exporter-trace-otlp-proto": "0.201.1",
