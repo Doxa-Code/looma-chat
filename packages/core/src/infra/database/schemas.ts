@@ -197,3 +197,12 @@ export const messageBuffer = pgTable("message_buffer", {
   sender: text("sender").notNull(),
   timestamp: integer("timestamp").notNull(),
 });
+
+export const toolsResultsBuffer = pgTable("tools_results_buffer", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  toolName: text("toolName").notNull(),
+  contact: text("contact").notNull(),
+  channel: text("channel").notNull(),
+  content: text("content").notNull(),
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
+});

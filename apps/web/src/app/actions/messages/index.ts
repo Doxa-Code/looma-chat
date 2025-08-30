@@ -47,7 +47,7 @@ export const saveMessageResponse = securityProcedure([
     })
   )
   .handler(async ({ input, ctx }) => {
-    await SaveMessageResponse.instance().execute({
+    const conversation = await SaveMessageResponse.instance().execute({
       content: input.content,
       conversationId: input.conversationId,
       userId: ctx.user.id,
@@ -55,12 +55,17 @@ export const saveMessageResponse = securityProcedure([
       workspaceId: ctx.membership.workspaceId,
       messageId: input.messageId,
     });
+
+    sseEmitter.emit("message", conversation?.raw());
   });
 
 export const messageReceived = securityProcedure([
   "view:conversation",
   "view:conversations",
 ])
+  .onError(async (err) => {
+    console.log(err);
+  })
   .input(
     z.object({
       channel: z.string(),
@@ -73,6 +78,7 @@ export const messageReceived = securityProcedure([
         type: z.enum(["text", "audio", "image"]),
       }),
       wabaId: z.string(),
+      workspaceId: z.string(),
     })
   )
   .handler(async ({ input }) => {
@@ -88,7 +94,9 @@ export const messageReceived = securityProcedure([
         type: input.messagePayload.type,
       },
       wabaId: input.wabaId,
+      workspaceId: input.workspaceId,
     });
+    sseEmitter.emit("message", response?.conversation?.raw());
     return {
       ...response,
       conversation: response?.conversation?.raw(),

@@ -13,7 +13,7 @@ export class SaveMessageResponse {
   constructor(
     private readonly conversationsRepository: ConversationsRepository
   ) {}
-  async execute(input: InputDTO): Promise<void> {
+  async execute(input: InputDTO): Promise<Conversation> {
     const conversation = await this.conversationsRepository.retrieve(
       input.conversationId
     );
@@ -37,6 +37,7 @@ export class SaveMessageResponse {
     conversation.addMessage(message);
 
     await this.conversationsRepository.upsert(conversation, input.workspaceId);
+    return conversation;
   }
 
   static instance() {

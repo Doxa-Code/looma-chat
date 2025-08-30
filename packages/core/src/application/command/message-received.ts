@@ -33,16 +33,6 @@ export class MessageReceived {
     private readonly conversationsRepository: ConversationsRepository
   ) {}
   async execute(input: InputDTO) {
-    const responseSetting =
-      await this.settingsRepository.retrieveSettingByWabaIdAndPhoneId(
-        input.wabaId,
-        input.channel
-      );
-
-    if (!responseSetting) return null;
-
-    const workspaceId = responseSetting?.workspaceId;
-
     let contact = await this.contactsRepository.retrieve(input.contactPhone);
 
     if (!contact) {
@@ -67,13 +57,14 @@ export class MessageReceived {
       sender: contact,
       type: input.messagePayload?.type,
     });
+
     if (conversation.messages.some((m) => m.id === message.id)) return;
     message.markAsDelivered();
     conversation.addMessage(message);
 
-    await this.conversationsRepository.upsert(conversation, workspaceId);
+    await this.conversationsRepository.upsert(conversation, input.workspaceId);
 
-    return { conversation, workspaceId };
+    return { conversation, workspaceId: input.workspaceId };
   }
 
   static instance() {
@@ -98,4 +89,5 @@ type InputDTO = {
   contactPhone: string;
   contactName: string;
   messagePayload: MessagePayload;
+  workspaceId: string;
 };

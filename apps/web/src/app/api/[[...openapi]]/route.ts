@@ -1,9 +1,4 @@
 import {
-  refreshConversation,
-  typingConversation,
-  untypingConversation,
-} from "@/app/actions/conversations";
-import {
   changeStatusMessage,
   messageReceived,
   saveMessageResponse,
@@ -25,9 +20,6 @@ const router = createOpenApiServerActionRouter({
   .post(
     "/conversation/{conversationId}/message/{messageId}",
     saveMessageResponse
-  )
-  .get("/conversation/{conversationId}/refresh", refreshConversation)
-  .get("/conversation/{conversationId}/typing", typingConversation)
-  .get("/conversation/{conversationId}/untyping", untypingConversation);
+  );
 
 export const { GET, POST, PUT, DELETE } = createRouteHandlers(router) as any;

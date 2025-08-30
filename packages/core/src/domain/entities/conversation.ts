@@ -30,6 +30,7 @@ export namespace Conversation {
     channel: string;
     lastMessage?: Message.Raw;
     teaser?: string;
+    lastContactMessages: Message.Raw[];
   }
 }
 
@@ -69,6 +70,7 @@ export class Conversation {
       lastMessage: this.lastMessage?.raw?.(),
       teaser: this.teaser,
       closedAt: this.closedAt,
+      lastContactMessages: this.lastContactMessages.map((m) => m.raw()),
     };
   }
 
