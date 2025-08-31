@@ -116,7 +116,8 @@ export function Chat(props: Props) {
       )
     ) {
       markLastMessagesContactAsViewedAction.mutate({
-        conversationId: conversation.id,
+        channel: conversation.channel,
+        contactPhone: conversation.contact.phone,
       });
     }
   }, [conversation]);

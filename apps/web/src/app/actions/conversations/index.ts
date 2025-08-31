@@ -4,8 +4,6 @@ import { CloseConversation } from "@looma/core/application/command/close-convers
 import { ConversationsDatabaseRepository } from "@looma/core/infra/repositories/conversations-repository";
 import z from "zod";
 import { securityProcedure } from "../procedure";
-import { createServerAction } from "zsa";
-import { Attendant } from "@looma/core/domain/value-objects/attendant";
 
 const conversationsRepository = ConversationsDatabaseRepository.instance();
 

@@ -1,7 +1,9 @@
 import {
   changeStatusMessage,
+  markLastMessagesContactAsViewed,
   messageReceived,
-  saveMessageResponse,
+  sendMessage,
+  sendTyping,
 } from "@/app/actions/messages";
 import { retrieveSettings } from "@/app/actions/settings";
 import { sse } from "@/app/actions/sse";
@@ -15,11 +17,10 @@ const router = createOpenApiServerActionRouter({
 })
   .get("/sse", sse)
   .get("/settings", retrieveSettings)
-  .post("/conversation/message/received", messageReceived)
-  .put("/conversation/message/{messageId}", changeStatusMessage)
-  .post(
-    "/conversation/{conversationId}/message/{messageId}",
-    saveMessageResponse
-  );
+  .post("/message/status", changeStatusMessage)
+  .post("/message/received", messageReceived)
+  .post("/message/viewed", markLastMessagesContactAsViewed)
+  .post("/message/send", sendMessage)
+  .post("/message/typing", sendTyping);
 
 export const { GET, POST, PUT, DELETE } = createRouteHandlers(router) as any;
