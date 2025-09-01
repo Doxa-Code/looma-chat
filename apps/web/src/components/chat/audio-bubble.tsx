@@ -59,7 +59,7 @@ export const AudioBubble: React.FC<Props> = (props) => {
 
   useEffect(() => {
     const audio = new Audio(
-      `/api/conversations/message/${props.message.id}/audio?channel=${props.channel}`
+      `/api/message/${props.message.id}/audio?channel=${props.channel}`
     );
     audioRef.current = audio;
 

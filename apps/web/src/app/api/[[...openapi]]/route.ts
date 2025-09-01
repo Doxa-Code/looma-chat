@@ -1,7 +1,9 @@
 import {
   changeStatusMessage,
+  listenAudio,
   markLastMessagesContactAsViewed,
   messageReceived,
+  retrieveImage,
   sendMessage,
   sendTyping,
 } from "@/app/actions/messages";
@@ -17,6 +19,8 @@ const router = createOpenApiServerActionRouter({
 })
   .get("/sse", sse)
   .get("/settings", retrieveSettings)
+  .get("/message/{messageId}/audio", listenAudio)
+  .get("/message/{messageId}/image", retrieveImage)
   .post("/message/status", changeStatusMessage)
   .post("/message/received", messageReceived)
   .post("/message/viewed", markLastMessagesContactAsViewed)

@@ -1,6 +1,5 @@
 import { Conversation } from "../../domain/entities/conversation";
 import { NotFound } from "../../domain/errors/not-found";
-import { MetaMessageDriver } from "../../infra/drivers/message-driver";
 import { ConversationsDatabaseRepository } from "../../infra/repositories/conversations-repository";
 
 interface ConversationsRepository {
@@ -11,19 +10,9 @@ interface ConversationsRepository {
   upsert(conversation: Conversation, workspaceId: string): Promise<void>;
 }
 
-type ViewProps = {
-  lastMessageId: string;
-  channel: string;
-};
-
-interface MessageDriver {
-  viewMessage(data: ViewProps): Promise<void>;
-}
-
 export class MarkLastMessagesContactAsViewed {
   constructor(
-    private readonly conversationsRepository: ConversationsRepository,
-    private readonly messageDriver: MessageDriver
+    private readonly conversationsRepository: ConversationsRepository
   ) {}
 
   async execute(input: InputDTO) {
@@ -35,11 +24,6 @@ export class MarkLastMessagesContactAsViewed {
 
     if (!conversation) throw NotFound.throw("conversation");
 
-    await this.messageDriver.viewMessage({
-      channel: conversation.channel,
-      lastMessageId: conversation.lastMessage!.id,
-    });
-
     conversation.markLastMessagesContactAsViewed();
 
     await this.conversationsRepository.upsert(conversation, input.workspaceId);
@@ -49,8 +33,7 @@ export class MarkLastMessagesContactAsViewed {
 
   static instance() {
     return new MarkLastMessagesContactAsViewed(
-      ConversationsDatabaseRepository.instance(),
-      MetaMessageDriver.instance()
+      ConversationsDatabaseRepository.instance()
     );
   }
 }

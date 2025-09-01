@@ -26,7 +26,7 @@ export const ImageBubble: React.FC<Props> = (props) => {
 
   async function loadImage() {
     const response = await fetch(
-      `/api/conversations/message/${props.message.id}/image?channel=${props.channel}`
+      `/api/message/${props.message.id}/image?channel=${props.channel}`
     );
     const buffer = await response.arrayBuffer();
 
