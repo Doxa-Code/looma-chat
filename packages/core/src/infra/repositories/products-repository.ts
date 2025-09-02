@@ -48,6 +48,7 @@ export class ProductsDatabaseRepository {
       promotionPrice: item.promotionPrice ? item.promotionPrice / 100 : 0,
     }));
   }
+
   async retrieve(id: string, workspaceId: string): Promise<Product | null> {
     const db = createDatabaseConnection();
 
@@ -154,6 +155,72 @@ export class ProductsDatabaseRepository {
       promotionPrice: item.promotionPrice ? item.promotionPrice / 100 : 0,
     }));
   }
+
+  async vectorSearch(
+    embedding: number[],
+    workspaceId: string
+  ): Promise<Product.Props[]> {
+    const db = createDatabaseConnection();
+
+    const lists = await db.execute(`
+      SELECT 
+        id, 
+        description, 
+        code, 
+        manufactory, 
+        price, 
+        stock, 
+        promotion_price, 
+        promotion_start, 
+        promotion_end, 
+        workspace_id 
+      FROM products 
+        WHERE workspace_id = '${workspaceId}' AND stock > 0 
+        ORDER BY embedding <-> '${JSON.stringify(embedding)}' 
+        LIMIT 5
+    `);
+
+    return (lists as unknown as Product.Props[]).map((item) => ({
+      ...item,
+      price: item.price / 100,
+      promotionPrice: item.promotionPrice ? item.promotionPrice / 100 : 0,
+    }));
+  }
+
+  async vectorSearchPromotion(
+    embedding: number[],
+    workspaceId: string
+  ): Promise<Product.Props[]> {
+    const db = createDatabaseConnection();
+
+    const lists = await db.execute(`
+      SELECT 
+        id, 
+        description, 
+        code, 
+        manufactory, 
+        price, 
+        stock, 
+        promotion_price, 
+        promotion_start, 
+        promotion_end, 
+        workspace_id 
+      FROM products 
+        WHERE 
+          workspace_id = '${workspaceId}' AND 
+          stock > 0 AND
+          promotion_end IS NOT NULL
+        ORDER BY embedding <-> '${JSON.stringify(embedding)}' 
+        LIMIT 5
+    `);
+
+    return (lists as unknown as Product.Props[]).map((item) => ({
+      ...item,
+      price: item.price / 100,
+      promotionPrice: item.promotionPrice ? item.promotionPrice / 100 : 0,
+    }));
+  }
+
   static instance() {
     return new ProductsDatabaseRepository();
   }

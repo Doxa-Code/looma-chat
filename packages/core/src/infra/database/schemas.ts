@@ -1,4 +1,4 @@
-import { jsonb, primaryKey, serial } from "drizzle-orm/pg-core";
+import { index, jsonb, primaryKey, serial, vector } from "drizzle-orm/pg-core";
 import {
   boolean,
   integer,
@@ -141,6 +141,9 @@ export const products = pgTable(
     manufactory: text("manufactory").notNull(),
     price: integer("price").notNull().default(0),
     stock: integer("stock").notNull().default(0),
+    embedding: vector("embedding", {
+      dimensions: 1536,
+    }),
     promotionPrice: integer("promotion_price").default(0),
     promotionStart: timestamp("promotion_start"),
     promotionEnd: timestamp("promotion_end"),
@@ -215,10 +218,4 @@ export const toolsResultsBuffer = pgTable("tools_results_buffer", {
   channel: text("channel").notNull(),
   content: text("content").notNull(),
   timestamp: timestamp("timestamp").notNull().defaultNow(),
-});
-
-export const n8nChatHistories = pgTable("n8n_chat_histories", {
-  id: serial("id").primaryKey(),
-  sessionId: varchar("session_id", { length: 255 }).notNull(),
-  message: jsonb("message").notNull(),
 });

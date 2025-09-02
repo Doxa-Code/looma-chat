@@ -1,15 +1,11 @@
 import { Product } from "@looma/core/domain/value-objects/product";
-import { pgVector } from "@looma/core/infra/ai/config/vectors/pg-vector";
+import { createDatabaseConnection } from "@looma/core/infra/database";
+import { products } from "@looma/core/infra/database/schemas";
 import { ProductsDatabaseRepository } from "@looma/core/infra/repositories/products-repository";
 import { SettingsDatabaseRepository } from "@looma/core/infra/repositories/settings-repository";
 import type { SQSEvent, SQSHandler } from "aws-lambda";
 import z from "zod";
 import { createEmbedding } from "../helpers/vector-store";
-
-function normalize(vector: number[]) {
-  const norm = Math.sqrt(vector.reduce((acc, val) => acc + val * val, 0));
-  return vector.map((val) => val / norm);
-}
 
 const productValidate = z.object({
   workspaceId: z.string(),
@@ -29,6 +25,7 @@ const productValidate = z.object({
 export const handler: SQSHandler = async (event: SQSEvent) => {
   const productsRepository = ProductsDatabaseRepository.instance();
   const settingsRepository = SettingsDatabaseRepository.instance();
+  const db = createDatabaseConnection();
 
   for (const record of event.Records) {
     const body = JSON.parse(record.body) as Product.Props;
@@ -39,7 +36,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
         error: result.error,
         body: record.body,
       });
-      return;
+      continue;
     }
 
     const settings = await settingsRepository.retrieveSettingsByWorkspaceId(
@@ -48,7 +45,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
 
     if (!settings?.vectorNamespace) {
       console.log("Vector store namespace");
-      return;
+      continue;
     }
 
     const product = Product.instance({
@@ -65,44 +62,31 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       product.id,
       result.data.workspaceId
     );
+
+    const insertData: Product.Props & {
+      workspaceId: string;
+      embedding?: number[];
+    } = {
+      ...product.raw(),
+      workspaceId: result.data.workspaceId,
+    };
+
     if (
       !productAlreadyExists ||
       product.description !== productAlreadyExists.description
     ) {
-      const indexes = await pgVector.listIndexes();
-      console.log(product);
-      const productsVectorName = `products-${settings.vectorNamespace}`.replace(
-        /-/gim,
-        "_"
-      );
-
-      if (!indexes.includes(productsVectorName)) {
-        await pgVector.createIndex({
-          dimension: 1536,
-          indexName: productsVectorName,
-          metric: "cosine",
-        });
-      }
-
-      console.log(
-        `${product.id} - Embedando descrição do produto, ${productAlreadyExists?.description ?? "Produto não existe"}, ${product.description}`
-      );
       const value = `${product.description} | ${product.manufactory}`;
       const { embedding } = await createEmbedding(value);
-      const normalizedEmbedding = normalize(embedding);
-      await pgVector.upsert({
-        indexName: productsVectorName,
-        vectors: [normalizedEmbedding],
-        ids: [product.id],
-        metadata: [
-          {
-            id: product.id,
-            description: product.description,
-          },
-        ],
-      });
+      insertData.embedding = embedding;
+      console.log(`${value} - Embeddando descrição do produto`);
     }
 
-    await productsRepository.upsert(product, result.data.workspaceId);
+    await db
+      .insert(products)
+      .values(insertData)
+      .onConflictDoUpdate({
+        target: [products.id, products.workspaceId],
+        set: insertData,
+      });
   }
 };

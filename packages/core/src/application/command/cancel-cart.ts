@@ -65,7 +65,11 @@ export class CancelCart {
     if (settings?.queueURL) {
       await this.messagingDriver.sendMessageToQueue({
         body: JSON.stringify({
-          data: cart.id,
+          data: {
+            id: cart.id,
+            canceledAt: cart.canceledAt,
+            cancelReason: cart.cancelReason,
+          },
           workspaceId: input.workspaceId,
           operation: "cancelCart",
         }),
