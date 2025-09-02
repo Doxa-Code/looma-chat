@@ -1,12 +1,9 @@
 import { CloseConversation } from "@looma/core/application/command/close-conversation";
-import { SendMessage } from "@looma/core/application/command/send-message";
 import { Product } from "@looma/core/domain/value-objects/product";
-import { createDatabaseConnection } from "@looma/core/infra/database";
-import { n8nChatHistories } from "@looma/core/infra/database/schemas";
 import { CartsDatabaseRepository } from "@looma/core/infra/repositories/carts-repository";
 import { ConversationsDatabaseRepository } from "@looma/core/infra/repositories/conversations-repository";
-import { UsersDatabaseRepository } from "@looma/core/infra/repositories/users-repository";
 import type { SQSEvent, SQSHandler } from "aws-lambda";
+import axios from "axios";
 import z from "zod";
 
 const finishCartValidate = z.object({
@@ -19,6 +16,10 @@ const cartsRepository = CartsDatabaseRepository.instance();
 const conversationsRepository = ConversationsDatabaseRepository.instance();
 
 export const handler: SQSHandler = async (event: SQSEvent) => {
+  const loomaClient = axios.create({
+    baseURL:
+      "https://n8n.doxacode.com.br/webhook/f1c118f6-1c41-4866-8fc1-6c4497fa980b",
+  });
   for (const record of event.Records) {
     const body = JSON.parse(record.body) as Product.Props;
     const result = await finishCartValidate.safeParseAsync(body);
@@ -60,49 +61,24 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       }
       case "processing": {
         cart.processing();
-        const message =
-          "opa! acabei de ver aqui e seu pedido ta sendo processado blz? jaja chega ai!";
-        const loomaUser =
-          await UsersDatabaseRepository.instance().retrieveLoomaUser(
-            result.data.workspaceId
-          );
-        if (loomaUser) {
-          await SendMessage.instance().execute({
-            content: message,
-            conversationId: conversation.id,
-            userId: loomaUser?.id,
-            userName: loomaUser?.name,
-            workspaceId: result.data.workspaceId,
-          });
-          const db = createDatabaseConnection();
-          await db.insert(n8nChatHistories).values({
-            message: `{"type": "ai", "content": "${message}", "tool_calls": [], "additional_kwargs": {}, "response_metadata": {}, "invalid_tool_calls": []}`,
-            sessionId: `${conversation.channel}-${conversation.contact.phone}`,
-          });
-        }
+        await loomaClient.post("/", {
+          workspaceId: result.data.workspaceId,
+          conversationId: conversation.id,
+          status: "processing",
+          channel: conversation.channel,
+          contactPhone: conversation.contact.phone,
+        });
         break;
       }
       case "shipped": {
         cart.shipped();
-        const message = "opa! seu pedido ta saindo daqui? jaja chega ai ok?";
-        const loomaUser =
-          await UsersDatabaseRepository.instance().retrieveLoomaUser(
-            result.data.workspaceId
-          );
-        if (loomaUser) {
-          await SendMessage.instance().execute({
-            content: message,
-            conversationId: conversation.id,
-            userId: loomaUser?.id,
-            userName: loomaUser?.name,
-            workspaceId: result.data.workspaceId,
-          });
-          const db = createDatabaseConnection();
-          await db.insert(n8nChatHistories).values({
-            message: `{"type": "ai", "content": "${message}", "tool_calls": [], "additional_kwargs": {}, "response_metadata": {}, "invalid_tool_calls": []}`,
-            sessionId: `${conversation.channel}-${conversation.contact.phone}`,
-          });
-        }
+        await loomaClient.post("/", {
+          workspaceId: result.data.workspaceId,
+          conversationId: conversation.id,
+          status: "shipped",
+          channel: conversation.channel,
+          contactPhone: conversation.contact.phone,
+        });
         break;
       }
     }
