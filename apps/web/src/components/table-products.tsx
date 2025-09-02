@@ -30,6 +30,7 @@ import { useServerActionMutation } from "@/hooks/server-action-hooks";
 import { useToast } from "@/hooks/use-toast";
 import { Spinner } from "flowbite-react";
 import { useDebouncedCallback } from "use-debounce";
+import { Logo } from "./logo";
 
 type Props = {
   products: Product.Props[];
@@ -176,7 +177,13 @@ export default function TableProducts(props: Props) {
       </div>
 
       {/* Table */}
-      <div className="bg-background flex-1 overflow-hidden rounded-md border">
+      <div className="bg-background relative flex-1 overflow-hidden rounded-md border">
+        {isPending && (
+          <div className="absolute w-full h-full top-0 left-0 flex justify-center items-center flex-col bg-white/80 z-50">
+            <Logo className="size-20 motion-preset-stretch " />
+            <span className="animate-pulse">Carregando produtos...</span>
+          </div>
+        )}
         <Table>
           <TableHead>
             <TableRow
@@ -204,7 +211,9 @@ export default function TableProducts(props: Props) {
                       {product.description}
                     </TableCell>
                     <TableCell className="py-2">
-                      {product.manufactory}
+                      {product.manufactory === "<nil>"
+                        ? "-"
+                        : product.manufactory}
                     </TableCell>
                     <TableCell
                       data-danger={product.stock <= 1}

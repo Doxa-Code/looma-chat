@@ -46,51 +46,58 @@ export function Chat(props: Props) {
   const { connected } = useSSE({
     url: "/api/sse",
     onError(err) {
-      toast({
-        variant: "error",
-        title: "Error",
-        description: err.message,
-      });
+      if (err.message) {
+        toast({
+          variant: "error",
+          title: "Error",
+          description: err.message,
+        });
+      }
     },
     onMessage({ type, data: message }) {
-      if (type === "typing") {
+      if (
+        type === "typing" &&
+        conversation?.messages.map((m) => m.id).includes(message.messageId)
+      ) {
         setTyping(true);
         return;
       }
 
-      if (type === "untyping") {
+      if (type === "untyping" && message.id === conversation?.id) {
         setTyping(false);
         return;
       }
 
-      const newConversation = message as Conversation.Raw;
+      if (type === "conversation") {
+        const newConversation = message as Conversation.Raw;
 
-      if (!newConversation.id || newConversation.channel !== props.channel)
-        return;
+        if (!newConversation.id || newConversation.channel !== props.channel)
+          return;
 
-      setConversations((conversations) => {
-        conversations.set(newConversation.id, {
-          ...newConversation,
-          lastMessage: newConversation.lastMessage
-            ? {
-                ...newConversation.lastMessage,
-                createdAt: new Date(newConversation.lastMessage?.createdAt),
-              }
-            : undefined,
-          openedAt: newConversation.openedAt
-            ? new Date(newConversation.openedAt)
-            : null,
-          messages: newConversation.messages.map((m) => ({
-            ...m,
-            createdAt: new Date(m.createdAt),
-            viewedAt: m.viewedAt ? new Date(m.viewedAt) : null,
-          })),
+        setConversations((conversations) => {
+          conversations.set(newConversation.id, {
+            ...newConversation,
+            lastMessage: newConversation.lastMessage
+              ? {
+                  ...newConversation.lastMessage,
+                  createdAt: new Date(newConversation.lastMessage?.createdAt),
+                }
+              : undefined,
+            openedAt: newConversation.openedAt
+              ? new Date(newConversation.openedAt)
+              : null,
+            messages: newConversation.messages.map((m) => ({
+              ...m,
+              createdAt: new Date(m.createdAt),
+              viewedAt: m.viewedAt ? new Date(m.viewedAt) : null,
+            })),
+          });
+          return new Map(Array.from(conversations.entries()));
         });
-        return new Map(Array.from(conversations.entries()));
-      });
 
-      if (conversation?.id === newConversation.id) {
-        setConversation(newConversation);
+        if (conversation?.id === newConversation.id) {
+          setConversation(newConversation);
+        }
       }
     },
   });

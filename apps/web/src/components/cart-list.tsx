@@ -33,13 +33,14 @@ import { useState } from "react";
 import { BadgeStatus } from "./badge-status";
 import { EmptyState } from "./empty-state";
 import { Separator } from "./ui/separator";
+import { useSSE } from "@/hooks/use-sse";
 
 interface CartListProps {
   initCartsRaw: Cart.Raw[];
 }
 
 export function CartList({ initCartsRaw }: CartListProps) {
-  const { data: cartsRaw } = useServerActionQuery(listCarts, {
+  const { data: cartsRaw, refetch } = useServerActionQuery(listCarts, {
     input: undefined,
     queryKey: ["list-carts"],
     initialData: initCartsRaw,
@@ -48,6 +49,14 @@ export function CartList({ initCartsRaw }: CartListProps) {
   const carts = cartsRaw.map((c) => Cart.instance(c));
   const [open, setOpen] = useState(false);
   const [cart, setCart] = useState<Cart | null>(null);
+  useSSE({
+    url: "/api/sse",
+    async onMessage({ type }) {
+      if (type === "cart") {
+        await refetch();
+      }
+    },
+  });
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("pt-BR", {
       day: "2-digit",

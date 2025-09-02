@@ -26,7 +26,7 @@ export const sendTyping = securityProcedure([
   .handler(async ({ input }) => {
     const messageDriver = MetaMessageDriver.instance();
 
-    sseEmitter.emit("typing");
+    sseEmitter.emit("typing", { messageId: input.messageId });
 
     await messageDriver.sendTyping({
       channel: input.channel,
@@ -51,7 +51,7 @@ export const changeStatusMessage = securityProcedure([
       status: input.status,
     });
     if (conversation) {
-      sseEmitter.emit("message", conversation.raw());
+      sseEmitter.emit("conversation", conversation.raw());
     }
   });
 
@@ -86,7 +86,7 @@ export const messageReceived = securityProcedure([
       },
       workspaceId: ctx.membership.workspaceId,
     });
-    sseEmitter.emit("message", response?.conversation?.raw());
+    sseEmitter.emit("conversation", response?.conversation?.raw());
     return {
       ...response,
       conversation: response?.conversation?.raw(),
@@ -167,7 +167,8 @@ export const sendAudio = securityProcedure(["send:message"])
       file: input.file,
     });
 
-    sseEmitter.emit("message", conversation.raw());
+    sseEmitter.emit("conversation", conversation.raw());
+    sseEmitter.emit("untyping", { id: conversation.id });
   });
 
 export const sendMessage = securityProcedure(["send:message"])
@@ -184,8 +185,10 @@ export const sendMessage = securityProcedure(["send:message"])
     });
 
     if (conversation) {
-      sseEmitter.emit("message", conversation.raw());
+      sseEmitter.emit("conversation", conversation.raw());
     }
+
+    sseEmitter.emit("untyping", { id: input.conversationId });
   });
 
 export const markLastMessagesContactAsViewed = securityProcedure([
@@ -203,5 +206,5 @@ export const markLastMessagesContactAsViewed = securityProcedure([
       contactPhone: input.contactPhone,
     });
 
-    sseEmitter.emit("message", conversation.raw());
+    sseEmitter.emit("conversation", conversation.raw());
   });

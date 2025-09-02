@@ -1,5 +1,27 @@
-export const MessageLoading: React.FC<{ typing: boolean }> = (props) => {
-  if (!props.typing) return <></>;
+import React, { useEffect, useState } from "react";
+
+export const MessageLoading: React.FC<{ typing: boolean }> = ({ typing }) => {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+
+    if (typing) {
+      setVisible(true);
+      timer = setTimeout(() => {
+        setVisible(false);
+      }, 20000);
+    } else {
+      setVisible(false);
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [typing]);
+
+  if (!visible) return null;
+
   return (
     <div className="w-full flex items-center justify-end">
       <div className="flex flex-col gap-0 border leading-1.5 py-3 px-4 border-gray-200 shadow rounded-l-xl rounded-tr-xl bg-primary/90">

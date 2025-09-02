@@ -5,6 +5,7 @@ type Props = {
   status: StatusValue;
 };
 export const BadgeStatus: React.FC<Props> = (props) => {
+  if (!props.status) return <></>;
   const status = Status.create(props.status);
   if (props.status === "budget") {
     return <Badge className="bg-amber-500">{status.formatted}</Badge>;

@@ -14,6 +14,7 @@ import { RemoveProductFromCart } from "@looma/core/application/command/remove-pr
 import { SetCartAddress } from "@looma/core/application/command/set-cart-address";
 import { PaymentMethod } from "@looma/core/domain/value-objects/payment-method";
 import { SetCartPayment } from "@looma/core/application/command/set-cart-payment";
+import { sseEmitter } from "@/lib/sse";
 
 const handler = createMcpHandler((server) => {
   server.registerTool(
@@ -116,6 +117,8 @@ const handler = createMcpHandler((server) => {
         workspaceId,
       });
 
+      sseEmitter.emit("cart");
+
       return {
         content: [
           {
@@ -192,6 +195,8 @@ const handler = createMcpHandler((server) => {
         contactPhone,
         workspaceId
       );
+      sseEmitter.emit("cart");
+
       if (!lastCart) {
         return {
           content: [
@@ -230,6 +235,8 @@ const handler = createMcpHandler((server) => {
           conversationId,
           workspaceId
         );
+      sseEmitter.emit("cart");
+
       if (!currentCart) {
         return {
           content: [
@@ -267,6 +274,7 @@ const handler = createMcpHandler((server) => {
         conversationId,
         workspaceId,
       });
+      sseEmitter.emit("cart");
 
       return {
         content: [
@@ -298,6 +306,7 @@ const handler = createMcpHandler((server) => {
         workspaceId,
         reason,
       });
+      sseEmitter.emit("cart");
 
       return {
         content: [
@@ -326,6 +335,7 @@ const handler = createMcpHandler((server) => {
         conversationId,
         workspaceId,
       });
+      sseEmitter.emit("cart");
 
       return {
         content: [
@@ -353,6 +363,7 @@ const handler = createMcpHandler((server) => {
     async (input) => {
       const upsertProductOnCart = UpsertProductOnCart.instance();
       const cart = await upsertProductOnCart.execute(input);
+      sseEmitter.emit("cart");
 
       return {
         content: [
@@ -378,6 +389,7 @@ const handler = createMcpHandler((server) => {
     async (input) => {
       const removeProductFromCart = RemoveProductFromCart.instance();
       const cart = await removeProductFromCart.execute(input);
+      sseEmitter.emit("cart");
 
       return {
         content: [
@@ -418,6 +430,7 @@ const handler = createMcpHandler((server) => {
       const setCartAddress = SetCartAddress.instance();
       const cart = await setCartAddress.execute(input);
       const response = cart.address?.validate();
+      sseEmitter.emit("cart");
 
       if (!response?.isValid) {
         const result = `Endereço ${cart.address?.fullAddress()} salvo porém com campos faltantes: ${response?.missingFields.join(", ")}`;
@@ -458,6 +471,7 @@ const handler = createMcpHandler((server) => {
       const setCartPayment = SetCartPayment.instance();
 
       const cart = await setCartPayment.execute(input);
+      sseEmitter.emit("cart");
 
       return {
         content: [

@@ -39,5 +39,5 @@ export const closeConversation = securityProcedure(["close:conversation"])
       workspaceId: membership.workspaceId,
     });
 
-    sseEmitter.emit("message", conversation.raw());
+    sseEmitter.emit("conversation", conversation.raw());
   });

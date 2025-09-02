@@ -10,16 +10,12 @@ export const sse = securityProcedure([
   let isOpen = true;
 
   const stream = new ReadableStream({
-    cancel() {
-      isOpen = false;
-    },
     async start(controller) {
       const sendEvent = (data: any) => {
         try {
           const message = `data: ${JSON.stringify(data)}\n\n`;
           controller.enqueue(encoder.encode(message));
         } catch {
-          isOpen = false;
           console.log("Stream fechada, não é possível enviar mais eventos.");
           try {
             controller.close();
@@ -33,16 +29,19 @@ export const sse = securityProcedure([
         sendEvent({ type: "ping" });
       }, 1000);
 
-      const onMessage = (data: any) => {
-        sendEvent({
-          type: "message",
-          data,
-        });
+      const onMessage = (type: string) => {
+        return (data: any) => {
+          sendEvent({
+            type,
+            data,
+          });
+        };
       };
 
-      sseEmitter.on("message", onMessage);
-      sseEmitter.on("typing", () => sendEvent({ type: "typing" }));
-      sseEmitter.on("untyping", () => sendEvent({ type: "untyping" }));
+      sseEmitter.on("conversation", onMessage("conversation"));
+      sseEmitter.on("cart", onMessage("cart"));
+      sseEmitter.on("typing", onMessage("typing"));
+      sseEmitter.on("untyping", onMessage("untyping"));
 
       request?.signal.addEventListener("abort", () => {
         clearInterval(keepAlive);
