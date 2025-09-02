@@ -29,6 +29,8 @@ export default $config({
       AZURE_API_KEY: process.env.AZURE_API_KEY!,
       AZURE_ENDPOINT: process.env.AZURE_ENDPOINT!,
       AZURE_API_VERSION: process.env.AZURE_API_VERSION!,
+      META_TOKEN: process.env.META_TOKEN!,
+      META_APP_SECRET: process.env.META_APP_SECRET!,
     };
 
     const productsQueue = new sst.aws.Queue("ProductsBroker", {
