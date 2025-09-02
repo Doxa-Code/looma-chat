@@ -1,9 +1,11 @@
+import { CloseConversation } from "@looma/core/application/command/close-conversation";
+import { SendMessage } from "@looma/core/application/command/send-message";
 import { Product } from "@looma/core/domain/value-objects/product";
 import { createDatabaseConnection } from "@looma/core/infra/database";
 import { n8nChatHistories } from "@looma/core/infra/database/schemas";
-import { MetaMessageDriver } from "@looma/core/infra/drivers/message-driver";
 import { CartsDatabaseRepository } from "@looma/core/infra/repositories/carts-repository";
 import { ConversationsDatabaseRepository } from "@looma/core/infra/repositories/conversations-repository";
+import { UsersDatabaseRepository } from "@looma/core/infra/repositories/users-repository";
 import type { SQSEvent, SQSHandler } from "aws-lambda";
 import z from "zod";
 
@@ -42,41 +44,65 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
     switch (result.data.status) {
       case "cancelled": {
         cart.cancel("Cancelado pelo sistema da farmácia");
+        await CloseConversation.instance().execute({
+          conversationId: conversation.id,
+          workspaceId: result.data.workspaceId,
+        });
         break;
       }
       case "finished": {
         cart.finish();
+        await CloseConversation.instance().execute({
+          conversationId: conversation.id,
+          workspaceId: result.data.workspaceId,
+        });
         break;
       }
       case "processing": {
         cart.processing();
         const message =
           "opa! acabei de ver aqui e seu pedido ta sendo processado blz? jaja chega ai!";
-        const db = createDatabaseConnection();
-        await db.insert(n8nChatHistories).values({
-          message: `{"type": "ai", "content": "${message}", "tool_calls": [], "additional_kwargs": {}, "response_metadata": {}, "invalid_tool_calls": []}`,
-          sessionId: `${conversation.channel}-${conversation.contact.phone}`,
-        });
-        await MetaMessageDriver.instance().sendMessageText({
-          channel: conversation.channel,
-          content: message,
-          to: conversation.contact.phone,
-        });
+        const loomaUser =
+          await UsersDatabaseRepository.instance().retrieveLoomaUser(
+            result.data.workspaceId
+          );
+        if (loomaUser) {
+          await SendMessage.instance().execute({
+            content: message,
+            conversationId: conversation.id,
+            userId: loomaUser?.id,
+            userName: loomaUser?.name,
+            workspaceId: result.data.workspaceId,
+          });
+          const db = createDatabaseConnection();
+          await db.insert(n8nChatHistories).values({
+            message: `{"type": "ai", "content": "${message}", "tool_calls": [], "additional_kwargs": {}, "response_metadata": {}, "invalid_tool_calls": []}`,
+            sessionId: `${conversation.channel}-${conversation.contact.phone}`,
+          });
+        }
         break;
       }
       case "shipped": {
         cart.shipped();
         const message = "opa! seu pedido ta saindo daqui? jaja chega ai ok?";
-        const db = createDatabaseConnection();
-        await db.insert(n8nChatHistories).values({
-          message: `{"type": "ai", "content": "${message}", "tool_calls": [], "additional_kwargs": {}, "response_metadata": {}, "invalid_tool_calls": []}`,
-          sessionId: `${conversation.channel}-${conversation.contact.phone}`,
-        });
-        await MetaMessageDriver.instance().sendMessageText({
-          channel: conversation.channel,
-          content: message,
-          to: conversation.contact.phone,
-        });
+        const loomaUser =
+          await UsersDatabaseRepository.instance().retrieveLoomaUser(
+            result.data.workspaceId
+          );
+        if (loomaUser) {
+          await SendMessage.instance().execute({
+            content: message,
+            conversationId: conversation.id,
+            userId: loomaUser?.id,
+            userName: loomaUser?.name,
+            workspaceId: result.data.workspaceId,
+          });
+          const db = createDatabaseConnection();
+          await db.insert(n8nChatHistories).values({
+            message: `{"type": "ai", "content": "${message}", "tool_calls": [], "additional_kwargs": {}, "response_metadata": {}, "invalid_tool_calls": []}`,
+            sessionId: `${conversation.channel}-${conversation.contact.phone}`,
+          });
+        }
         break;
       }
     }
