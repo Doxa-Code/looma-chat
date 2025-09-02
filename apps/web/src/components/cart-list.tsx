@@ -43,6 +43,7 @@ export function CartList({ initCartsRaw }: CartListProps) {
     input: undefined,
     queryKey: ["list-carts"],
     initialData: initCartsRaw,
+    staleTime: 3,
   });
   const carts = cartsRaw.map((c) => Cart.instance(c));
   const [open, setOpen] = useState(false);
