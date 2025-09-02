@@ -204,6 +204,13 @@
       "when": 1756819090103,
       "tag": "0028_certain_black_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1756820949983,
+      "tag": "0029_quiet_silver_centurion",
+      "breakpoints": true
     }
   ]
 }

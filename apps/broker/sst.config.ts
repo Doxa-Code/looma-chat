@@ -61,7 +61,7 @@ export default $config({
     const finishCart = new sst.aws.Queue("FinishCart");
 
     finishCart.subscribe({
-      handler: "functions/finish-cart.handler",
+      handler: "functions/cart-broker.handler",
       environment,
     });
 

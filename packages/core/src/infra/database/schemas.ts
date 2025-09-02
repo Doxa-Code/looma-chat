@@ -1,4 +1,4 @@
-import { jsonb, primaryKey } from "drizzle-orm/pg-core";
+import { jsonb, primaryKey, serial } from "drizzle-orm/pg-core";
 import {
   boolean,
   integer,
@@ -215,4 +215,10 @@ export const toolsResultsBuffer = pgTable("tools_results_buffer", {
   channel: text("channel").notNull(),
   content: text("content").notNull(),
   timestamp: timestamp("timestamp").notNull().defaultNow(),
+});
+
+export const n8nChatHistories = pgTable("n8n_chat_histories", {
+  id: serial("id").primaryKey(),
+  sessionId: varchar("session_id", { length: 255 }).notNull(),
+  message: jsonb("message").notNull(),
 });

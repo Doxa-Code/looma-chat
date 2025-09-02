@@ -119,7 +119,8 @@ export class Cart {
     if (
       this.status.is("finished") ||
       this.status.is("expired") ||
-      this.status.is("shipped")
+      this.status.is("shipped") ||
+      this.status.is("processing")
     ) {
       throw new Error(
         "O pedido já está fechado e já não pode mais adicionar produtos"
@@ -184,7 +185,8 @@ export class Cart {
     if (
       this.status.is("finished") ||
       this.status.is("expired") ||
-      this.status.is("shipped")
+      this.status.is("shipped") ||
+      this.status.is("processing")
     ) {
       throw new Error(
         "O pedido já está fechado e já não pode mais remover produtos"
