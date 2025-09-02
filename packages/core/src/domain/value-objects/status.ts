@@ -5,6 +5,7 @@ export type StatusValue =
   | "budget"
   | "order"
   | "cancelled"
+  | "processing"
   | "shipped"
   | "finished";
 
@@ -15,6 +16,7 @@ export class Status {
     "order",
     "cancelled",
     "shipped",
+    "processing",
     "finished",
   ];
   constructor(readonly value: StatusValue) {}
@@ -33,8 +35,9 @@ export class Status {
       ["cancelled", "Pedido cancelado"],
       ["expired", "Pedido expirado"],
       ["finished", "Venda concluída"],
-      ["shipped", "Pedido expedido"],
+      ["shipped", "Pedido enviado"],
       ["order", "Pedido realizado"],
+      ["processing", "Processando pedido"],
     ]);
 
     return formatteds.get(this.value) ?? "";

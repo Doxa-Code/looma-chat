@@ -5,7 +5,7 @@ import z from "zod";
 
 const finishCartValidate = z.object({
   cartId: z.string(),
-  status: z.string(),
+  status: z.enum(["finished", "processing", "shipped", "cancelled"]),
   workspaceId: z.string(),
 });
 
@@ -24,7 +24,24 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
 
     if (!cart) return;
 
-    cart.finish();
+    switch (result.data.status) {
+      case "cancelled": {
+        cart.cancel("Cancelo pelo sistema da farmácia");
+        break;
+      }
+      case "finished": {
+        cart.finish();
+        break;
+      }
+      case "processing": {
+        cart.processing();
+        break;
+      }
+      case "shipped": {
+        cart.shipped();
+        break;
+      }
+    }
 
     await cartsRepository.upsert(cart, result.data.workspaceId);
   }

@@ -21,6 +21,8 @@ export namespace Cart {
     expiredAt: Date | null;
     finishedAt: Date | null;
     canceledAt: Date | null;
+    shippedAt: Date | null;
+    processingAt: Date | null;
     paymentMethod: PaymentMethod | null;
     paymentChange: number | null;
     cancelReason: string | null;
@@ -38,6 +40,8 @@ export namespace Cart {
     expiredAt: Date | null;
     finishedAt: Date | null;
     canceledAt: Date | null;
+    shippedAt: Date | null;
+    processingAt: Date | null;
     paymentMethod: PaymentMethodValue | null;
     paymentChange: number | null;
     cancelReason: string | null;
@@ -61,6 +65,8 @@ export class Cart {
   public expiredAt: Date | null;
   public finishedAt: Date | null;
   public canceledAt: Date | null;
+  public processingAt: Date | null;
+  public shippedAt: Date | null;
   public paymentMethod: PaymentMethod | null;
   public paymentChange: number | null;
   public cancelReason: string | null;
@@ -76,7 +82,9 @@ export class Cart {
     this.orderedAt = props.orderedAt;
     this.expiredAt = props.expiredAt;
     this.finishedAt = props.finishedAt;
+    this.shippedAt = props.shippedAt;
     this.canceledAt = props.canceledAt;
+    this.processingAt = props.processingAt;
     this.paymentMethod = props.paymentMethod;
     this.paymentChange = props.paymentChange;
     this.cancelReason = props.cancelReason;
@@ -160,6 +168,16 @@ export class Cart {
     this.status = Status.create("cancelled");
     this.canceledAt = new Date();
     this.cancelReason = reason ?? "Não informado";
+  }
+
+  processing() {
+    this.status = Status.create("processing");
+    this.processingAt = new Date();
+  }
+
+  shipped() {
+    this.status = Status.create("shipped");
+    this.shippedAt = new Date();
   }
 
   removeProduct(productId: string) {
@@ -257,6 +275,8 @@ ${this.total.toLocaleString("pt-BR", {
       paymentMethod: null,
       paymentChange: null,
       cancelReason: null,
+      processingAt: null,
+      shippedAt: null,
     });
   }
 
@@ -278,6 +298,8 @@ ${this.total.toLocaleString("pt-BR", {
       products: props.products.map((p) => CartProduct.instance(p)),
       status: Status.create(props.status),
       cancelReason: props.cancelReason,
+      processingAt: props.processingAt,
+      shippedAt: props.shippedAt,
     });
   }
 
@@ -294,9 +316,11 @@ ${this.total.toLocaleString("pt-BR", {
       expiredAt: this.expiredAt,
       finishedAt: this.finishedAt,
       canceledAt: this.canceledAt,
+      shippedAt: this.shippedAt,
       paymentMethod: this.paymentMethod?.raw() ?? null,
       paymentChange: this.paymentChange ?? null,
       cancelReason: this.cancelReason ?? null,
+      processingAt: this.processingAt ?? null,
     };
   }
 }

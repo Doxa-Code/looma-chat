@@ -177,7 +177,15 @@ export const carts = pgTable("carts", {
     }),
   status: varchar("status", {
     length: 10,
-    enum: ["expired", "budget", "shipped", "order", "cancelled", "finished"],
+    enum: [
+      "expired",
+      "processing",
+      "budget",
+      "shipped",
+      "order",
+      "cancelled",
+      "finished",
+    ],
   })
     .notNull()
     .default("budget"),
@@ -186,6 +194,8 @@ export const carts = pgTable("carts", {
   expiredAt: integer("expired_at"),
   finishedAt: integer("finished_at"),
   canceledAt: integer("canceled_at"),
+  shippedAt: integer("shipped_at"),
+  processingAt: integer("processing_at"),
   cancelReason: text("cancel_reason"),
   paymentMethod: text("payment_method"),
   paymentChange: integer("payment_change"),

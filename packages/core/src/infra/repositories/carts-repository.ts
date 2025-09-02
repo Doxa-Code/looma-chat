@@ -37,6 +37,10 @@ export class CartsDatabaseRepository {
       createdAt: this.dateToTimestamp(cart.createdAt),
       orderedAt: cart.orderedAt ? this.dateToTimestamp(cart.orderedAt) : null,
       expiredAt: cart.expiredAt ? this.dateToTimestamp(cart.expiredAt) : null,
+      shippedAt: cart.shippedAt ? this.dateToTimestamp(cart.shippedAt) : null,
+      processingAt: cart.processingAt
+        ? this.dateToTimestamp(cart.processingAt)
+        : null,
       finishedAt: cart.finishedAt
         ? this.dateToTimestamp(cart.finishedAt)
         : null,
@@ -128,6 +132,8 @@ export class CartsDatabaseRepository {
         status: carts.status,
         createdAt: carts.createdAt,
         orderedAt: carts.orderedAt,
+        processingAt: carts.processingAt,
+        shippedAt: carts.shippedAt,
         expiredAt: carts.expiredAt,
         finishedAt: carts.finishedAt,
         canceledAt: carts.canceledAt,
@@ -232,6 +238,10 @@ export class CartsDatabaseRepository {
       createdAt: this.timestampToDate(cart.createdAt),
       orderedAt: cart.orderedAt ? this.timestampToDate(cart.orderedAt) : null,
       expiredAt: cart.expiredAt ? this.timestampToDate(cart.expiredAt) : null,
+      processingAt: cart.processingAt
+        ? this.timestampToDate(cart.processingAt)
+        : null,
+      shippedAt: cart.shippedAt ? this.timestampToDate(cart.shippedAt) : null,
       finishedAt: cart.finishedAt
         ? this.timestampToDate(cart.finishedAt)
         : null,
@@ -307,6 +317,8 @@ export class CartsDatabaseRepository {
         createdAt: carts.createdAt,
         orderedAt: carts.orderedAt,
         expiredAt: carts.expiredAt,
+        shippedAt: carts.shippedAt,
+        processingAt: carts.processingAt,
         finishedAt: carts.finishedAt,
         canceledAt: carts.canceledAt,
         paymentMethod: carts.paymentMethod,
@@ -379,6 +391,10 @@ export class CartsDatabaseRepository {
       createdAt: this.timestampToDate(cart.createdAt),
       orderedAt: cart.orderedAt ? this.timestampToDate(cart.orderedAt) : null,
       expiredAt: cart.expiredAt ? this.timestampToDate(cart.expiredAt) : null,
+      processingAt: cart.processingAt
+        ? this.timestampToDate(cart.processingAt)
+        : null,
+      shippedAt: cart.shippedAt ? this.timestampToDate(cart.shippedAt) : null,
       finishedAt: cart.finishedAt
         ? this.timestampToDate(cart.finishedAt)
         : null,
@@ -448,6 +464,8 @@ export class CartsDatabaseRepository {
         orderedAt: carts.orderedAt,
         expiredAt: carts.expiredAt,
         finishedAt: carts.finishedAt,
+        shippedAt: carts.shippedAt,
+        processingAt: carts.processingAt,
         canceledAt: carts.canceledAt,
         paymentMethod: carts.paymentMethod,
         paymentChange: carts.paymentChange,
@@ -509,6 +527,10 @@ export class CartsDatabaseRepository {
       createdAt: this.timestampToDate(cart.createdAt),
       orderedAt: cart.orderedAt ? this.timestampToDate(cart.orderedAt) : null,
       expiredAt: cart.expiredAt ? this.timestampToDate(cart.expiredAt) : null,
+      processingAt: cart.processingAt
+        ? this.timestampToDate(cart.processingAt)
+        : null,
+      shippedAt: cart.shippedAt ? this.timestampToDate(cart.shippedAt) : null,
       finishedAt: cart.finishedAt
         ? this.timestampToDate(cart.finishedAt)
         : null,
@@ -547,6 +569,8 @@ export class CartsDatabaseRepository {
         orderedAt: carts.orderedAt,
         expiredAt: carts.expiredAt,
         finishedAt: carts.finishedAt,
+        shippedAt: carts.shippedAt,
+        processingAt: carts.processingAt,
         canceledAt: carts.canceledAt,
         paymentMethod: carts.paymentMethod,
         paymentChange: carts.paymentChange,

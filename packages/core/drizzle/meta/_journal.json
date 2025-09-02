@@ -197,6 +197,13 @@
       "when": 1756497736558,
       "tag": "0027_breezy_toad",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1756819090103,
+      "tag": "0028_certain_black_tarantula",
+      "breakpoints": true
     }
   ]
 }
