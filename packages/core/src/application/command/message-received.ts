@@ -53,6 +53,8 @@ export class MessageReceived {
     message.markAsDelivered();
     conversation.addMessage(message);
 
+    conversation.markAllMessageAsViewed();
+
     await this.conversationsRepository.upsert(conversation, input.workspaceId);
 
     return { conversation, workspaceId: input.workspaceId };

@@ -143,6 +143,15 @@ export class Conversation {
     }
   }
 
+  markAllMessageAsViewed() {
+    const messages = this.messages.filter((m) => m.status !== "viewed");
+
+    for (const message of messages) {
+      message.markAsViewed();
+      this._messages.set(message.id, message);
+    }
+  }
+
   openConversation(attendantId: string) {
     if (this.attendant?.id !== attendantId) return;
     this.markLastMessagesAsViewed();
