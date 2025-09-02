@@ -61,24 +61,28 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       }
       case "processing": {
         cart.processing();
-        await loomaClient.post("/", {
-          workspaceId: result.data.workspaceId,
-          conversationId: conversation.id,
-          status: "processing",
-          channel: conversation.channel,
-          contactPhone: conversation.contact.phone,
-        });
+        await loomaClient
+          .post("/", {
+            workspaceId: result.data.workspaceId,
+            conversationId: conversation.id,
+            status: "processing",
+            channel: conversation.channel,
+            contactPhone: conversation.contact.phone,
+          })
+          .catch(() => {});
         break;
       }
       case "shipped": {
         cart.shipped();
-        await loomaClient.post("/", {
-          workspaceId: result.data.workspaceId,
-          conversationId: conversation.id,
-          status: "shipped",
-          channel: conversation.channel,
-          contactPhone: conversation.contact.phone,
-        });
+        await loomaClient
+          .post("/", {
+            workspaceId: result.data.workspaceId,
+            conversationId: conversation.id,
+            status: "shipped",
+            channel: conversation.channel,
+            contactPhone: conversation.contact.phone,
+          })
+          .catch(() => {});
         break;
       }
     }
