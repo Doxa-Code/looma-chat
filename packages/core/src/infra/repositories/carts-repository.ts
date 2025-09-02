@@ -105,6 +105,19 @@ export class CartsDatabaseRepository {
     });
   }
 
+  async retrieveConversationId(cartId: string) {
+    const db = createDatabaseConnection();
+
+    const [cart] = await db
+      .select({
+        conversationId: carts.conversationId,
+      })
+      .from(carts)
+      .where(eq(carts.id, cartId));
+
+    return cart?.conversationId ?? null;
+  }
+
   async retrieveOpenCartByConversationId(
     conversationId: string,
     workspaceId: string

@@ -24,6 +24,12 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
 
     if (!cart) return;
 
+    const conversationId = await cartsRepository.retrieveConversationId(
+      cart.id
+    );
+
+    if (!conversationId) return;
+
     switch (result.data.status) {
       case "cancelled": {
         cart.cancel("Cancelo pelo sistema da farmácia");
@@ -43,6 +49,6 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       }
     }
 
-    await cartsRepository.upsert(cart, result.data.workspaceId);
+    await cartsRepository.upsert(cart, conversationId);
   }
 };
