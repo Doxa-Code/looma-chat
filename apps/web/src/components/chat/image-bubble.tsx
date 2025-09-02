@@ -7,6 +7,7 @@ import React, { useEffect, useState } from "react";
 import { ProgressBar } from "../progress-bar";
 import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
 import { MessageContainer } from "./message-container";
+import { Skeleton } from "../ui/skeleton";
 
 type Props = {
   message: Message.Raw;
@@ -60,12 +61,7 @@ export const ImageBubble: React.FC<Props> = (props) => {
             className="w-full gap-4 flex justify-center items-center"
             data-hidden={!loading}
           >
-            <Loader className="animate-spin group-data-[sender=contact]:stroke-primary" />
-            <ProgressBar
-              value={100}
-              className="w-full rounded"
-              classNameBar="bg-primary groud-data-[sender=attendant]:bg-white"
-            />
+            <Skeleton className="w-full h-[200px]" />
           </div>
           <Dialog>
             <DialogTrigger className="cursor-pointer">
