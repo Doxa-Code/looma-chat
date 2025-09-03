@@ -6,6 +6,7 @@ import { SettingsDatabaseRepository } from "@looma/core/infra/repositories/setti
 import type { SQSEvent, SQSHandler } from "aws-lambda";
 import z from "zod";
 import { createEmbedding } from "../helpers/vector-store";
+import axios from "axios";
 
 const productValidate = z.object({
   workspaceId: z.string(),
@@ -48,9 +49,19 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       continue;
     }
 
+    const productionDescription = await axios.post(
+      "https://n8n.doxacode.com.br/webhook/978a1a87-669d-4094-98de-8248ed0f92af",
+      {
+        description: result?.data?.product?.description,
+      }
+    );
+
     const product = Product.instance({
       ...result.data.product,
-      promotionStart: result.data.product.promotionStart
+      description:
+        productionDescription?.data?.description ??
+        result?.data?.product.description,
+      promotionStart: result?.data?.product?.promotionStart
         ? new Date(result.data.product.promotionStart)
         : null,
       promotionEnd: result.data.product.promotionEnd
