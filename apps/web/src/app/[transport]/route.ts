@@ -26,22 +26,6 @@ const handler = createMcpHandler((server) => {
         query: z.string().describe("Nome do produto e/ou apresentação"),
         workspaceId: z.string().describe("ID da área de trabalho"),
       },
-      outputSchema: {
-        products: z.array(
-          z.object({
-            id: z.string(),
-            description: z.string(),
-            code: z.string().nullable(),
-            manufactory: z.string(),
-            price: z.number(),
-            stock: z.number(),
-            promotionPrice: z.number().nullable(),
-            promotionStart: z.date().nullable(),
-            promotionEnd: z.date().nullable(),
-            workspaceId: z.string().nullish(),
-          })
-        ),
-      },
     },
     async ({ query, workspaceId }) => {
       const consultingStock = ConsultingStock.instance();
@@ -61,9 +45,6 @@ const handler = createMcpHandler((server) => {
             type: "text",
           },
         ],
-        structuredContent: {
-          products,
-        },
       };
     }
   );
