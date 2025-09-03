@@ -33,15 +33,16 @@ const handler = createMcpHandler((server) => {
         query,
         workspaceId,
       });
+      console.log(products);
       return {
         content: [
           {
             text: products
               .map(
                 (i) =>
-                  `id: ${i.id} - description: ${i.description} - price: ${i.price} - manufactory: ${i.manufactory} - stock: ${i.stock} - promotionPrice: ${i.promotionPrice} - promotionStart: ${i.promotionStart} - promotionEnd: ${i.promotionEnd}`
+                  `id: ${i.id}\ndescription: ${i.description}\nprice: ${i.price}\nmanufactory: ${i.manufactory}\nstock: ${i.stock}\npromotionPrice: ${i.promotionPrice}\npromotionStart: ${i.promotionStart}\npromotionEnd: ${i.promotionEnd}`
               )
-              .join("\n"),
+              .join("\n\n"),
             type: "text",
           },
         ],
@@ -71,9 +72,9 @@ const handler = createMcpHandler((server) => {
             text: promotions
               .map(
                 (i) =>
-                  `id: ${i.id} - description: ${i.description} - price: ${i.price} - manufactory: ${i.manufactory} - stock: ${i.stock} - promotionPrice: ${i.promotionPrice} - promotionStart: ${i.promotionStart} - promotionEnd: ${i.promotionEnd}`
+                  `id: ${i.id}\ndescription: ${i.description}\nprice: ${i.price}\nmanufactory: ${i.manufactory}\nstock: ${i.stock}\npromotionPrice: ${i.promotionPrice}\npromotionStart: ${i.promotionStart}\npromotionEnd: ${i.promotionEnd}`
               )
-              .join("\n"),
+              .join("\n\n"),
             type: "text",
           },
         ],

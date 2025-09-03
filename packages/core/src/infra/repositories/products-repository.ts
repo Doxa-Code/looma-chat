@@ -170,24 +170,27 @@ export class ProductsDatabaseRepository {
         manufactory, 
         price, 
         stock, 
-        promotion_price as promotionPrice, 
-        promotion_start as promotionStart,  
-        promotion_end as promotionEnd, 
-        workspace_id as workspaceId 
+        promotion_price, 
+        promotion_start,  
+        promotion_end, 
+        workspace_id 
       FROM products 
         WHERE workspace_id = '${workspaceId}' AND stock > 0 
         ORDER BY embedding <-> '${JSON.stringify(embedding)}' 
         LIMIT 5
     `);
 
-    return (lists as unknown as Product.Props[]).map(
-      (item) =>
-        ({
-          ...item,
-          price: item.price / 100,
-          promotionPrice: item.promotionPrice ? item.promotionPrice / 100 : 0,
-        }) as Product.Props
-    );
+    return (lists as unknown as Product.Props[]).map((item: any) => ({
+      code: item.code,
+      description: item.description,
+      id: item.id,
+      manufactory: item.manufactory,
+      promotionEnd: item.promotion_end,
+      promotionStart: item.promotion_start,
+      stock: item.stock,
+      price: item.price / 100,
+      promotionPrice: item.promotion_price ? item.promotion_price / 100 : 0,
+    }));
   }
 
   async vectorSearchPromotion(
@@ -204,10 +207,10 @@ export class ProductsDatabaseRepository {
         manufactory, 
         price, 
         stock, 
-        promotion_price as promotionPrice, 
-        promotion_start as promotionStart,  
-        promotion_end as promotionEnd, 
-        workspace_id as workspaceId 
+        promotion_price,
+        promotion_start,
+        promotion_end,
+        workspace_id
       FROM products 
         WHERE 
           workspace_id = '${workspaceId}' AND 
@@ -217,10 +220,16 @@ export class ProductsDatabaseRepository {
         LIMIT 5
     `);
 
-    return (lists as unknown as Product.Props[]).map((item) => ({
-      ...item,
+    return (lists as unknown as Product.Props[]).map((item: any) => ({
+      code: item.code,
+      description: item.description,
+      id: item.id,
+      manufactory: item.manufactory,
+      promotionEnd: item.promotion_end,
+      promotionStart: item.promotion_start,
+      stock: item.stock,
       price: item.price / 100,
-      promotionPrice: item.promotionPrice ? item.promotionPrice / 100 : 0,
+      promotionPrice: item.promotion_price ? item.promotion_price / 100 : 0,
     }));
   }
 
