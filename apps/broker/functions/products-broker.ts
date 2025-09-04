@@ -82,10 +82,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       workspaceId: result.data.workspaceId,
     };
 
-    if (
-      !productAlreadyExists ||
-      product.description !== productAlreadyExists.description
-    ) {
+    if (!productAlreadyExists) {
       const value = `${product.description} | ${product.manufactory}`;
       const { embedding } = await createEmbedding(value);
       insertData.embedding = embedding;
