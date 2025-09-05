@@ -33,14 +33,17 @@ const handler = createMcpHandler((server) => {
         query,
         workspaceId,
       });
-      console.log(products);
       return {
         content: [
           {
             text: products
               .map(
                 (i) =>
-                  `id: ${i.id}\ndescription: ${i.description}\nprice: ${i.price}\nmanufactory: ${i.manufactory}\nstock: ${i.stock}\npromotionPrice: ${i.promotionPrice}\npromotionStart: ${i.promotionStart}\npromotionEnd: ${i.promotionEnd}`
+                  `
+                    ${i.description} (ID: ${i.id})
+                    Fabricante: ${i.manufactory}
+                    Preço: ${i.promotionEnd ? `de ${i.price.toLocaleString("pt-BR", { currency: "BRL", style: "currency" })} por ${i.promotionPrice?.toLocaleString("pt-BR", { currency: "BRL", style: "currency" })}` : i.price.toLocaleString("pt-BR", { currency: "BRL", style: "currency" })}
+                  `
               )
               .join("\n\n"),
             type: "text",
@@ -72,7 +75,11 @@ const handler = createMcpHandler((server) => {
             text: promotions
               .map(
                 (i) =>
-                  `id: ${i.id}\ndescription: ${i.description}\nprice: ${i.price}\nmanufactory: ${i.manufactory}\nstock: ${i.stock}\npromotionPrice: ${i.promotionPrice}\npromotionStart: ${i.promotionStart}\npromotionEnd: ${i.promotionEnd}`
+                  `
+                    ${i.description} (ID: ${i.id})
+                    Fabricante: ${i.manufactory}
+                    Preço: ${i.promotionEnd ? `de ${i.price.toLocaleString("pt-BR", { currency: "BRL", style: "currency" })} por ${i.promotionPrice?.toLocaleString("pt-BR", { currency: "BRL", style: "currency" })}` : i.price.toLocaleString("pt-BR", { currency: "BRL", style: "currency" })}
+                  `
               )
               .join("\n\n"),
             type: "text",
