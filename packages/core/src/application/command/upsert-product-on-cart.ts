@@ -92,7 +92,7 @@ export class UpsertProductOnCart {
       input.workspaceId
     );
 
-    if (!product) throw NotFound.throw("Product");
+    if (!product) throw new Error("Não achei um produto com esse id.");
 
     const cartProduct = CartProduct.create({
       product,
