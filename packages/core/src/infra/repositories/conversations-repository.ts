@@ -70,6 +70,8 @@ export class ConversationsDatabaseRepository {
           .groupBy(
             conversations.id,
             conversations.channel,
+            conversations.closedAt,
+            conversations.workspaceId,
             contacts.phone,
             contacts.name,
             users.id,
