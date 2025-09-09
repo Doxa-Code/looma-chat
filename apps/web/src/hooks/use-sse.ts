@@ -24,7 +24,8 @@ export function useSSE<T extends { type: string } = any>(props: SSEOptions<T>) {
   const connect = () => {
     if (
       eventSourceRef.current &&
-      eventSourceRef.current.readyState === EventSource.OPEN
+      (eventSourceRef.current.readyState === EventSource.OPEN ||
+        eventSourceRef.current.readyState === EventSource.CONNECTING)
     ) {
       return;
     }
