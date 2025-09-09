@@ -45,9 +45,9 @@ export const retrieveOpenCart = securityProcedure([
       ctx.membership.workspaceId
     );
 
-    if (!cart) throw NotFound.throw("Cart");
+    if (!cart) return "Nenhum pedido aberto ainda!";
 
-    return cart.raw();
+    return cart.formatted;
   });
 
 export const upsertProductOnCart = securityProcedure(["manage:carts"])

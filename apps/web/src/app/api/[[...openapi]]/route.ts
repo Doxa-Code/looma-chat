@@ -1,3 +1,4 @@
+import { retrieveOpenCart } from "@/app/actions/cart";
 import {
   changeStatusMessage,
   listenAudio,
@@ -19,6 +20,7 @@ const router = createOpenApiServerActionRouter({
 })
   .get("/sse", sse)
   .get("/settings", retrieveSettings)
+  .get("/conversation/{conversationId}/cart", retrieveOpenCart)
   .get("/message/{messageId}/audio", listenAudio)
   .get("/message/{messageId}/image", retrieveImage)
   .post("/message/status", changeStatusMessage)
