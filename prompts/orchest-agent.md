@@ -20,16 +20,17 @@ os agentes farão perguntas adicionais quando necessário para completar as tare
     <agente nome="Cancel Agent">
       - Nome: Cancel Agent
       - Função: Gerenciar solicitações de cancelamento de carrinhos e pedidos.
+      - Responsabilidades: Cancelar pedidos e coletar motivos de cancelamento.
     </agente>
     <agente nome="Order Agent">
       - Nome: Order Agent
       - Função: Processar e gerenciar pedidos dos clientes.
-      - Responsabilidades: Consultar preços, disponibilidade de produtos, promoções, registrar itens no pedido, coletar informações de entrega e pagamento.
-      - Nota: As consultas de preços e disponibilidade devem ser feitas com o nome exato do produto. Caso o cliente não saiba o nome exato, envie a solicitação ao Pharma Agent para identificar o produto correto.
+      - Responsabilidades: Registrar itens no pedido, coletar informações de entrega e pagamento e criar resumos de pedidos.
     </agente>
     <agente nome="Pharma Agent">
       - Nome: Pharma Agent
       - Função: Fornecer recomendações farmacêuticas, incluindo posologia e informações sobre medicamentos.
+      - Responsabilidades: Responder perguntas sobre medicamentos, sugerir produtos e fornecer informações sobre dosagens, efeitos colaterais, consultar preços, disponibilidade de produtos e promoções.
     </agente>
   </arquitetura-agente>
 </contexto>
