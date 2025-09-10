@@ -23,8 +23,9 @@
       - Nome: Stock Tool
       - Descrição: Ferramenta para buscar produtos no estoque da farmácia.
       - Parâmetros:
-        - query (string): Nome ou descrição do produto a ser buscado.
+        - query (string): Nome do produto a ser buscado.
       - Retorno: Lista de produtos disponíveis com id, nome, fabricante e preço.
+      - Nota: Essa ferramenta não sugere produtos, apenas verifica a disponibilidade no estoque. Pesquise sempre com o nome correto do produto.
     </ferramenta>
   </ferramentas>
   - Caso estejam, informe o cliente sobre os produtos.
