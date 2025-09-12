@@ -82,19 +82,6 @@ export class CartsDatabaseRepository {
       )) ?? [];
 
     await db.transaction(async (tx) => {
-      const productsIds = await tx
-        .select({ id: productsOnCart.id })
-        .from(productsOnCart)
-        .where(eq(productsOnCart.cartId, cart.id));
-
-      await Promise.all(
-        productsIds
-          .filter((p) => !productsOnCartNewValues.find((pc) => pc.id === p.id))
-          .map(async (p) => {
-            await tx.delete(productsOnCart).where(eq(productsOnCart.id, p.id));
-          })
-      );
-
       if (cart.address) {
         await tx.insert(addresses).values(cart.address).onConflictDoUpdate({
           set: cart.address,
@@ -114,6 +101,18 @@ export class CartsDatabaseRepository {
         })
       );
     });
+  }
+
+  async removeProduct(cartId: string, productId: string) {
+    const db = createDatabaseConnection();
+    await db
+    .delete(productsOnCart)
+    .where(
+      and(
+        eq(productsOnCart.cartId, cartId),
+        eq(productsOnCart.productId, productId)
+      )
+    );
   }
 
   async retrieveConversationId(cartId: string) {

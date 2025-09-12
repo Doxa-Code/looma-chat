@@ -1,3 +1,4 @@
+import { removeProductFromCart } from "./../../../../../apps/web/src/app/actions/cart/index";
 import { Cart } from "../../domain/entities/cart";
 import { Conversation } from "../../domain/entities/conversation";
 import { NotFound } from "../../domain/errors/not-found";
@@ -18,6 +19,7 @@ interface CartsRepository {
     workspaceId: string
   ): Promise<Cart | null>;
   upsert(cart: Cart, conversationId: string): Promise<void>;
+  removeProduct(cartId: string, productId: string): Promise<void>;
 }
 
 type SendMessageToQueueProps = {
@@ -41,7 +43,7 @@ export class RemoveProductFromCart {
     private readonly cartsRepository: CartsRepository,
     private readonly messagingDriver: MessagingDriver,
     private readonly settingsRepository: SettingsRepository
-  ) {}
+  ) { }
   async execute(input: InputDTO) {
     const conversation = await this.conversationsRepository.retrieve(
       input.conversationId
@@ -63,7 +65,7 @@ export class RemoveProductFromCart {
 
     cart.removeProduct(input.productId);
 
-    await this.cartsRepository.upsert(cart, conversation.id);
+    await this.cartsRepository.removeProduct(cart.id, input.productId)
 
     if (cart.status.is("order")) {
       const settings =
