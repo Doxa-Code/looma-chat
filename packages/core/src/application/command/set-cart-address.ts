@@ -61,7 +61,10 @@ export class SetCartAddress {
       });
     }
 
-    const newAddress = Address.create(input.address);
+    const newAddress = Address.create({
+      ...cart.address,
+      ...input.address,
+    });
 
     if (!client.address) {
       client.setAddress(newAddress);

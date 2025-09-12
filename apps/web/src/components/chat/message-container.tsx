@@ -26,7 +26,7 @@ export const MessageContainer: React.FC<Props> = (props) => {
     >
       <div
         className={cx(
-          "flex items-end gap-3",
+          "flex items-start gap-3",
           props.senderType === "attendant" && "flex-row-reverse"
         )}
       >
@@ -51,37 +51,44 @@ export const MessageContainer: React.FC<Props> = (props) => {
           <div
             data-rounded={!props.hiddenAvatar}
             className={cx(
-              "flex flex-col gap-0 w-full border max-w-[420px] px-3 pb-1 border-gray-200 shadow",
+              "flex flex-col gap-0 w-full max-w-[420px] border px-3 pb-1 border-gray-200",
               props.senderType === "attendant"
-                ? "data-[rounded=false]:rounded-br-xl rounded-l-xl rounded-tr-xl bg-primary/90 text-white"
-                : "rounded-tl-xl data-[rounded=false]:rounded-bl-xl rounded-r-xl rounded-br-xl bg-white"
+                ? "data-[rounded=false]:rounded-br-xl rounded-l-xl rounded-br-xl bg-[#D9FDD3] text-[#0A0A0A]"
+                : "rounded-bl-xl data-[rounded=false]:rounded-bl-xl rounded-r-xl rounded-br-xl bg-white"
             )}
           >
             {props.children}
-            <div className="flex items-end flex-1 pb-1 justify-end gap-2">
+            <div className="flex items-center flex-1 pb-1 justify-end gap-1">
               <span
                 className={cx(
                   "!text-[10px] font-normal opacity-85",
                   props.senderType === "attendant"
-                    ? "text-white self-end"
+                    ? "text-[#6A7C67] self-end"
                     : "text-muted-foreground"
                 )}
               >
                 {format(props.createdAt, "HH:mm")}
               </span>
               <Clock7
-                data-show={props.status === "senting"}
-                className="size-3 hidden"
+                data-show={
+                  props.status === "senting" && props.senderType === "attendant"
+                }
+                className="size-3 stroke-[#6A7C67] hidden"
               />
               <Check
-                data-show={props.status === "sent"}
-                className="size-4 hidden"
+                data-show={
+                  props.status === "sent" && props.senderType === "attendant"
+                }
+                className="size-4 stroke-[#6A7C67] hidden"
               />
               <CheckCheckIcon
-                data-show={["delivered", "viewed"].includes(props.status)}
+                data-show={
+                  ["delivered", "viewed"].includes(props.status) &&
+                  props.senderType === "attendant"
+                }
                 className={cx(
                   "size-4 hidden",
-                  props.status === "viewed" && "stroke-lime-400"
+                  props.status === "viewed" && "stroke-[#007BFC]"
                 )}
               />
             </div>

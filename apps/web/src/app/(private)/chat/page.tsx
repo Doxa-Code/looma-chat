@@ -11,7 +11,7 @@ export default async function Page() {
   const [settings] = await retrieveSettings();
 
   return (
-    <main className="w-full !overflow-y-hidden flex p-10 flex-1">
+    <main className="w-full !overflow-y-hidden flex p-0 flex-1">
       <Chat
         conversations={conversations ?? []}
         userAuthenticated={userAuthenticated?.raw?.()!}

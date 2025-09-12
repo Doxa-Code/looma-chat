@@ -4,7 +4,7 @@ import { Message } from "@looma/core/domain/entities/message";
 import { User } from "@looma/core/domain/entities/user";
 import { Attendant } from "@looma/core/domain/value-objects/attendant";
 import dynamic from "next/dynamic";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Textarea } from "../ui/textarea";
 
 const VoiceRecorder = dynamic(
@@ -17,6 +17,7 @@ type Props = {
   channel: string;
   addMessage(message: Message.Raw): void;
   userAuthenticated: User.Raw;
+  attendantId?: string;
 };
 
 export const ChatForm: React.FC<Props> = (props) => {
@@ -24,6 +25,11 @@ export const ChatForm: React.FC<Props> = (props) => {
   const [inRecording, setInRecording] = useState(false);
   const sendMessageAction = useServerActionMutation(sendMessage);
   const sendAudioAction = useServerActionMutation(sendAudio);
+  const disabled = useMemo(
+    () =>
+      !props.attendantId || props.attendantId !== props.userAuthenticated.id,
+    [props.attendantId, props.userAuthenticated.id]
+  );
 
   return (
     <form
@@ -54,7 +60,8 @@ export const ChatForm: React.FC<Props> = (props) => {
           conversationId: props.conversationId,
         });
       }}
-      className="w-full z-50 absolute bottom-0 flex items-center bg-white gap-2 p-3"
+      data-disabled={disabled}
+      className="w-[98%] data-[disabled=true]:hidden shadow z-50 h-screen max-h-[52px] absolute bottom-5 flex left-[50%] -translate-x-[50%] items-center bg-white rounded-full border gap-2 p-3"
     >
       {/* <FileButton
         conversationId={props.conversationId}
@@ -64,8 +71,9 @@ export const ChatForm: React.FC<Props> = (props) => {
       /> */}
       <Textarea
         data-hidden={inRecording}
-        className="resize-none rounded-4xl flex-1 font-light max-h-[200px]"
+        className="resize-none focus-visible:ring-0 border-0 shadow-none rounded-4xl flex-1 font-light max-h-[200px]"
         rows={1}
+        placeholder="Digite sua mensagem"
         name="message"
         onKeyDown={(e) => {
           if (e.key === "Enter") {

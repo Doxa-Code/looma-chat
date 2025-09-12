@@ -12,9 +12,13 @@ import { CartsDatabaseRepository } from "@looma/core/infra/repositories/carts-re
 import { ConversationsDatabaseRepository } from "@looma/core/infra/repositories/conversations-repository";
 import z from "zod";
 import { securityProcedure } from "./../procedure";
+import { Cart } from "@looma/core/domain/entities/cart";
+import { Client } from "@looma/core/domain/entities/client";
+import { ClientsDatabaseRepository } from "@looma/core/infra/repositories/clients-repository";
 
 const conversationsRepository = ConversationsDatabaseRepository.instance();
 const cartsRepository = CartsDatabaseRepository.instance();
+const clientsRepository = ClientsDatabaseRepository.instance();
 
 export const listCarts = securityProcedure([
   "view:carts",
@@ -23,6 +27,43 @@ export const listCarts = securityProcedure([
   const carts = await cartsRepository.list(ctx.membership.workspaceId);
   return carts;
 });
+
+export const createCart = securityProcedure(["manage:carts"])
+  .input(
+    z.object({
+      conversationId: z.string(),
+    })
+  )
+  .handler(async ({ input, ctx }) => {
+    const conversation = await conversationsRepository.retrieve(
+      input.conversationId
+    );
+    if (!conversation) return;
+
+    let client = await clientsRepository.retrieveByPhone(
+      conversation.contact.phone,
+      ctx.membership.workspaceId
+    );
+
+    if (!client) {
+      client = Client.create(conversation.contact);
+
+      await clientsRepository.upsert(client, ctx.membership.workspaceId);
+    }
+
+    let cart = await cartsRepository.retrieveOpenCartByConversationId(
+      input.conversationId,
+      ctx.membership.workspaceId
+    );
+
+    if (!cart) {
+      cart = Cart.create({
+        attendant: conversation.attendant!,
+        client,
+      });
+      await cartsRepository.upsert(cart, input.conversationId);
+    }
+  });
 
 export const retrieveOpenCart = securityProcedure([
   "manage:carts",
@@ -34,6 +75,8 @@ export const retrieveOpenCart = securityProcedure([
     })
   )
   .handler(async ({ input, ctx }) => {
+    if (!input.conversationId) return "Nenhum pedido aberto ainda!";
+
     const conversation = await conversationsRepository.retrieve(
       input.conversationId
     );
@@ -46,8 +89,7 @@ export const retrieveOpenCart = securityProcedure([
     );
 
     if (!cart) return "Nenhum pedido aberto ainda!";
-
-    return cart.formatted;
+    return cart.raw();
   });
 
 export const upsertProductOnCart = securityProcedure(["manage:carts"])
@@ -120,14 +162,14 @@ export const setCartAddress = securityProcedure(["manage:carts"])
     z.object({
       conversationId: z.string(),
       address: z.object({
-        street: z.string().optional().default(""),
-        number: z.string().optional().default(""),
-        neighborhood: z.string().optional().default(""),
-        city: z.string().optional().default(""),
-        state: z.string().optional().default(""),
-        zipCode: z.string().optional().default(""),
+        street: z.string().optional(),
+        number: z.string().optional(),
+        neighborhood: z.string().optional(),
+        city: z.string().optional(),
+        state: z.string().optional(),
+        zipCode: z.string().optional(),
         country: z.string().optional().default("Brasil"),
-        note: z.string().optional().default("").nullable(),
+        note: z.string().optional().nullable(),
       }),
     })
   )

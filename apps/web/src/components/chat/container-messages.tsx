@@ -38,7 +38,7 @@ export const ContainerMessages: React.FC<Props> = (props) => {
             >
               <Badge
                 variant="outline"
-                className="bg-muted text-muted-foreground border-0"
+                className="bg-[#fefdfd] !rounded text-[#7f7e7e] border-0 px-2 text-xs py-0.5"
               >
                 {formatRelative(message.createdAt, new Date(), {
                   locale: pt,

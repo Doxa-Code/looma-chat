@@ -2,6 +2,7 @@ import { InvalidCreation } from "../errors/invalid-creation";
 import { Attendant, AttendantRaw } from "../value-objects/attendant";
 import { Contact, ContactRaw } from "../value-objects/contact";
 import { Sector, SectorRaw } from "../value-objects/sector";
+import { Sender } from "../value-objects/sender";
 import { Message } from "./message";
 
 export namespace Conversation {
@@ -184,6 +185,35 @@ export class Conversation {
 
   static instance(props: Conversation.Props) {
     return new Conversation(props);
+  }
+
+  static fromRaw(props: Conversation.Raw) {
+    return new Conversation({
+      attendant: props.attendant
+        ? Attendant.create(props.attendant?.id, props.attendant?.name)
+        : null,
+      channel: props.channel,
+      closedAt: props.closedAt,
+      contact: Contact.create(props.contact.phone, props.contact.name),
+      id: props.id,
+      messages: props.messages.map((m) =>
+        Message.instance({
+          content: m.content,
+          createdAt: m.createdAt,
+          id: m.id,
+          internal: m.internal,
+          sender: Sender.create(m.sender.type, m.sender.id, m.sender.name),
+          status: m.status,
+          type: m.type,
+          viewedAt: m.viewedAt,
+        })
+      ),
+      openedAt: props.openedAt,
+      sector: props.sector
+        ? Sector.create(props.sector.name, props.sector.id)
+        : null,
+      status: props.status,
+    });
   }
 
   static create(contact: Contact, channel: string) {

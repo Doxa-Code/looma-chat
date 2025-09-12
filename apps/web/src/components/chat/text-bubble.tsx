@@ -1,6 +1,9 @@
 import { Message } from "@looma/core/domain/entities/message";
 import React from "react";
 import { MessageContainer } from "./message-container";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeSanitize from "rehype-sanitize";
 
 type Props = {
   message: Message.Raw;
@@ -16,7 +19,14 @@ export const TextBubble: React.FC<Props> = (props) => {
       status={props.message.status}
       senderName={props.message.sender.name}
     >
-      <p className="text-sm font-normal py-2">{props.message.content}</p>
+      <div className="text-sm font-normal prose py-2">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeSanitize]}
+        >
+          {props.message.content}
+        </ReactMarkdown>
+      </div>
     </MessageContainer>
   );
 };

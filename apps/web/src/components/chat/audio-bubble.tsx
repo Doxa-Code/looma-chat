@@ -216,11 +216,11 @@ export const AudioBubble: React.FC<Props> = (props) => {
             className="w-full gap-4 flex justify-center items-center"
             data-hidden={!loading}
           >
-            <Loader className="animate-spin group-data-[sender=contact]:stroke-primary" />
+            <Loader className="animate-spin stroke-primary" />
             <ProgressBar
               value={100}
               className="w-full rounded"
-              classNameBar="bg-primary groud-data-[sender=attendant]:bg-white"
+              classNameBar="bg-primary"
             />
           </div>
           <div data-hidden={loading} className="flex w-full items-center gap-2">
@@ -286,7 +286,7 @@ export const AudioBubble: React.FC<Props> = (props) => {
             </svg>
           </div>
 
-          <span className="w-10 select-none text-xs">
+          <span className="w-10 select-none text-primary text-xs">
             {ready ? formatTime(isPlaying ? currentTime : duration) : "00:00"}
           </span>
         </div>

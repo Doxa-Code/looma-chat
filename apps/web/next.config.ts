@@ -1,8 +1,7 @@
-import type { NextConfig } from "next";
 import withFlowbiteReact from "flowbite-react/plugin/nextjs";
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@mastra/*"],
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.externals.push("bcrypt");

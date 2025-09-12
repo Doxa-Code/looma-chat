@@ -207,4 +207,6 @@ export const markLastMessagesContactAsViewed = securityProcedure([
     });
 
     sseEmitter.emit("conversation", conversation.raw());
+
+    return conversation.raw();
   });

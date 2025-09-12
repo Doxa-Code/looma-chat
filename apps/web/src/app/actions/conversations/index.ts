@@ -4,6 +4,7 @@ import { CloseConversation } from "@looma/core/application/command/close-convers
 import { ConversationsDatabaseRepository } from "@looma/core/infra/repositories/conversations-repository";
 import z from "zod";
 import { securityProcedure } from "../procedure";
+import { Attendant } from "@looma/core/domain/value-objects/attendant";
 
 const conversationsRepository = ConversationsDatabaseRepository.instance();
 
@@ -38,6 +39,25 @@ export const closeConversation = securityProcedure(["close:conversation"])
       conversationId: input.conversationId,
       workspaceId: membership.workspaceId,
     });
+
+    sseEmitter.emit("conversation", conversation.raw());
+  });
+
+export const registerMeAttendant = securityProcedure(["view:conversation"])
+  .input(z.object({ conversationId: z.string() }))
+  .handler(async ({ ctx, input }) => {
+    const conversation = await conversationsRepository.retrieve(
+      input.conversationId
+    );
+    if (!conversation) return;
+    conversation.attributeAttendant(
+      Attendant.create(ctx.user.id, ctx.user.name)
+    );
+
+    await conversationsRepository.upsert(
+      conversation,
+      ctx.membership.workspaceId
+    );
 
     sseEmitter.emit("conversation", conversation.raw());
   });

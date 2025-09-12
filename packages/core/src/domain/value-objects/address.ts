@@ -7,7 +7,7 @@ export type AddressRaw = {
   state?: string;
   zipCode?: string;
   country?: string;
-  note: string | null;
+  note?: string | null;
 };
 export class Address {
   constructor(

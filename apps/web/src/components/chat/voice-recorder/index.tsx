@@ -198,7 +198,7 @@ export const VoiceRecorder: React.FC<Props> = (props) => {
         type="button"
         onClick={handleStart}
       >
-        <Mic className="size-5 stroke-muted-foreground" />
+        <Mic className="size-5 stroke-[#171616]" />
       </Button>
     );
   }

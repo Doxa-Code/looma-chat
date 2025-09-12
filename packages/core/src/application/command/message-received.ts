@@ -51,9 +51,8 @@ export class MessageReceived {
     if (conversation.messages.some((m) => m.id === message.id)) return;
 
     message.markAsDelivered();
-    conversation.addMessage(message);
 
-    conversation.markAllMessageAsViewed();
+    conversation.addMessage(message);
 
     await this.conversationsRepository.upsert(conversation, input.workspaceId);
 

@@ -47,7 +47,7 @@ export class CartsDatabaseRepository {
       canceledAt: cart.canceledAt
         ? this.dateToTimestamp(cart.canceledAt)
         : null,
-      paymentMethod: cart.paymentMethod?.value,
+      paymentMethod: cart.paymentMethod?.value ?? null,
       paymentChange: cart.paymentChange ? cart.paymentChange * 100 : null,
       cancelReason: cart.cancelReason,
     };
@@ -82,18 +82,29 @@ export class CartsDatabaseRepository {
       )) ?? [];
 
     await db.transaction(async (tx) => {
+      const productsIds = await tx
+        .select({ id: productsOnCart.id })
+        .from(productsOnCart)
+        .where(eq(productsOnCart.cartId, cart.id));
+
+      await Promise.all(
+        productsIds
+          .filter((p) => !productsOnCartNewValues.find((pc) => pc.id === p.id))
+          .map(async (p) => {
+            await tx.delete(productsOnCart).where(eq(productsOnCart.id, p.id));
+          })
+      );
+
       if (cart.address) {
         await tx.insert(addresses).values(cart.address).onConflictDoUpdate({
           set: cart.address,
           target: addresses.id,
         });
       }
-
       await tx.insert(carts).values(cartNewValues).onConflictDoUpdate({
         target: carts.conversationId,
         set: cartNewValues,
       });
-
       await Promise.all(
         productsOnCartNewValues.map(async (product) => {
           await tx.insert(productsOnCart).values(product).onConflictDoUpdate({

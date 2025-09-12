@@ -1,13 +1,11 @@
 "use client";
-import { Message } from "@looma/core/domain/entities/message";
 import { cx } from "@/lib/utils";
-import { Loader } from "lucide-react";
+import { Message } from "@looma/core/domain/entities/message";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
-import { ProgressBar } from "../progress-bar";
 import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
-import { MessageContainer } from "./message-container";
 import { Skeleton } from "../ui/skeleton";
+import { MessageContainer } from "./message-container";
 
 type Props = {
   message: Message.Raw;

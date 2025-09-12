@@ -1,23 +1,25 @@
 "use client";
 
-import { Conversation } from "@looma/core/domain/entities/conversation";
-import { Message } from "@looma/core/domain/entities/message";
+import { listAllConversations } from "@/app/actions/conversations";
+import { markLastMessagesContactAsViewed } from "@/app/actions/messages";
 import {
   useServerActionMutation,
   useServerActionQuery,
 } from "@/hooks/server-action-hooks";
 import { useSSE } from "@/hooks/use-sse";
 import { useToast } from "@/hooks/use-toast";
+import { Conversation } from "@looma/core/domain/entities/conversation";
+import { Message } from "@looma/core/domain/entities/message";
+import { User } from "@looma/core/domain/entities/user";
 import { useEffect, useRef, useState } from "react";
+import { Logo } from "../logo";
 import { ChatEmptyContainer } from "./chat-empty-container";
 import { ChatForm } from "./chat-form";
 import { ChatHeader } from "./chat-header";
 import { ChatSidebar } from "./chat-sidebar";
 import { ContainerMessages } from "./container-messages";
-import { User } from "@looma/core/domain/entities/user";
-import { Logo } from "../logo";
-import { markLastMessagesContactAsViewed } from "@/app/actions/messages";
-import { listAllConversations } from "@/app/actions/conversations";
+import { ModalCart } from "./modal-cart";
+import { Attendant } from "@looma/core/domain/value-objects/attendant";
 
 type Props = {
   conversations: Conversation.Raw[];
@@ -26,6 +28,9 @@ type Props = {
 };
 
 export function Chat(props: Props) {
+  const [conversation, setConversation] = useState<Conversation.Raw | null>(
+    null
+  );
   const containerMessages = useRef<HTMLDivElement>(null);
   const { data } = useServerActionQuery(listAllConversations, {
     input: undefined,
@@ -34,13 +39,20 @@ export function Chat(props: Props) {
   const [conversations, setConversations] = useState<
     Map<string, Conversation.Raw>
   >(new Map(props.conversations.map((c) => [c.id, c])));
-  const [conversation, setConversation] = useState<Conversation.Raw | null>(
-    null
-  );
   const [typing, setTyping] = useState(false);
   const [messages, setMessages] = useState<Message.Raw[]>([]);
   const markLastMessagesContactAsViewedAction = useServerActionMutation(
-    markLastMessagesContactAsViewed
+    markLastMessagesContactAsViewed,
+    {
+      onSuccess(data) {
+        setConversation(data);
+
+        setConversations((prev) => {
+          prev.set(data.id, data);
+          return new Map(prev);
+        });
+      },
+    }
   );
   const { toast } = useToast();
   const { connected } = useSSE({
@@ -120,11 +132,19 @@ export function Chat(props: Props) {
     if (
       conversation?.messages.some(
         (m) => m.status !== "viewed" && m.sender?.type === "contact"
-      )
+      ) &&
+      conversation.attendant?.id === props.userAuthenticated.id
     ) {
       markLastMessagesContactAsViewedAction.mutate({
         channel: conversation.channel,
         contactPhone: conversation.contact.phone,
+      });
+      const lastConversation = Conversation.fromRaw(conversation);
+      lastConversation.markAllMessageAsViewed();
+      setConversation(lastConversation.raw());
+      setConversations((prev) => {
+        prev.set(lastConversation.id, lastConversation.raw());
+        return new Map(prev);
       });
     }
   }, [conversation]);
@@ -139,6 +159,20 @@ export function Chat(props: Props) {
     }
   }, [messages]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setConversation(null);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   if (!connected) {
     return (
       <div className="fixed w-full h-screen top-0 left-0 flex justify-center items-center flex-col bg-white/80 z-50">
@@ -149,33 +183,58 @@ export function Chat(props: Props) {
   }
 
   return (
-    <div className="flex flex-1 w-full border overflow-hidden rounded-md shadow">
+    <div className="flex flex-1 w-full overflow-hidden rounded-none">
       <ChatSidebar
         conversation={conversation}
         conversations={Array.from(conversations.values())}
         isConnected={connected}
         selectConversation={setConversation}
+        user={props.userAuthenticated}
+        registerMe={(conversationId) => {
+          const conversation = conversations.get(conversationId);
+
+          if (!conversation) return;
+
+          const lastConversation = Conversation.fromRaw(conversation);
+          lastConversation.attributeAttendant(
+            Attendant.create(
+              props.userAuthenticated.id,
+              props.userAuthenticated.name
+            )
+          );
+          setConversation(lastConversation.raw());
+          setConversations((prev) => {
+            prev.set(lastConversation.id, lastConversation.raw());
+            return new Map(prev);
+          });
+        }}
       />
       <ChatEmptyContainer hidden={!!conversation} />
       <div
         data-hidden={!conversation}
-        className="flex flex-col overflow-hidden bg-[#E2DFE8]/30 gap-4 w-full flex-1 relative"
+        className="flex flex-col overflow-hidden bg-[#F5F1EB]/30 gap-0 w-full flex-1 relative"
       >
         <ChatHeader contact={conversation?.contact} />
-        <ContainerMessages
-          ref={containerMessages}
-          messages={messages}
-          channel={conversation?.channel!}
-          typing={typing}
-        />
-        <ChatForm
-          conversationId={conversation?.id}
-          addMessage={(message) => {
-            setMessages((messages) => [...messages, message]);
-          }}
-          channel={conversation?.channel!}
-          userAuthenticated={props.userAuthenticated}
-        />
+        <div className="flex flex-1 relative overflow-hidden">
+          <div className="w-full overflow-y-auto flex-1 pb-16 flex flex-col relative">
+            <ContainerMessages
+              ref={containerMessages}
+              messages={messages}
+              channel={conversation?.channel!}
+              typing={typing}
+            />
+            <ChatForm
+              conversationId={conversation?.id}
+              addMessage={(message) => {
+                setMessages((messages) => [...messages, message]);
+              }}
+              attendantId={conversation?.attendant?.id}
+              channel={conversation?.channel!}
+              userAuthenticated={props.userAuthenticated}
+            />
+          </div>
+          <ModalCart conversationId={conversation?.id} />
+        </div>
       </div>
     </div>
   );
