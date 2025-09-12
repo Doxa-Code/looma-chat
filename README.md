@@ -1,5 +1,5 @@
-# Looma
+# Looma / Olivia
 
-- [ ] Cumprimento
-- [ ] Conferencia do endereço antes de confirmar com o cliente
-- [ ] Mensagem pós Resumo do pedido
+- [ ] Transferencia de atendimento
+- [ ] Filtro por permissões de atendimentos
+- [ ] Leitura de banco de dados para entendimento de como fazer com os agendamentos.

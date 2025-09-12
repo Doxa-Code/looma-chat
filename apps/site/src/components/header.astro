@@ -1,0 +1,40 @@
+---
+  import { Bot, Menu } from "@lucide/astro"
+  import Button from "@/components/ui/button.astro"
+---
+
+<header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+  <div class="container mx-auto flex h-16 items-center justify-between px-4">
+    <div class="flex items-center w-full max-w-[40px]">
+      <img src="/icon.png"/>
+    </div>
+
+    <nav class="hidden md:flex items-center space-x-6">
+      <a href="#problema" class="text-sm font-normal hover:text-primary transition-colors">
+        Problema
+      </a>
+      <a href="#solucao" class="text-sm font-normal hover:text-primary transition-colors">
+        Solução
+      </a>
+      <a href="#como-funciona" class="text-sm font-normal hover:text-primary transition-colors">
+        Como Funciona
+      </a>
+      <a href="#resultados" class="text-sm font-normal hover:text-primary transition-colors">
+        Resultados
+      </a>
+      <a href="#depoimentos" class="text-sm font-normal hover:text-primary transition-colors">
+        Depoimentos
+      </a>
+    </nav>
+
+    <div class="flex items-center  space-x-4">
+      <Button variant="outline" className="hidden md:inline-flex bg-transparent">
+        Login
+      </Button>
+      <Button className="bg-sky-500 text-white hover:bg-sky-500">Começar Agora</Button>
+      <Button variant="ghost" size="icon" className="md:hidden">
+        <Menu class="h-5 w-5" />
+      </Button>
+    </div>
+  </div>
+</header>
