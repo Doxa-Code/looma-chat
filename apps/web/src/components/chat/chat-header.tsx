@@ -1,16 +1,19 @@
 "use client";
 import { useCart } from "@/hooks/use-cart";
 import { ContactRaw } from "@looma/core/domain/value-objects/contact";
-import { ShoppingCart, User2 } from "lucide-react";
+import { Forward, ShoppingCart, User2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
+import { RiArrowGoForwardFill, RiArrowGoForwardLine } from "@remixicon/react";
+import { ModalTransfer } from "../modal-transfer";
 
 type Props = {
   contact?: ContactRaw;
 };
 
 export const ChatHeader: React.FC<Props> = ({ contact }) => {
-  const { openCart, setOpenCart } = useCart();
+  const { openCart, setOpenCart, productsOnCart } = useCart();
   return (
     <div className="w-full z-50 justify-between items-center border-b flex top-0 bg-white h-screen max-h-[64px] py-6 px-4">
       <div className="flex items-center gap-4">
@@ -27,14 +30,23 @@ export const ChatHeader: React.FC<Props> = ({ contact }) => {
           </span>
         </div>
       </div>
-      <Button
-        data-active={openCart}
-        onClick={() => setOpenCart(!openCart)}
-        variant="ghost"
-        className="data-[active=true]:bg-sky-500 group rounded-lg"
-      >
-        <ShoppingCart className="size-4 group-data-[active=true]:!stroke-sky-100" />
-      </Button>
+      <div className="flex gap-2 items-center">
+        <ModalTransfer />
+        <Button
+          data-active={openCart}
+          onClick={() => setOpenCart(!openCart)}
+          variant="ghost"
+          className="data-[active=true]:bg-sky-500 group rounded-lg"
+        >
+          <Badge
+            className="!text-[7pt] rounded-full absolute -top-1 -right-1 bg-pink-500 w-4 h-4"
+            data-hidden={productsOnCart < 1}
+          >
+            {productsOnCart}
+          </Badge>
+          <ShoppingCart className="size-4 group-data-[active=true]:!stroke-sky-100" />
+        </Button>
+      </div>
     </div>
   );
 };
