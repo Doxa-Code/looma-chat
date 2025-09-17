@@ -21,20 +21,22 @@
     "db:generate": "turbo run db:generate",
     "db:seed": "turbo run db:seed",
     "db:generate:token": "turbo run db:generate:token",
-    "db:generate:password": "bun run ./packages/core/src/infra/database/generate-password.ts",
-    "mastra:dev": "turbo run mastra:dev"
+    "db:generate:password": "bun run ./packages/core/src/infra/database/generate-password.ts"
   },
   "devDependencies": {
     "prettier": "^3.6.2",
     "turbo": "^2.5.6",
     "typescript": "5.8.3"
   },
-  "packageManager": "pnpm@9.0.0",
+  "packageManager": "bun@1.2.21",
   "engines": {
-    "node": ">=22.18.0"
+    "bun": ">=1.2.21"
   },
   "workspaces": [
     "packages/*",
     "apps/*"
-  ]
+  ],
+  "dependencies": {
+    "zod": "3"
+  }
 }

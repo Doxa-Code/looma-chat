@@ -18,6 +18,6 @@
     "@pinecone-database/pinecone": "^6.1.2",
     "ai": "^4.3.19",
     "axios": "^1.10.0",
-    "zod": "^4.0.17"
+    "zod": "^3.25.76"
   }
 }

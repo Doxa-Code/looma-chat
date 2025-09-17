@@ -19,8 +19,8 @@ import { WorkspacesRepository } from "@looma/core/infra/repositories/workspaces-
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { z } from "zod";
-import { createServerAction } from "zsa";
+import * as z from "zod";
+import { createServerAction, createZodSafeFunction } from "zsa";
 import { securityProcedure } from "../procedure";
 
 const usersRepository = UsersDatabaseRepository.instance();

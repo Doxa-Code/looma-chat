@@ -2,7 +2,9 @@ import {
   boolean,
   foreignKey,
   integer,
+  PgSchema,
   pgSchema,
+  pgTable,
   primaryKey,
   text,
   timestamp,
@@ -11,9 +13,10 @@ import {
   vector,
 } from "drizzle-orm/pg-core";
 
-const schemas = pgSchema(
-  process.env.NODE_ENV === "production" ? "public" : "development"
-);
+const schemas =
+  process.env.NODE_ENV === "production"
+    ? ({ table: pgTable } as unknown as PgSchema)
+    : pgSchema("development");
 
 export const users = schemas.table("users", {
   id: uuid("id").primaryKey().notNull(),
