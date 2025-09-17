@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "vitest",
-    "postinstall": "flowbite-react patch"
+    "test": "vitest"
   },
   "dependencies": {
     "@arizeai/openinference-semantic-conventions": "^2.1.1",
