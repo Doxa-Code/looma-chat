@@ -259,8 +259,9 @@ export class ConversationsDatabaseRepository {
           sectorId: conversation.sector?.id,
         })
         .onConflictDoUpdate({
+          target: [conversations.contactPhone, conversations.channel],
           set: {
-            channel: conversation.channel,
+            id: conversation.id,
             openedAt: conversation.openedAt
               ? this.dateToTimestamp(conversation.openedAt)
               : null,
@@ -270,10 +271,8 @@ export class ConversationsDatabaseRepository {
             status: conversation.status,
             workspaceId,
             attendantId: conversation.attendant?.id,
-            contactPhone: conversation.contact.phone,
             sectorId: conversation.sector?.id,
           },
-          target: conversations.id,
         });
 
       await Promise.all(
@@ -294,6 +293,7 @@ export class ConversationsDatabaseRepository {
               status: m.status,
             })
             .onConflictDoUpdate({
+              target: messages.id,
               set: {
                 createdAt: this.dateToTimestamp(m.createdAt),
                 senderId: m.sender.id,
@@ -306,7 +306,6 @@ export class ConversationsDatabaseRepository {
                 viewedAt: m.viewedAt ? this.dateToTimestamp(m.viewedAt) : null,
                 status: m.status,
               },
-              target: messages.id,
             });
         })
       );

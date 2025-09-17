@@ -69,24 +69,28 @@ export const contacts = pgTable("contacts", {
   thumbnail: text("thumbnail"),
 });
 
-export const conversations = pgTable("conversations", {
-  id: uuid("id").primaryKey().notNull(),
-  channel: text("channel").notNull(),
-  sectorId: uuid("sector_id").references(() => sectors.id),
-  contactPhone: varchar("contact_phone", { length: 15 }).references(
-    () => contacts.phone
-  ),
-  attendantId: uuid("attendant_id").references(() => users.id),
-  status: varchar("status", {
-    length: 10,
-    enum: ["open", "closed", "expired", "waiting"],
-  }).notNull(),
-  workspaceId: uuid("workspace_id")
-    .references(() => workspaces.id)
-    .notNull(),
-  openedAt: integer("opened_at"),
-  closedAt: integer("closed_at"),
-});
+export const conversations = pgTable(
+  "conversations",
+  {
+    id: uuid("id").notNull().unique(),
+    channel: text("channel").notNull(),
+    sectorId: uuid("sector_id").references(() => sectors.id),
+    contactPhone: varchar("contact_phone", { length: 15 }).references(
+      () => contacts.phone
+    ),
+    attendantId: uuid("attendant_id").references(() => users.id),
+    status: varchar("status", {
+      length: 10,
+      enum: ["open", "closed", "expired", "waiting"],
+    }).notNull(),
+    workspaceId: uuid("workspace_id")
+      .references(() => workspaces.id)
+      .notNull(),
+    openedAt: integer("opened_at"),
+    closedAt: integer("closed_at"),
+  },
+  (table) => [primaryKey({ columns: [table.contactPhone, table.channel] })]
+);
 
 export const messages = pgTable("messages", {
   id: text("id").primaryKey().notNull(),

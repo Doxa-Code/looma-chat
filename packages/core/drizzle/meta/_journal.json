@@ -225,6 +225,20 @@
       "when": 1756835750680,
       "tag": "0031_crazy_red_skull",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1758070747143,
+      "tag": "0032_optimal_moira_mactaggert",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1758071326685,
+      "tag": "0033_supreme_bullseye",
+      "breakpoints": true
     }
   ]
 }
