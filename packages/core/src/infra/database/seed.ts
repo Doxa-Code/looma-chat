@@ -12,7 +12,7 @@ import { WorkspacesRepository } from "../repositories/workspaces-repository";
 const USER_DATA = {
   name: "Fernando Souza",
   email: "fernando.souza@doxacode.com.br",
-  password: bcrypt.hashSync("50271541", 10),
+  password: bcrypt.hashSync("admin", 10),
   thumbnail: null,
   type: "superuser" as const,
 };
@@ -23,7 +23,6 @@ const workspacesRepository = WorkspacesRepository.instance();
 const membershipsRepository = MembershipsDatabaseRepository.instance();
 
 (async () => {
-  // TODO: RESOLVER
   const user = await usersRepository.retrieveUserByEmail(USER_DATA.email);
 
   if (!user?.id) {

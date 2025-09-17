@@ -36,7 +36,6 @@
     "dotenv": "^17.0.1",
     "drizzle-orm": "^0.44.2",
     "form-data": "^4.0.4",
-    "ioredis": "^5.7.0",
     "jsonwebtoken": "^9.0.2",
     "openai": "^5.13.1",
     "pg": "^8.16.3",

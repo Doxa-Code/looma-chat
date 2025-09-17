@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "dev:web": "turbo run dev --filter @looma/web",
     "build:service": "sh apps/service/build.sh",
     "dev:broker": "turbo run dev:broker",
     "deploy:broker": "turbo run deploy:broker",

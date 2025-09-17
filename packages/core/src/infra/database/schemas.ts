@@ -1,22 +1,21 @@
 import {
-  foreignKey,
-  index,
-  jsonb,
-  primaryKey,
-  serial,
-  vector,
-} from "drizzle-orm/pg-core";
-import {
   boolean,
+  foreignKey,
   integer,
-  pgTable,
+  pgSchema,
+  primaryKey,
   text,
   timestamp,
   uuid,
   varchar,
+  vector,
 } from "drizzle-orm/pg-core";
 
-export const users = pgTable("users", {
+const schemas = pgSchema(
+  process.env.NODE_ENV === "production" ? "public" : "development"
+);
+
+export const users = schemas.table("users", {
   id: uuid("id").primaryKey().notNull(),
   name: text("name").default("").notNull(),
   email: text("email").unique().notNull(),
@@ -28,12 +27,12 @@ export const users = pgTable("users", {
     .default("user"),
 });
 
-export const workspaces = pgTable("workspaces", {
+export const workspaces = schemas.table("workspaces", {
   id: uuid("id").primaryKey().notNull(),
   name: text("name").notNull(),
 });
 
-export const settings = pgTable("settings", {
+export const settings = schemas.table("settings", {
   id: uuid("id").primaryKey().notNull(),
   wabaId: text("waba_id").notNull().default(""),
   phoneId: text("phone_id").notNull().default(""),
@@ -53,7 +52,7 @@ export const settings = pgTable("settings", {
   queueURL: text("queue_url").notNull().default(""),
 });
 
-export const memberships = pgTable("memberships", {
+export const memberships = schemas.table("memberships", {
   id: uuid("id").primaryKey().notNull(),
   userId: uuid("user_id")
     .references(() => users.id, { onDelete: "cascade" })
@@ -64,19 +63,19 @@ export const memberships = pgTable("memberships", {
   permissions: text("permissions").array().notNull().default([]),
 });
 
-export const sectors = pgTable("sectors", {
+export const sectors = schemas.table("sectors", {
   id: uuid("id").primaryKey().notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   workspaceId: uuid("workspace_id").references(() => workspaces.id),
 });
 
-export const contacts = pgTable("contacts", {
+export const contacts = schemas.table("contacts", {
   phone: varchar("phone", { length: 15 }).notNull().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   thumbnail: text("thumbnail"),
 });
 
-export const conversations = pgTable(
+export const conversations = schemas.table(
   "conversations",
   {
     id: uuid("id").notNull().unique(),
@@ -99,7 +98,7 @@ export const conversations = pgTable(
   (table) => [primaryKey({ columns: [table.contactPhone, table.channel] })]
 );
 
-export const messages = pgTable(
+export const messages = schemas.table(
   "messages",
   {
     id: text("id").primaryKey().notNull(),
@@ -131,7 +130,7 @@ export const messages = pgTable(
   ]
 );
 
-export const clients = pgTable("clients", {
+export const clients = schemas.table("clients", {
   id: uuid("id").primaryKey().notNull(),
   partnerId: text("partner_id"),
   contactPhone: varchar("contact_phone", { length: 15 }).references(
@@ -141,7 +140,7 @@ export const clients = pgTable("clients", {
   workspaceId: uuid("workspace_id").references(() => workspaces.id),
 });
 
-export const addresses = pgTable("addresses", {
+export const addresses = schemas.table("addresses", {
   id: uuid("id").primaryKey().notNull(),
   street: text("street").notNull(),
   number: varchar("number", { length: 10 }).notNull(),
@@ -153,7 +152,7 @@ export const addresses = pgTable("addresses", {
   note: text("note"),
 });
 
-export const products = pgTable(
+export const products = schemas.table(
   "products",
   {
     id: text("id").notNull(),
@@ -173,7 +172,7 @@ export const products = pgTable(
   (table) => [primaryKey({ columns: [table.id, table.workspaceId] })]
 );
 
-export const productsOnCart = pgTable("products_on_cart", {
+export const productsOnCart = schemas.table("products_on_cart", {
   id: uuid("id").primaryKey().notNull(),
   cartId: uuid("cart_id")
     .references(() => carts.id, {
@@ -188,7 +187,7 @@ export const productsOnCart = pgTable("products_on_cart", {
   quantity: integer("quantity").notNull().default(1),
 });
 
-export const carts = pgTable(
+export const carts = schemas.table(
   "carts",
   {
     id: uuid("id").primaryKey().notNull(),
@@ -233,14 +232,14 @@ export const carts = pgTable(
   ]
 );
 
-export const messageBuffer = pgTable("message_buffer", {
+export const messageBuffer = schemas.table("message_buffer", {
   id: text("message_id").primaryKey().notNull(),
   content: text("content").notNull(),
   sender: text("sender").notNull(),
   timestamp: integer("timestamp").notNull(),
 });
 
-export const toolsResultsBuffer = pgTable("tools_results_buffer", {
+export const toolsResultsBuffer = schemas.table("tools_results_buffer", {
   id: uuid("id").primaryKey().defaultRandom(),
   toolName: text("toolName").notNull(),
   contact: text("contact").notNull(),

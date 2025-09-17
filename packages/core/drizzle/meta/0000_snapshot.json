@@ -1,12 +1,12 @@
 {
-  "id": "080671be-9699-4c2e-a9f9-bb1cddfc16c3",
+  "id": "1f8cc222-bd8b-49a6-83cd-d2da59af4594",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.addresses": {
+    "development.addresses": {
       "name": "addresses",
-      "schema": "",
+      "schema": "development",
       "columns": {
         "id": {
           "name": "id",
@@ -72,9 +72,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.carts": {
+    "development.carts": {
       "name": "carts",
-      "schema": "",
+      "schema": "development",
       "columns": {
         "id": {
           "name": "id",
@@ -186,6 +186,7 @@
           "name": "carts_attendant_id_users_id_fk",
           "tableFrom": "carts",
           "tableTo": "users",
+          "schemaTo": "development",
           "columnsFrom": [
             "attendant_id"
           ],
@@ -199,6 +200,7 @@
           "name": "carts_client_id_clients_id_fk",
           "tableFrom": "carts",
           "tableTo": "clients",
+          "schemaTo": "development",
           "columnsFrom": [
             "client_id"
           ],
@@ -212,6 +214,7 @@
           "name": "carts_address_id_addresses_id_fk",
           "tableFrom": "carts",
           "tableTo": "addresses",
+          "schemaTo": "development",
           "columnsFrom": [
             "address_id"
           ],
@@ -225,6 +228,7 @@
           "name": "messages_conversation_fk",
           "tableFrom": "carts",
           "tableTo": "conversations",
+          "schemaTo": "development",
           "columnsFrom": [
             "contact_phone",
             "channel"
@@ -243,9 +247,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.clients": {
+    "development.clients": {
       "name": "clients",
-      "schema": "",
+      "schema": "development",
       "columns": {
         "id": {
           "name": "id",
@@ -284,6 +288,7 @@
           "name": "clients_contact_phone_contacts_phone_fk",
           "tableFrom": "clients",
           "tableTo": "contacts",
+          "schemaTo": "development",
           "columnsFrom": [
             "contact_phone"
           ],
@@ -297,6 +302,7 @@
           "name": "clients_address_id_addresses_id_fk",
           "tableFrom": "clients",
           "tableTo": "addresses",
+          "schemaTo": "development",
           "columnsFrom": [
             "address_id"
           ],
@@ -310,6 +316,7 @@
           "name": "clients_workspace_id_workspaces_id_fk",
           "tableFrom": "clients",
           "tableTo": "workspaces",
+          "schemaTo": "development",
           "columnsFrom": [
             "workspace_id"
           ],
@@ -326,9 +333,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.contacts": {
+    "development.contacts": {
       "name": "contacts",
-      "schema": "",
+      "schema": "development",
       "columns": {
         "phone": {
           "name": "phone",
@@ -357,9 +364,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.conversations": {
+    "development.conversations": {
       "name": "conversations",
-      "schema": "",
+      "schema": "development",
       "columns": {
         "id": {
           "name": "id",
@@ -422,6 +429,7 @@
           "name": "conversations_sector_id_sectors_id_fk",
           "tableFrom": "conversations",
           "tableTo": "sectors",
+          "schemaTo": "development",
           "columnsFrom": [
             "sector_id"
           ],
@@ -435,6 +443,7 @@
           "name": "conversations_contact_phone_contacts_phone_fk",
           "tableFrom": "conversations",
           "tableTo": "contacts",
+          "schemaTo": "development",
           "columnsFrom": [
             "contact_phone"
           ],
@@ -448,6 +457,7 @@
           "name": "conversations_attendant_id_users_id_fk",
           "tableFrom": "conversations",
           "tableTo": "users",
+          "schemaTo": "development",
           "columnsFrom": [
             "attendant_id"
           ],
@@ -461,6 +471,7 @@
           "name": "conversations_workspace_id_workspaces_id_fk",
           "tableFrom": "conversations",
           "tableTo": "workspaces",
+          "schemaTo": "development",
           "columnsFrom": [
             "workspace_id"
           ],
@@ -493,9 +504,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.memberships": {
+    "development.memberships": {
       "name": "memberships",
-      "schema": "",
+      "schema": "development",
       "columns": {
         "id": {
           "name": "id",
@@ -529,6 +540,7 @@
           "name": "memberships_user_id_users_id_fk",
           "tableFrom": "memberships",
           "tableTo": "users",
+          "schemaTo": "development",
           "columnsFrom": [
             "user_id"
           ],
@@ -542,6 +554,7 @@
           "name": "memberships_workspace_id_workspaces_id_fk",
           "tableFrom": "memberships",
           "tableTo": "workspaces",
+          "schemaTo": "development",
           "columnsFrom": [
             "workspace_id"
           ],
@@ -558,9 +571,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.message_buffer": {
+    "development.message_buffer": {
       "name": "message_buffer",
-      "schema": "",
+      "schema": "development",
       "columns": {
         "message_id": {
           "name": "message_id",
@@ -595,9 +608,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.messages": {
+    "development.messages": {
       "name": "messages",
-      "schema": "",
+      "schema": "development",
       "columns": {
         "id": {
           "name": "id",
@@ -681,6 +694,7 @@
           "name": "messages_conversation_fk",
           "tableFrom": "messages",
           "tableTo": "conversations",
+          "schemaTo": "development",
           "columnsFrom": [
             "contact_phone",
             "channel"
@@ -699,9 +713,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.products": {
+    "development.products": {
       "name": "products",
-      "schema": "",
+      "schema": "development",
       "columns": {
         "id": {
           "name": "id",
@@ -779,6 +793,7 @@
           "name": "products_workspace_id_workspaces_id_fk",
           "tableFrom": "products",
           "tableTo": "workspaces",
+          "schemaTo": "development",
           "columnsFrom": [
             "workspace_id"
           ],
@@ -803,9 +818,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.products_on_cart": {
+    "development.products_on_cart": {
       "name": "products_on_cart",
-      "schema": "",
+      "schema": "development",
       "columns": {
         "id": {
           "name": "id",
@@ -860,6 +875,7 @@
           "name": "products_on_cart_cart_id_carts_id_fk",
           "tableFrom": "products_on_cart",
           "tableTo": "carts",
+          "schemaTo": "development",
           "columnsFrom": [
             "cart_id"
           ],
@@ -876,9 +892,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.sectors": {
+    "development.sectors": {
       "name": "sectors",
-      "schema": "",
+      "schema": "development",
       "columns": {
         "id": {
           "name": "id",
@@ -905,6 +921,7 @@
           "name": "sectors_workspace_id_workspaces_id_fk",
           "tableFrom": "sectors",
           "tableTo": "workspaces",
+          "schemaTo": "development",
           "columnsFrom": [
             "workspace_id"
           ],
@@ -921,9 +938,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.settings": {
+    "development.settings": {
       "name": "settings",
-      "schema": "",
+      "schema": "development",
       "columns": {
         "id": {
           "name": "id",
@@ -1021,6 +1038,7 @@
           "name": "settings_workspace_id_workspaces_id_fk",
           "tableFrom": "settings",
           "tableTo": "workspaces",
+          "schemaTo": "development",
           "columnsFrom": [
             "workspace_id"
           ],
@@ -1037,9 +1055,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.tools_results_buffer": {
+    "development.tools_results_buffer": {
       "name": "tools_results_buffer",
-      "schema": "",
+      "schema": "development",
       "columns": {
         "id": {
           "name": "id",
@@ -1088,9 +1106,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.users": {
+    "development.users": {
       "name": "users",
-      "schema": "",
+      "schema": "development",
       "columns": {
         "id": {
           "name": "id",
@@ -1145,6 +1163,7 @@
           "name": "users_sector_id_sectors_id_fk",
           "tableFrom": "users",
           "tableTo": "sectors",
+          "schemaTo": "development",
           "columnsFrom": [
             "sector_id"
           ],
@@ -1169,9 +1188,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.workspaces": {
+    "development.workspaces": {
       "name": "workspaces",
-      "schema": "",
+      "schema": "development",
       "columns": {
         "id": {
           "name": "id",
