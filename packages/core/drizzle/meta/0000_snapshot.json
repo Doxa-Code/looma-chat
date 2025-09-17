@@ -1,5 +1,5 @@
 {
-  "id": "b20be579-5143-4445-ae7a-838cf7c08938",
+  "id": "080671be-9699-4c2e-a9f9-bb1cddfc16c3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -100,12 +100,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "conversation_id": {
-          "name": "conversation_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
         "status": {
           "name": "status",
           "type": "varchar(10)",
@@ -143,11 +137,47 @@
           "primaryKey": false,
           "notNull": false
         },
-        "payment_method": {
-          "name": "payment_method",
-          "type": "varchar",
+        "shipped_at": {
+          "name": "shipped_at",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
+        },
+        "processing_at": {
+          "name": "processing_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cancel_reason": {
+          "name": "cancel_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "payment_method": {
+          "name": "payment_method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "payment_change": {
+          "name": "payment_change",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contact_phone": {
+          "name": "contact_phone",
+          "type": "varchar(15)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "channel": {
+          "name": "channel",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
@@ -191,18 +221,20 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "carts_conversation_id_conversations_id_fk": {
-          "name": "carts_conversation_id_conversations_id_fk",
+        "messages_conversation_fk": {
+          "name": "messages_conversation_fk",
           "tableFrom": "carts",
           "tableTo": "conversations",
           "columnsFrom": [
-            "conversation_id"
+            "contact_phone",
+            "channel"
           ],
           "columnsTo": [
-            "id"
+            "contact_phone",
+            "channel"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -221,6 +253,12 @@
           "primaryKey": true,
           "notNull": true
         },
+        "partner_id": {
+          "name": "partner_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "contact_phone": {
           "name": "contact_phone",
           "type": "varchar(15)",
@@ -229,6 +267,12 @@
         },
         "address_id": {
           "name": "address_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "workspace_id": {
+          "name": "workspace_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
@@ -255,6 +299,19 @@
           "tableTo": "addresses",
           "columnsFrom": [
             "address_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "clients_workspace_id_workspaces_id_fk": {
+          "name": "clients_workspace_id_workspaces_id_fk",
+          "tableFrom": "clients",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
           ],
           "columnsTo": [
             "id"
@@ -307,7 +364,7 @@
         "id": {
           "name": "id",
           "type": "uuid",
-          "primaryKey": true,
+          "primaryKey": false,
           "notNull": true
         },
         "channel": {
@@ -348,6 +405,12 @@
         },
         "opened_at": {
           "name": "opened_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "closed_at": {
+          "name": "closed_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
@@ -408,8 +471,24 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "compositePrimaryKeys": {
+        "conversations_contact_phone_channel_pk": {
+          "name": "conversations_contact_phone_channel_pk",
+          "columns": [
+            "contact_phone",
+            "channel"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "conversations_id_unique": {
+          "name": "conversations_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -456,7 +535,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "memberships_workspace_id_workspaces_id_fk": {
@@ -473,6 +552,43 @@
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.message_buffer": {
+      "name": "message_buffer",
+      "schema": "",
+      "columns": {
+        "message_id": {
+          "name": "message_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sender": {
+          "name": "sender",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -520,12 +636,6 @@
           "notNull": true,
           "default": "'senting'"
         },
-        "conversation_id": {
-          "name": "conversation_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
         "sender_type": {
           "name": "sender_type",
           "type": "varchar(10)",
@@ -551,19 +661,33 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
+        },
+        "contact_phone": {
+          "name": "contact_phone",
+          "type": "varchar(15)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "channel": {
+          "name": "channel",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "messages_conversation_id_conversations_id_fk": {
-          "name": "messages_conversation_id_conversations_id_fk",
+        "messages_conversation_fk": {
+          "name": "messages_conversation_fk",
           "tableFrom": "messages",
           "tableTo": "conversations",
           "columnsFrom": [
-            "conversation_id"
+            "contact_phone",
+            "channel"
           ],
           "columnsTo": [
-            "id"
+            "contact_phone",
+            "channel"
           ],
           "onDelete": "cascade",
           "onUpdate": "cascade"
@@ -582,7 +706,7 @@
         "id": {
           "name": "id",
           "type": "text",
-          "primaryKey": true,
+          "primaryKey": false,
           "notNull": true
         },
         "description": {
@@ -595,7 +719,7 @@
           "name": "code",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "manufactory": {
           "name": "manufactory",
@@ -616,6 +740,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": 0
+        },
+        "embedding": {
+          "name": "embedding",
+          "type": "vector(1536)",
+          "primaryKey": false,
+          "notNull": false
         },
         "promotion_price": {
           "name": "promotion_price",
@@ -659,7 +789,15 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "products_id_workspace_id_pk": {
+          "name": "products_id_workspace_id_pk",
+          "columns": [
+            "id",
+            "workspace_id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
@@ -687,6 +825,27 @@
           "primaryKey": false,
           "notNull": true
         },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "price": {
+          "name": "price",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "real_price": {
+          "name": "real_price",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
         "quantity": {
           "name": "quantity",
           "type": "integer",
@@ -709,19 +868,6 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "cascade"
-        },
-        "products_on_cart_product_id_products_id_fk": {
-          "name": "products_on_cart_product_id_products_id_fk",
-          "tableFrom": "products_on_cart",
-          "tableTo": "products",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -789,13 +935,84 @@
           "name": "waba_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "''"
+        },
+        "phone_id": {
+          "name": "phone_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
         },
         "workspace_id": {
           "name": "workspace_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "attendant_name": {
+          "name": "attendant_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "business_name": {
+          "name": "business_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "location_available": {
+          "name": "location_available",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "opening_hours": {
+          "name": "opening_hours",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "payment_methods": {
+          "name": "payment_methods",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "vector_namespace": {
+          "name": "vector_namespace",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "knowledge_base": {
+          "name": "knowledge_base",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "ai_enabled": {
+          "name": "ai_enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "queue_url": {
+          "name": "queue_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
         }
       },
       "indexes": {},
@@ -814,6 +1031,57 @@
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tools_results_buffer": {
+      "name": "tools_results_buffer",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "toolName": {
+          "name": "toolName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contact": {
+          "name": "contact",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "channel": {
+          "name": "channel",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -841,8 +1109,7 @@
           "name": "email",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "default": "''"
+          "notNull": true
         },
         "thumbnail": {
           "name": "thumbnail",
@@ -889,7 +1156,15 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "users_email_unique": {
+          "name": "users_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

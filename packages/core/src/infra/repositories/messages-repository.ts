@@ -1,8 +1,8 @@
 import { Message } from "../../domain/entities/message";
 import { Sender, SenderType } from "../../domain/value-objects/sender";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
-import { messages } from "../database/schemas";
+import { conversations, messages } from "../database/schemas";
 
 export class MessagesDatabaseRepository {
   private timestampToDate(timestamp: number) {
@@ -17,8 +17,19 @@ export class MessagesDatabaseRepository {
     const db = createDatabaseConnection();
 
     const [oldMessage] = await db
-      .select({ conversationId: messages.conversationId })
+      .select({
+        contactPhone: messages.contactPhone,
+        channel: messages.channel,
+        conversationId: conversations.id,
+      })
       .from(messages)
+      .leftJoin(
+        conversations,
+        and(
+          eq(conversations.contactPhone, messages.contactPhone),
+          eq(conversations.channel, messages.channel)
+        )
+      )
       .where(eq(messages.id, message.id));
 
     if (!oldMessage) return null;
@@ -30,7 +41,8 @@ export class MessagesDatabaseRepository {
         createdAt: this.dateToTimestamp(message.createdAt),
         id: message.id,
         senderId: message.sender.id,
-        conversationId: oldMessage.conversationId,
+        contactPhone: oldMessage.contactPhone,
+        channel: oldMessage.channel,
         internal: message.internal,
         senderName: message.sender.name,
         senderType: message.sender?.type,
@@ -45,7 +57,8 @@ export class MessagesDatabaseRepository {
           content: message.content,
           createdAt: this.dateToTimestamp(message.createdAt),
           senderId: message.sender.id,
-          conversationId: oldMessage.conversationId,
+          contactPhone: oldMessage.contactPhone,
+          channel: oldMessage.channel,
           internal: message.internal,
           senderName: message.sender.name,
           senderType: message.sender?.type,
@@ -58,7 +71,7 @@ export class MessagesDatabaseRepository {
         target: messages.id,
       });
 
-    return oldMessage.conversationId!;
+    return oldMessage.conversationId;
   }
 
   async retrieve(messageId: string) {

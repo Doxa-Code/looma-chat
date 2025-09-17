@@ -1,4 +1,11 @@
-import { index, jsonb, primaryKey, serial, vector } from "drizzle-orm/pg-core";
+import {
+  foreignKey,
+  index,
+  jsonb,
+  primaryKey,
+  serial,
+  vector,
+} from "drizzle-orm/pg-core";
 import {
   boolean,
   integer,
@@ -92,27 +99,37 @@ export const conversations = pgTable(
   (table) => [primaryKey({ columns: [table.contactPhone, table.channel] })]
 );
 
-export const messages = pgTable("messages", {
-  id: text("id").primaryKey().notNull(),
-  content: text("content").notNull(),
-  createdAt: integer("created_at").notNull(),
-  viewedAt: integer("viewed_at"),
-  type: varchar("type", { enum: ["text", "audio", "image"], length: 10 }),
-  status: text("status", { enum: ["sent", "senting", "viewed", "delivered"] })
-    .default("senting")
-    .notNull(),
-  conversationId: uuid("conversation_id").references(() => conversations.id, {
-    onDelete: "cascade",
-    onUpdate: "cascade",
-  }),
-  senderType: varchar("sender_type", {
-    length: 10,
-    enum: ["attendant", "contact"],
-  }),
-  senderName: text("sender_name").notNull().default(""),
-  senderId: text("sender_id").notNull(),
-  internal: boolean("internal").notNull().default(false),
-});
+export const messages = pgTable(
+  "messages",
+  {
+    id: text("id").primaryKey().notNull(),
+    content: text("content").notNull(),
+    createdAt: integer("created_at").notNull(),
+    viewedAt: integer("viewed_at"),
+    type: varchar("type", { enum: ["text", "audio", "image"], length: 10 }),
+    status: text("status", { enum: ["sent", "senting", "viewed", "delivered"] })
+      .default("senting")
+      .notNull(),
+    senderType: varchar("sender_type", {
+      length: 10,
+      enum: ["attendant", "contact"],
+    }),
+    senderName: text("sender_name").notNull().default(""),
+    senderId: text("sender_id").notNull(),
+    internal: boolean("internal").notNull().default(false),
+    contactPhone: varchar("contact_phone", { length: 15 }).notNull(),
+    channel: text("channel").notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.contactPhone, table.channel],
+      foreignColumns: [conversations.contactPhone, conversations.channel],
+      name: "messages_conversation_fk",
+    })
+      .onDelete("cascade")
+      .onUpdate("cascade"),
+  ]
+);
 
 export const clients = pgTable("clients", {
   id: uuid("id").primaryKey().notNull(),
@@ -171,42 +188,50 @@ export const productsOnCart = pgTable("products_on_cart", {
   quantity: integer("quantity").notNull().default(1),
 });
 
-export const carts = pgTable("carts", {
-  id: uuid("id").primaryKey().notNull(),
-  attendantId: uuid("attendant_id").references(() => users.id),
-  clientId: uuid("client_id").references(() => clients.id),
-  addressId: uuid("address_id").references(() => addresses.id),
-  conversationId: uuid("conversation_id")
-    .unique()
-    .references(() => conversations.id, {
-      onDelete: "cascade",
-      onUpdate: "cascade",
-    }),
-  status: varchar("status", {
-    length: 10,
-    enum: [
-      "expired",
-      "processing",
-      "budget",
-      "shipped",
-      "order",
-      "cancelled",
-      "finished",
-    ],
-  })
-    .notNull()
-    .default("budget"),
-  createdAt: integer("created_at").notNull(),
-  orderedAt: integer("ordered_at"),
-  expiredAt: integer("expired_at"),
-  finishedAt: integer("finished_at"),
-  canceledAt: integer("canceled_at"),
-  shippedAt: integer("shipped_at"),
-  processingAt: integer("processing_at"),
-  cancelReason: text("cancel_reason"),
-  paymentMethod: text("payment_method"),
-  paymentChange: integer("payment_change"),
-});
+export const carts = pgTable(
+  "carts",
+  {
+    id: uuid("id").primaryKey().notNull(),
+    attendantId: uuid("attendant_id").references(() => users.id),
+    clientId: uuid("client_id").references(() => clients.id),
+    addressId: uuid("address_id").references(() => addresses.id),
+    status: varchar("status", {
+      length: 10,
+      enum: [
+        "expired",
+        "processing",
+        "budget",
+        "shipped",
+        "order",
+        "cancelled",
+        "finished",
+      ],
+    })
+      .notNull()
+      .default("budget"),
+    createdAt: integer("created_at").notNull(),
+    orderedAt: integer("ordered_at"),
+    expiredAt: integer("expired_at"),
+    finishedAt: integer("finished_at"),
+    canceledAt: integer("canceled_at"),
+    shippedAt: integer("shipped_at"),
+    processingAt: integer("processing_at"),
+    cancelReason: text("cancel_reason"),
+    paymentMethod: text("payment_method"),
+    paymentChange: integer("payment_change"),
+    contactPhone: varchar("contact_phone", { length: 15 }).notNull(),
+    channel: text("channel").notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.contactPhone, table.channel],
+      foreignColumns: [conversations.contactPhone, conversations.channel],
+      name: "messages_conversation_fk",
+    })
+      .onDelete("cascade")
+      .onUpdate("cascade"),
+  ]
+);
 
 export const messageBuffer = pgTable("message_buffer", {
   id: text("message_id").primaryKey().notNull(),

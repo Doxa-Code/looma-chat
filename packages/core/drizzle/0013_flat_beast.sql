@@ -1,1 +1,0 @@
-ALTER TABLE "clients" ADD COLUMN "partner_id" text;

@@ -1,1 +1,0 @@
-ALTER TABLE "carts" ADD CONSTRAINT "carts_conversation_id_unique" UNIQUE("conversation_id");

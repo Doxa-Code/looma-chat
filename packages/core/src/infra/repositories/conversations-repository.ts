@@ -63,7 +63,13 @@ export class ConversationsDatabaseRepository {
           })
           .from(conversations)
           .leftJoin(contacts, eq(conversations.contactPhone, contacts.phone))
-          .leftJoin(messages, eq(messages.conversationId, conversations.id))
+          .leftJoin(
+            messages,
+            and(
+              eq(messages.channel, conversations.channel),
+              eq(messages.contactPhone, conversations.contactPhone)
+            )
+          )
           .leftJoin(users, eq(users.id, conversations.attendantId))
           .leftJoin(sectors, eq(sectors.id, conversations.sectorId))
           .where(params)
@@ -284,13 +290,14 @@ export class ConversationsDatabaseRepository {
               createdAt: this.dateToTimestamp(m.createdAt),
               senderId: m.sender.id,
               content: m.content,
-              conversationId: conversation.id,
               internal: m.internal,
               senderName: m.sender.name,
               senderType: m.sender?.type,
               type: m?.type,
               viewedAt: m.viewedAt ? this.dateToTimestamp(m.viewedAt) : null,
               status: m.status,
+              channel: conversation.channel,
+              contactPhone: conversation.contact.phone,
             })
             .onConflictDoUpdate({
               target: messages.id,
@@ -298,7 +305,8 @@ export class ConversationsDatabaseRepository {
                 createdAt: this.dateToTimestamp(m.createdAt),
                 senderId: m.sender.id,
                 content: m.content,
-                conversationId: conversation.id,
+                channel: conversation.channel,
+                contactPhone: conversation.contact.phone,
                 internal: m.internal,
                 senderName: m.sender.name,
                 senderType: m.sender?.type,

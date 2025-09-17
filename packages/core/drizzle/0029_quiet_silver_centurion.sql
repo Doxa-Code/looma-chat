@@ -1,5 +1,0 @@
--- CREATE TABLE "n8n_chat_histories" (
--- 	"id" serial PRIMARY KEY NOT NULL,
--- 	"session_id" varchar(255) NOT NULL,
--- 	"message" jsonb NOT NULL
--- );

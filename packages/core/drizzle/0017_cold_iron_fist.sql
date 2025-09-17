@@ -1,1 +1,0 @@
-ALTER TABLE "carts" ADD COLUMN "cancel_reason" text;

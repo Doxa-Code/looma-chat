@@ -1,1 +1,0 @@
-ALTER TABLE "message_buffer" ALTER COLUMN "content" SET DATA TYPE text;
