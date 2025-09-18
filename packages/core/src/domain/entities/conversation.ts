@@ -60,7 +60,7 @@ export class Conversation {
 
   raw(): Conversation.Raw {
     return {
-      attendant: this.attendant?.raw?.() ?? null,
+      attendant: this.attendant ? this.attendant?.raw?.() : null,
       channel: this.channel,
       contact: this.contact.raw(),
       id: this.id,
@@ -172,7 +172,7 @@ export class Conversation {
 
   transferToSector(sector: Sector) {
     this.sector = sector;
-    this.attendant = null
+    this.attendant = null;
   }
 
   transferToAttendant(attendant: Attendant) {

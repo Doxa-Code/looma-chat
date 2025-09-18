@@ -1,17 +1,13 @@
 "use server";
-import { UsersDatabaseRepository } from "@looma/core/infra/repositories/users-repository";
-import { SectorsDatabaseRepository } from "@looma/core/infra/repositories/sectors-respository";
 import { sseEmitter } from "@/lib/sse";
 import { CloseConversation } from "@looma/core/application/command/close-conversation";
+import { TransferConversation } from "@looma/core/application/command/transfer-conversation";
+import { Attendant } from "@looma/core/domain/value-objects/attendant";
 import { ConversationsDatabaseRepository } from "@looma/core/infra/repositories/conversations-repository";
 import z from "zod";
 import { securityProcedure } from "../procedure";
-import { Attendant } from "@looma/core/domain/value-objects/attendant";
-import { Sector } from "@looma/core/domain/value-objects/sector";
 
 const conversationsRepository = ConversationsDatabaseRepository.instance();
-const sectorsRepository = SectorsDatabaseRepository.instance();
-const usersRepository = UsersDatabaseRepository.instance();
 
 export const transferConversation = securityProcedure([
   "view:conversations",
@@ -25,34 +21,18 @@ export const transferConversation = securityProcedure([
     })
   )
   .handler(async ({ input, ctx }) => {
-    const conversation = await conversationsRepository.retrieve(
-      input.conversationId
-    );
+    const transferConversation = TransferConversation.instance();
 
-    if (!conversation) return;
+    const conversation = await transferConversation.execute({
+      conversationId: input.conversationId,
+      sectorId: input.sectorId,
+      workspaceId: ctx.membership.workspaceId,
+      attendantId: input.attendantId,
+    });
 
-    const sector = await sectorsRepository.retrieve(input.sectorId);
-
-    if (!sector) return;
-
-    conversation.transferToSector(Sector.create(sector.name, input.sectorId));
-
-    if (input.attendantId) {
-      const attendant = await usersRepository.retrieve(input.attendantId);
-
-      if (!attendant) return;
-
-      conversation.transferToAttendant(
-        Attendant.create(input.attendantId, attendant.name)
-      );
+    if (conversation) {
+      sseEmitter.emit("conversation", conversation.raw());
     }
-
-    await conversationsRepository.upsert(
-      conversation,
-      ctx.membership.workspaceId
-    );
-
-    sseEmitter.emit("conversation", conversation.raw());
   });
 
 export const listAllConversations = securityProcedure([
@@ -68,13 +48,13 @@ export const listAllConversations = securityProcedure([
     );
     return response.map((c) => c.raw());
   }
-  return (
-    await conversationsRepository.listBySectorAndAttendantId(
-      ctx.user.id,
-      ctx.membership.workspaceId,
-      ctx.user.sector?.id
-    )
-  ).map((c) => c.raw());
+  const result = await conversationsRepository.listBySectorAndAttendantId(
+    ctx.user.id,
+    ctx.membership.workspaceId,
+    ctx.user.sector?.id
+  );
+
+  return result.map((c) => c.raw());
 });
 
 export const closeConversation = securityProcedure(["close:conversation"])

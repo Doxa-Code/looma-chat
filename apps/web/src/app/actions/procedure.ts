@@ -38,7 +38,8 @@ export const securityProcedure = (permissions?: PolicyName[]) =>
         membership
       );
 
-      if (!isAllowed && !!permissions?.length) throw NotAuthorized.throw();
+      if (!isAllowed && !!permissions?.length)
+        throw NotAuthorized.throw(permissions);
 
       return { user, membership };
     })

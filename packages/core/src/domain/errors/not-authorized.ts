@@ -1,10 +1,10 @@
 export class NotAuthorized extends Error {
-  constructor() {
-    super("Sem autorização");
+  constructor(permissions?: string) {
+    super(`Sem autorização ${permissions}`);
     this.name = "NotAuthorized";
   }
 
-  static throw() {
-    return new NotAuthorized();
+  static throw(permissions?: string[]) {
+    return new NotAuthorized(permissions?.join(", "));
   }
 }

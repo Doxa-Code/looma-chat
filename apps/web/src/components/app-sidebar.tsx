@@ -174,7 +174,7 @@ export function AppSidebar(
               : false;
 
             const isActive = Boolean(pathname === item.url);
-            if (!item.active) return <></>;
+            if (!item.active) return <React.Fragment key={item.title} />;
             return (
               <Collapsible
                 key={item.title}

@@ -254,7 +254,7 @@ export class ConversationsDatabaseRepository {
             : null,
           status: conversation.status,
           workspaceId,
-          attendantId: conversation.attendant?.id,
+          attendantId: conversation.attendant?.id || null,
           contactPhone: conversation.contact.phone,
           sectorId: conversation.sector?.id,
         })
@@ -265,7 +265,6 @@ export class ConversationsDatabaseRepository {
             conversations.channel,
           ],
           set: {
-            id: conversation.id,
             openedAt: conversation.openedAt
               ? this.dateToTimestamp(conversation.openedAt)
               : null,
