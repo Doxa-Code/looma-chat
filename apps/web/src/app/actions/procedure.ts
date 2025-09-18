@@ -22,7 +22,7 @@ export const securityProcedure = (permissions?: PolicyName[]) =>
       user = userAuth;
       workspaceId = await getWorkspaceSelected();
 
-      if (!user || !workspaceId) throw NotAuthorized.throw();
+      if (!user || !workspaceId) throw NotAuthorized.throw(permissions);
 
       const membership =
         await membershipsRepository.retrieveByUserIdAndWorkspaceId(

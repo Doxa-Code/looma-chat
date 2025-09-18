@@ -16,6 +16,8 @@ import {
 import { Conversation } from "../../domain/entities/conversation";
 import { Contact } from "../../domain/value-objects/contact";
 import { TransferConversation } from "./transfer-conversation";
+import { Sector } from "../../domain/value-objects/sector";
+import { Attendant } from "../../domain/value-objects/attendant";
 
 describe("TransferConversation - Integration", () => {
   const db = createDatabaseConnection();
@@ -26,8 +28,8 @@ describe("TransferConversation - Integration", () => {
   const workspaceId = randomUUID();
   const initialSectorId = randomUUID();
   const newSectorId = randomUUID();
-  const initialAttendantId = randomUUID(); // atendente original
-  const newAttendantId = randomUUID(); // atendente novo
+  const initialAttendantId = randomUUID();
+  const newAttendantId = randomUUID();
   const contactPhone = "5511999299999";
 
   let conversationId: string;
@@ -41,14 +43,18 @@ describe("TransferConversation - Integration", () => {
       })
       .onConflictDoNothing();
 
-    await db.insert(contacts).values({
-      phone: contactPhone,
-      name: "Cliente Teste",
-    });
+    await db
+      .insert(contacts)
+      .values({
+        phone: contactPhone,
+        name: "Cliente Teste",
+      })
+      .onConflictDoNothing();
+
+    const sector = Sector.create("Atendimento Inicial", initialSectorId);
 
     await db.insert(sectors).values({
-      id: initialSectorId,
-      name: "Atendimento Inicial",
+      ...sector,
       workspaceId,
     });
 
@@ -58,7 +64,8 @@ describe("TransferConversation - Integration", () => {
       workspaceId,
     });
 
-    // Atendente inicial
+    const attendant = Attendant.create(initialAttendantId, "Atendente Inicial");
+
     await db.insert(users).values({
       id: initialAttendantId,
       name: "Atendente Inicial",
@@ -67,7 +74,6 @@ describe("TransferConversation - Integration", () => {
       sectorId: initialSectorId,
     });
 
-    // Novo atendente
     await db.insert(users).values({
       id: newAttendantId,
       name: "Atendente Novo",
@@ -76,14 +82,13 @@ describe("TransferConversation - Integration", () => {
       sectorId: newSectorId,
     });
 
-    // Cria conversa inicial já com atendente original
     const initialConversation = Conversation.create(
       Contact.create(contactPhone, "Cliente Teste"),
       "whatsapp"
     );
 
-    initialConversation.transferToSector(initialSectorId);
-    initialConversation.assignAttendant(initialAttendantId);
+    initialConversation.transferToSector(sector);
+    initialConversation.attributeAttendant(attendant);
 
     await conversationsRepo.upsert(initialConversation, workspaceId);
 
@@ -91,15 +96,14 @@ describe("TransferConversation - Integration", () => {
   });
 
   afterAll(async () => {
-    // Ordem de deleção para evitar problemas de FK
     await db
       .delete(messages)
       .where(eq(messages.conversationId, conversationId));
     await db.delete(conversations).where(eq(conversations.id, conversationId));
+    await db.delete(contacts).where(eq(contacts.phone, contactPhone));
     await db.delete(users).where(eq(users.id, initialAttendantId));
     await db.delete(users).where(eq(users.id, newAttendantId));
     await db.delete(sectors).where(eq(sectors.workspaceId, workspaceId));
-    await db.delete(contacts).where(eq(contacts.phone, contactPhone));
     await db.delete(workspaces).where(eq(workspaces.id, workspaceId));
   });
 
@@ -110,14 +114,11 @@ describe("TransferConversation - Integration", () => {
       usersRepo
     );
 
-    // Recupera estado atual da conversa antes da transferência
     const beforeTransfer = await conversationsRepo.retrieve(conversationId);
     expect(beforeTransfer).not.toBeNull();
 
-    // Garante que o atendente inicial está correto
     expect(beforeTransfer?.attendant?.id).toBe(initialAttendantId);
 
-    // Executa a transferência
     await useCase.execute({
       conversationId,
       sectorId: newSectorId,
@@ -125,20 +126,16 @@ describe("TransferConversation - Integration", () => {
       workspaceId,
     });
 
-    // Recupera a conversa atualizada
     const afterTransfer = await conversationsRepo.retrieve(conversationId);
 
     expect(afterTransfer).not.toBeNull();
 
-    // Valida que o setor mudou
     expect(afterTransfer?.sector?.id).toBe(newSectorId);
     expect(afterTransfer?.sector?.name).toBe("Suporte Avançado");
 
-    // Valida que o atendente foi alterado
     expect(afterTransfer?.attendant?.id).toBe(newAttendantId);
     expect(afterTransfer?.attendant?.name).toBe("Atendente Novo");
 
-    // Verifica que o atendente antes e depois são diferentes
     expect(beforeTransfer?.attendant?.id).not.toBe(
       afterTransfer?.attendant?.id
     );

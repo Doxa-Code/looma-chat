@@ -72,6 +72,9 @@ export const messageReceived = securityProcedure([
       }),
     })
   )
+  .onError(async (err) => {
+    console.log(err);
+  })
   .handler(async ({ input, ctx }) => {
     const messageReceived = MessageReceived.instance();
     const response = await messageReceived.execute({
