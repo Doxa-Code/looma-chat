@@ -1,0 +1,53 @@
+---
+import { cn } from "@/lib/utils";
+
+const {
+  className,
+  translateX = 0,
+  translateY = 0,
+  translateZ = 0,
+  rotateX = 0,
+  rotateY = 0,
+  rotateZ = 0,
+  ...rest
+} = Astro.props;
+---
+
+<div
+  id="cart-item"
+  data-props={JSON.stringify({
+    translateX,
+    translateY,
+    translateZ,
+    rotateX,
+    rotateY,
+    rotateZ,
+  })}
+  class={cn("transition duration-200 ease-linear", className)}
+  {...rest}
+>
+  <slot />
+</div>
+
+<script>
+  import { useMouseEnter } from "@/hooks/use-mouse-enter";
+
+  const handleAnimations = () => {
+    const { isMouseEntered } = useMouseEnter.getState();
+    const item = document.getElementById("cart-item");
+    if (!item) return;
+    const { translateX, translateY, translateZ, rotateX, rotateY, rotateZ } =
+      JSON.parse(item.dataset.props!);
+    if (isMouseEntered) {
+      item.style.transform = `translateX(${translateX}px) translateY(${translateY}px) translateZ(${translateZ}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg)`;
+    } else {
+      item.style.transform = `translateX(0px) translateY(0px) translateZ(0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg)`;
+    }
+  };
+
+  useMouseEnter.subscribe((state, prevState) => {
+    if (state.isMouseEntered !== prevState.isMouseEntered) {
+      handleAnimations();
+    }
+  });
+</script>

@@ -4,6 +4,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev:web": "turbo run dev --filter @looma/web",
+    "dev:site": "turbo run dev --filter @olivia/site",
     "build:service": "sh apps/service/build.sh",
     "dev:broker": "turbo run dev:broker",
     "deploy:broker": "turbo run deploy:broker",

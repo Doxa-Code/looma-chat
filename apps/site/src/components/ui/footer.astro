@@ -1,0 +1,68 @@
+---
+import { Bot, Mail, MapPin, Phone, Shield } from "@lucide/astro";
+---
+
+<footer class="bg-muted py-16">
+  <div class="container mx-auto px-4">
+    <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+      {/* Logo and Description */}
+      <div class="lg:col-span-2">
+        <div class="flex items-center space-x-2 mb-4">
+          <div class="flex items-center w-full max-w-[40px]">
+            <img src="/icon.png" />
+          </div>
+          <span class="text-xl font-bold text-[primary]">Olivia</span>
+        </div>
+        <p class="text-muted-foreground font-light mb-6 max-w-md text-pretty">
+          A primeira IA brasileira especializada em reativar pacientes inativos
+          de clínicas odontológicas. Tecnologia avançada com resultados
+          comprovados.
+        </p>
+        <div class="flex items-center space-x-4 text-sm text-muted-foreground">
+          <div class="flex items-center">
+            <Shield class="mr-2 h-4 w-4" />
+            LGPD Compliant
+          </div>
+          <div class="flex items-center">
+            <span class="mr-2 h-2 w-2 rounded-full bg-green-500"></span>
+            Sistema Ativo
+          </div>
+        </div>
+      </div>
+
+      {/* Contact */}
+      <div>
+        <h3 class="font-semibold mb-4">Contato</h3>
+        <ul class="space-y-2 text-sm font-light text-muted-foreground">
+          <li class="flex items-center">
+            <Mail class="mr-2 h-4 w-4" />
+            contato@useolivia.app
+          </li>
+          <li class="flex items-center">
+            <Phone class="mr-2 h-4 w-4" />
+            (19) 9 2001-6741
+          </li>
+          <li class="flex items-center">
+            <MapPin class="mr-2 h-4 w-4" />
+            São Paulo, SP
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div
+      class="border-t mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center text-sm text-muted-foreground"
+    >
+      <p>&copy; 2025 Olivia AI. Todos os direitos reservados.</p>
+      <div class="flex space-x-6 mt-4 sm:mt-0">
+        <a href="#" class="hover:text-primary transition-colors">
+          Política de Privacidade
+        </a>
+        <a href="#" class="hover:text-primary transition-colors">
+          Termos de Uso
+        </a>
+        <a href="#" class="hover:text-primary transition-colors"> LGPD </a>
+      </div>
+    </div>
+  </div>
+</footer>

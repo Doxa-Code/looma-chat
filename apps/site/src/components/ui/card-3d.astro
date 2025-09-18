@@ -1,0 +1,50 @@
+---
+import { cn } from "@/lib/utils";
+
+const { className } = Astro.props;
+---
+
+<div
+  class={cn("py-20 flex items-center justify-center", className)}
+  style={{
+    perspective: "1000px",
+  }}
+>
+  <div
+    id="container"
+    class="flex items-center justify-center relative transition-all duration-200 ease-linear inter-var"
+    style={{
+      transformStyle: "preserve-3d",
+    }}
+  >
+    <div
+      class="[transform-style:preserve-3d] [&>*]:[transform-style:preserve-3d] bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-auto sm:w-[30rem] h-auto rounded-xl"
+    >
+      <slot />
+    </div>
+  </div>
+</div>
+
+<script>
+  import { useMouseEnter } from "@/hooks/use-mouse-enter";
+
+  const { setIsMouseEntered } = useMouseEnter.getState();
+
+  const containerRef = document.getElementById("container") as HTMLDivElement;
+
+  containerRef.addEventListener("mousemove", function (e) {
+    const { left, top, width, height } = containerRef.getBoundingClientRect();
+    const x = (e.clientX - left - width / 2) / 25;
+    const y = (e.clientY - top - height / 2) / 25;
+    this.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+  });
+
+  containerRef.addEventListener("mouseenter", function () {
+    setIsMouseEntered(true);
+  });
+
+  containerRef.addEventListener("mouseleave", function () {
+    setIsMouseEntered(false);
+    this.style.transform = `rotateY(0deg) rotateX(0deg)`;
+  });
+</script>

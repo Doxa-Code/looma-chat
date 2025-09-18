@@ -1,0 +1,247 @@
+---
+import { Check, DollarSign, FileText, TrendingUp, Users } from "@lucide/astro";
+import Card from "@/components/ui/card/index.astro";
+import CardContent from "@/components/ui/card/cart-content.astro";
+import Button from "./ui/button.astro";
+
+const benefits = [
+  {
+    icon: Users,
+    title: "Mais consultas sem aumentar equipe",
+    description:
+      "Olivia automatiza a reativação, liberando a equipe para o essencial.",
+    color: "bg-blue-100 text-blue-600",
+  },
+  {
+    icon: DollarSign,
+    title: "Recuperação de receita perdida",
+    description:
+      "Pacientes inativos voltam a agendar, gerando faturamento recorrente.",
+    color: "bg-green-100 text-green-600",
+  },
+  {
+    icon: TrendingUp,
+    title: "Entendimento real dos motivos de evasão",
+    description: "Acompanha e identifica por que os pacientes não retornam.",
+    color: "bg-purple-100 text-purple-600",
+  },
+  {
+    icon: FileText,
+    title: "Relatórios claros e acionáveis",
+    description: "Entregamos insights simples que ajudam na tomada de decisão.",
+    color: "bg-orange-100 text-orange-600",
+  },
+];
+---
+
+<section class="py-20 w-full">
+  <div class="container mx-auto px-4">
+    <div class="mx-auto max-w-3xl text-center mb-16">
+      <h2 class="text-3xl font-bold mb-4 text-balance lg:text-4xl">
+        Benefícios Reais para Sua Clínica
+      </h2>
+      <p class="text-lg text-muted-foreground font-light text-pretty">
+        Veja como a Olivia transforma o dia a dia da sua clínica com resultados
+        mensuráveis.
+      </p>
+    </div>
+
+    <div class="grid gap-12 lg:grid-cols-2 items-center max-w-6xl mx-auto">
+      {/* Benefícios */}
+      <div class="grid gap-6 md:grid-cols-2">
+        {
+          benefits.map((benefit, index) => (
+            <Card
+              key={index}
+              className="border-0 shadow-lg hover:shadow-4xl transition-all hover:scale-105 bg-white"
+            >
+              <CardContent className="p-6">
+                <div
+                  class={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl ${benefit.color}`}
+                >
+                  <benefit.icon class="h-6 w-6" />
+                </div>
+                <h3 class="mb-3 text-lg font-semibold text-balance">
+                  {benefit.title}
+                </h3>
+                <p class="text-muted-foreground text-pretty font-light leading-relaxed text-sm">
+                  {benefit.description}
+                </p>
+              </CardContent>
+            </Card>
+          ))
+        }
+      </div>
+
+      <div class="relative">
+        <div class="mx-auto max-w-sm">
+          <div class="relative bg-black rounded-[3rem] p-1 shadow-2xl">
+            {/* Notch do iPhone */}
+            <div
+              class="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-10"
+            >
+            </div>
+
+            <div class="bg-white rounded-[2.8rem] overflow-hidden relative">
+              {/* Status bar */}
+              <div
+                class="bg-white px-6 pt-12 pb-2 flex justify-between items-center text-black text-sm font-medium"
+              >
+                <span>9:41</span>
+                <div class="flex items-center gap-1">
+                  <div class="flex gap-1">
+                    <div class="w-1 h-1 bg-black rounded-full"></div>
+                    <div class="w-1 h-1 bg-black rounded-full"></div>
+                    <div class="w-1 h-1 bg-black rounded-full"></div>
+                    <div class="w-1 h-1 bg-gray-300 rounded-full"></div>
+                  </div>
+                  <svg class="w-6 h-3 ml-1" viewBox="0 0 24 12" fill="none">
+                    <rect
+                      x="1"
+                      y="3"
+                      width="18"
+                      height="6"
+                      rx="2"
+                      stroke="black"
+                      stroke-width="1"
+                      fill="none"></rect>
+                    <rect x="20" y="5" width="2" height="2" rx="1" fill="black"
+                    ></rect>
+                    <rect x="2" y="4" width="14" height="4" rx="1" fill="black"
+                    ></rect>
+                  </svg>
+                </div>
+              </div>
+
+              {/* Header do WhatsApp */}
+              <div class="bg-[#075e54] text-white p-4 flex items-center gap-3">
+                <div
+                  class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm"
+                >
+                  CS
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-semibold text-sm">Clínica Sorriso</h4>
+                  <p class="text-xs opacity-90">online</p>
+                </div>
+                <div class="flex gap-4">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"
+                    ></path>
+                  </svg>
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
+                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
+                    <path
+                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                    ></path>
+                  </svg>
+                </div>
+              </div>
+
+              {/* Conversação */}
+              <div class="p-4 space-y-3 bg-[#e5ddd5] min-h-[400px]">
+                {/* Mensagem da Olivia */}
+                <div class="flex justify-start">
+                  <div class="bg-white rounded-lg p-3 max-w-[80%] shadow-sm">
+                    <p class="text-sm">
+                      Olá Maria! Notei que você não retorna à Clínica Sorriso há
+                      alguns meses. Como você está?
+                    </p>
+                    <span class="text-xs text-gray-500 mt-1 block">14:32</span>
+                  </div>
+                </div>
+
+                {/* Resposta do paciente */}
+                <div class="flex justify-end">
+                  <div class="bg-[#dcf8c6] rounded-lg p-3 max-w-[80%]">
+                    <p class="text-sm">
+                      Oi! Estou bem, mas mudei de cidade por causa do trabalho
+                    </p>
+                    <span class="text-xs text-gray-500 mt-1 block">14:35</span>
+                  </div>
+                </div>
+
+                {/* Olivia coletando motivo */}
+                <div class="flex justify-start">
+                  <div class="bg-white rounded-lg p-3 max-w-[80%] shadow-sm">
+                    <p class="text-sm">
+                      Entendo! Que bom saber que está bem. Você gostaria de
+                      continuar seu tratamento? Temos uma unidade próxima à sua
+                      nova localização.
+                    </p>
+                    <span class="text-xs text-gray-500 mt-1 block">14:36</span>
+                  </div>
+                </div>
+
+                {/* Resposta positiva */}
+                <div class="flex justify-end">
+                  <div class="bg-[#dcf8c6] rounded-lg p-3 max-w-[80%]">
+                    <p class="text-sm">Sério? Isso seria ótimo! Onde fica?</p>
+                    <span class="text-xs text-gray-500 mt-1 block">14:38</span>
+                  </div>
+                </div>
+
+                {/* Olivia direcionando */}
+                <div class="flex justify-start">
+                  <div class="bg-white rounded-lg p-3 max-w-[80%] shadow-sm">
+                    <p class="text-sm">
+                      Perfeito! Vou te conectar com nossa atendente Ana para
+                      agendar sua consulta na unidade mais próxima. Um momento!
+                      😊
+                    </p>
+                    <span class="text-xs text-gray-500 mt-1 block">14:39</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Home indicator */}
+              <div
+                class="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-black rounded-full opacity-60"
+              >
+              </div>
+            </div>
+          </div>
+
+          {/* Indicador de ação */}
+          <div
+            class="absolute flex flex-col gap-2 -right-4 top-1/2 transform -translate-y-1/2"
+          >
+            <div
+              class="bg-white px-3 py-2 rounded-lg text-xs font-medium shadow-lg"
+            >
+              <div class="flex items-center gap-2">
+                <div class="bg-green-500 rounded-full">
+                  <Check class="size-4 text-white" />
+                </div>
+                <span>Motivo identificado</span>
+              </div>
+            </div>
+            <div
+              class="bg-green-500 text-white px-3 py-2 rounded-lg text-xs font-medium shadow-lg"
+            >
+              <div class="flex items-center gap-2">
+                <div class="bg-white rounded-full">
+                  <Check class="size-4 stroke-green-500" />
+                </div>
+                <span>Cliente qualificado</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-12">
+    <a href="https://wa.me/5519920016741" target="_blank">
+      <Button
+        size="lg"
+        className="bg-orange-500 hover:bg-primary/90 text-white px-8 py-3"
+      >
+        Quero Esses Benefícios na Minha Clínica
+      </Button>
+    </a>
+  </div>
+</section>
