@@ -116,7 +116,7 @@
         "nuqs": "^2.4.3",
         "p-debounce": "^4.0.0",
         "postcss": "^8.5.6",
-        "radix-ui": "^1.4.2",
+        "radix-ui": "^1.4.3",
         "react": "19.0.0",
         "react-day-picker": "8.10.1",
         "react-dom": "19.0.0",

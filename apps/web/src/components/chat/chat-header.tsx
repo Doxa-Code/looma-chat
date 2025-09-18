@@ -7,12 +7,17 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { RiArrowGoForwardFill, RiArrowGoForwardLine } from "@remixicon/react";
 import { ModalTransfer } from "../modal-transfer";
+import { SectorRaw } from "@looma/core/domain/value-objects/sector";
 
 type Props = {
   contact?: ContactRaw;
+  userInfo: {
+    id: string;
+    sector: SectorRaw | null;
+  };
 };
 
-export const ChatHeader: React.FC<Props> = ({ contact }) => {
+export const ChatHeader: React.FC<Props> = ({ contact, userInfo }) => {
   const { openCart, setOpenCart, productsOnCart } = useCart();
   return (
     <div className="w-full z-50 justify-between items-center border-b flex top-0 bg-white h-screen max-h-[64px] py-6 px-4">
@@ -31,7 +36,7 @@ export const ChatHeader: React.FC<Props> = ({ contact }) => {
         </div>
       </div>
       <div className="flex gap-2 items-center">
-        <ModalTransfer />
+        <ModalTransfer userInfo={userInfo} />
         <Button
           data-active={openCart}
           onClick={() => setOpenCart(!openCart)}

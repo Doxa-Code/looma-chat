@@ -214,7 +214,13 @@ export function Chat(props: Props) {
         data-hidden={!conversation}
         className="flex flex-col overflow-hidden bg-[#F5F1EB]/30 gap-0 w-full flex-1 relative"
       >
-        <ChatHeader contact={conversation?.contact} />
+        <ChatHeader
+          contact={conversation?.contact}
+          userInfo={{
+            id: props.userAuthenticated.id,
+            sector: props.userAuthenticated.sector,
+          }}
+        />
         <div className="flex flex-1 relative overflow-hidden">
           <div className="w-full overflow-y-auto flex-1 pb-16 flex flex-col relative">
             <ContainerMessages

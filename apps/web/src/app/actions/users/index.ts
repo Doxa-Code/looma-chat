@@ -225,3 +225,25 @@ export const upsertPermissions = securityProcedure([
     membership.setPermissions(input.permissions as PolicyName[]);
     await membershipRepository.upsert(membership);
   });
+
+export const validateTransferPermission = securityProcedure([
+  "view:conversation",
+  "view:conversations",
+])
+  .input(
+    z.object({
+      userId: z.string(),
+    })
+  )
+  .handler(async ({ input, ctx }) => {
+    const membership =
+      await membershipRepository.retrieveByUserIdAndWorkspaceId(
+        input.userId,
+        ctx.membership.workspaceId
+      );
+    if (!membership) return;
+
+    const canTransferToUser = membership.permissions.includes("view:conversations");
+
+    return canTransferToUser;
+  });
