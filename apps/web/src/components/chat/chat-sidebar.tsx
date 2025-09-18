@@ -65,7 +65,9 @@ export const ChatSidebar: React.FC<Props> = (props) => {
     >
       <SidebarHeader className="gap-3.5 pt-4 pb-0 px-0">
         <div className="flex items-center justify-between px-4 pb-2">
-          <h1 className="text-xl font-semibold text-[#0A0A0A]">Atendimentos</h1>
+          <h1 className="text-base font-semibold text-[#0A0A0A]">
+            Atendimentos
+          </h1>
         </div>
         <Tabs
           defaultValue={filter}
