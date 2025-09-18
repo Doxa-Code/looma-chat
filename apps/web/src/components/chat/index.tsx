@@ -219,6 +219,7 @@ export function Chat(props: Props) {
             conversation?.attendant?.id == props.userAuthenticated.id
           }
           contact={conversation?.contact}
+          conversationId={conversation?.id}
           userInfo={{
             id: props.userAuthenticated.id,
             sector: props.userAuthenticated.sector,

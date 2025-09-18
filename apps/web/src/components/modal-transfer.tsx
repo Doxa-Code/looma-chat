@@ -17,20 +17,30 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { listSectors } from "@/app/actions/sectors";
 import { listUsers, validateTransferPermission } from "@/app/actions/users";
+import { transferConversation } from "@/app/actions/conversations";
 import { useState, useMemo } from "react";
-import { useServerActionQuery } from "@/hooks/server-action-hooks";
+import {
+  useServerActionQuery,
+  useServerActionMutation,
+} from "@/hooks/server-action-hooks";
 import { SectorRaw } from "@looma/core/domain/value-objects/sector";
+import { toast } from "@/hooks/use-toast";
 
 interface Props {
+  conversationId?: string;
   userInfo: {
     id: string;
     sector: SectorRaw | null;
   };
 }
 
-export const ModalTransfer: React.FC<Props> = ({ userInfo }) => {
+export const ModalTransfer: React.FC<Props> = ({
+  conversationId,
+  userInfo,
+}) => {
   const [sector, setSector] = useState("");
   const [attendant, setAttendant] = useState("");
+  const [open, setOpen] = useState(false);
 
   const { data: sectorsList } = useServerActionQuery(listSectors, {
     input: undefined,
@@ -80,8 +90,29 @@ export const ModalTransfer: React.FC<Props> = ({ userInfo }) => {
     return sector !== userInfo.sector?.id;
   }, [sector, transferToUser, userInfo]);
 
+  const { mutate: transfer, isPending } = useServerActionMutation(
+    transferConversation,
+    {
+      onSuccess: () => {
+        setOpen(false);
+        toast({
+          variant: "success",
+          title: "Transferência realizada com sucesso!",
+        });
+      },
+      onError: (err) => {
+        toast({
+          variant: "error",
+          title: "Erro",
+          description:
+            (err as Error).message || "Erro ao remover produto do carrinho",
+        });
+      },
+    }
+  );
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           variant="ghost"
@@ -99,7 +130,17 @@ export const ModalTransfer: React.FC<Props> = ({ userInfo }) => {
           </DialogTitle>
         </DialogHeader>
         <div className="px-6 py-4">
-          <form className="space-y-5">
+          <form
+            className="space-y-5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              transfer({
+                conversationId: conversationId || "",
+                sectorId: sector,
+                attendantId: attendant || undefined,
+              });
+            }}
+          >
             <div className="space-y-4">
               <div>
                 <fieldset className="space-y-4">
@@ -173,8 +214,8 @@ export const ModalTransfer: React.FC<Props> = ({ userInfo }) => {
                 </fieldset>
               </div>
             </div>
-            <Button type="button" className="w-full">
-              Transferir
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? "Transferindo..." : "Transferir"}
             </Button>
           </form>
         </div>

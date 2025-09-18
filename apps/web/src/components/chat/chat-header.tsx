@@ -1,17 +1,17 @@
 "use client";
 import { useCart } from "@/hooks/use-cart";
 import { ContactRaw } from "@looma/core/domain/value-objects/contact";
-import { Forward, ShoppingCart, User2 } from "lucide-react";
-import { Avatar, AvatarFallback } from "../ui/avatar";
-import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
-import { RiArrowGoForwardFill, RiArrowGoForwardLine } from "@remixicon/react";
-import { ModalTransfer } from "../modal-transfer";
 import { SectorRaw } from "@looma/core/domain/value-objects/sector";
+import { ShoppingCart, User2 } from "lucide-react";
+import { ModalTransfer } from "../modal-transfer";
+import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 
 type Props = {
   contact?: ContactRaw;
   isMyConversation: boolean;
+  conversationId?: string;
   userInfo: {
     id: string;
     sector: SectorRaw | null;
@@ -19,7 +19,7 @@ type Props = {
 };
 
 export const ChatHeader: React.FC<Props> = (props) => {
-  const { contact, userInfo, isMyConversation } = props;
+  const { contact, userInfo, isMyConversation, conversationId } = props;
   const { openCart, setOpenCart, productsOnCart } = useCart();
   return (
     <div className="w-full z-50 justify-between items-center border-b flex top-0 bg-white h-screen max-h-[64px] py-6 px-4">
@@ -41,7 +41,9 @@ export const ChatHeader: React.FC<Props> = (props) => {
         </div>
       </div>
       <div className="flex gap-2 items-center">
-        {isMyConversation && <ModalTransfer userInfo={userInfo} />}
+        {isMyConversation && (
+          <ModalTransfer conversationId={conversationId} userInfo={userInfo} />
+        )}
         <Button
           data-active={openCart}
           onClick={() => setOpenCart(!openCart)}

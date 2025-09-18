@@ -43,7 +43,7 @@ export const transferConversation = securityProcedure([
       if (!attendant) return;
 
       conversation.transferToAttendant(
-        Attendant.create(attendant.name, input.attendantId)
+        Attendant.create(input.attendantId, attendant.name)
       );
     }
 
