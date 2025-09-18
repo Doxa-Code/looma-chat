@@ -10,6 +10,7 @@ export default defineConfig({
     url: process.env.DATABASE_URL ?? "",
   },
   migrations: {
-    schema: "public",
+    schema: process.env.NODE_ENV === "production" ? "public" : "development",
+    table: "postgres",
   },
 });

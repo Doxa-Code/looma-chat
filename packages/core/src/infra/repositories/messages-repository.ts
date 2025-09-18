@@ -18,18 +18,9 @@ export class MessagesDatabaseRepository {
 
     const [oldMessage] = await db
       .select({
-        contactPhone: messages.contactPhone,
-        channel: messages.channel,
-        conversationId: conversations.id,
+        conversationId: messages.conversationId,
       })
       .from(messages)
-      .leftJoin(
-        conversations,
-        and(
-          eq(conversations.contactPhone, messages.contactPhone),
-          eq(conversations.channel, messages.channel)
-        )
-      )
       .where(eq(messages.id, message.id));
 
     if (!oldMessage) return null;
@@ -41,13 +32,12 @@ export class MessagesDatabaseRepository {
         createdAt: this.dateToTimestamp(message.createdAt),
         id: message.id,
         senderId: message.sender.id,
-        contactPhone: oldMessage.contactPhone,
-        channel: oldMessage.channel,
         internal: message.internal,
         senderName: message.sender.name,
         senderType: message.sender?.type,
         status: message.status,
         type: message?.type,
+        conversationId: oldMessage.conversationId,
         viewedAt: message.viewedAt
           ? this.dateToTimestamp(message.viewedAt)
           : null,
@@ -57,8 +47,7 @@ export class MessagesDatabaseRepository {
           content: message.content,
           createdAt: this.dateToTimestamp(message.createdAt),
           senderId: message.sender.id,
-          contactPhone: oldMessage.contactPhone,
-          channel: oldMessage.channel,
+          conversationId: oldMessage.conversationId,
           internal: message.internal,
           senderName: message.sender.name,
           senderType: message.sender?.type,

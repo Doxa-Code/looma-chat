@@ -1,0 +1,2 @@
+ALTER TABLE "development"."conversations" DROP CONSTRAINT "conversations_contact_phone_channel_pk" CASCADE;--> statement-breakpoint
+ALTER TABLE "development"."conversations" ADD CONSTRAINT "conversations_id_contact_phone_channel_pk" PRIMARY KEY("id","contact_phone","channel");

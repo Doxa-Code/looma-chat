@@ -1,6 +1,6 @@
 {
-  "id": "0e520198-1d08-48a8-9c7e-50116e6ed05f",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "5162620d-e5eb-407a-84b4-629367aa92a5",
+  "prevId": "0e520198-1d08-48a8-9c7e-50116e6ed05f",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -475,9 +475,10 @@
         }
       },
       "compositePrimaryKeys": {
-        "conversations_contact_phone_channel_pk": {
-          "name": "conversations_contact_phone_channel_pk",
+        "conversations_id_contact_phone_channel_pk": {
+          "name": "conversations_id_contact_phone_channel_pk",
           "columns": [
+            "id",
             "contact_phone",
             "channel"
           ]

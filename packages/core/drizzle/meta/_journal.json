@@ -5,8 +5,22 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1758111952853,
-      "tag": "0000_serious_kid_colt",
+      "when": 1758168923621,
+      "tag": "0000_bright_miss_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1758171317215,
+      "tag": "0001_bumpy_blue_blade",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1758171696704,
+      "tag": "0002_futuristic_quicksilver",
       "breakpoints": true
     }
   ]

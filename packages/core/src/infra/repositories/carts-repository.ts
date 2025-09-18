@@ -28,8 +28,7 @@ export class CartsDatabaseRepository {
     const db = createDatabaseConnection();
     const [conversation] = await db
       .select({
-        contactPhone: conversations.contactPhone,
-        channel: conversations.channel,
+        id: conversations.id,
       })
       .from(conversations)
       .where(eq(conversations.id, conversationId));
@@ -37,10 +36,7 @@ export class CartsDatabaseRepository {
     if (!conversation) return;
 
     const cartNewValues = {
-      id: cart.id,
       attendantId: cart.attendant.id,
-      contactPhone: conversation.contactPhone!,
-      channel: conversation.channel!,
       clientId: cart.client?.id,
       addressId: cart.address?.id ?? null,
       status: cart.status.value,
@@ -100,11 +96,31 @@ export class CartsDatabaseRepository {
       }
       await tx
         .insert(carts)
-        .values(cartNewValues)
+        .values({
+          ...cartNewValues,
+          id: cart.id,
+          conversationId: conversation.id,
+        })
         .onConflictDoUpdate({
-          target: [carts.contactPhone, carts.channel],
-          set: cartNewValues,
+          target: carts.id,
+          set: {
+            attendantId: cartNewValues.attendantId,
+            clientId: cartNewValues.clientId ?? carts.clientId,
+            addressId: cartNewValues.addressId ?? carts.addressId,
+            status: cartNewValues.status,
+            createdAt: cartNewValues.createdAt,
+            orderedAt: cartNewValues.orderedAt ?? carts.orderedAt,
+            expiredAt: cartNewValues.expiredAt ?? carts.expiredAt,
+            finishedAt: cartNewValues.finishedAt ?? carts.finishedAt,
+            canceledAt: cartNewValues.canceledAt ?? carts.canceledAt,
+            shippedAt: cartNewValues.shippedAt ?? carts.shippedAt,
+            processingAt: cartNewValues.processingAt ?? carts.processingAt,
+            cancelReason: cartNewValues.cancelReason ?? carts.cancelReason,
+            paymentMethod: cartNewValues.paymentMethod ?? carts.paymentMethod,
+            paymentChange: cartNewValues.paymentChange ?? carts.paymentChange,
+          },
         });
+
       await Promise.all(
         productsOnCartNewValues.map(async (product) => {
           await tx.insert(productsOnCart).values(product).onConflictDoUpdate({
@@ -133,8 +149,7 @@ export class CartsDatabaseRepository {
 
     const [cart] = await db
       .select({
-        contactPhone: carts.contactPhone,
-        channel: carts.channel,
+        conversationId: carts.id,
       })
       .from(carts)
       .where(eq(carts.id, cartId));
@@ -194,13 +209,7 @@ export class CartsDatabaseRepository {
       })
       .from(carts)
       .innerJoin(users, eq(carts.attendantId, users.id))
-      .leftJoin(
-        conversations,
-        and(
-          eq(conversations.channel, carts.channel),
-          eq(conversations.contactPhone, carts.contactPhone)
-        )
-      )
+      .leftJoin(conversations, eq(conversations.id, carts.conversationId))
       .innerJoin(addresses, eq(addresses.id, carts.addressId))
       .leftJoin(productsOnCart, eq(carts.id, productsOnCart.cartId))
       .where(
@@ -480,13 +489,7 @@ export class CartsDatabaseRepository {
         conversations,
         eq(clients.contactPhone, conversations.contactPhone)
       )
-      .leftJoin(
-        conversations,
-        and(
-          eq(conversations.channel, carts.channel),
-          eq(conversations.contactPhone, carts.contactPhone)
-        )
-      )
+      .leftJoin(conversations, eq(conversations.id, carts.conversationId))
       .where(eq(carts.id, id));
 
     if (!client) return null;
@@ -639,13 +642,7 @@ export class CartsDatabaseRepository {
               `.as("products"),
       })
       .from(carts)
-      .innerJoin(
-        conversations,
-        and(
-          eq(conversations.channel, carts.channel),
-          eq(conversations.contactPhone, carts.contactPhone)
-        )
-      )
+      .innerJoin(conversations, eq(conversations.id, carts.conversationId))
       .innerJoin(users, eq(carts.attendantId, users.id))
       .innerJoin(addresses, eq(addresses.id, carts.addressId))
       .leftJoin(productsOnCart, eq(carts.id, productsOnCart.cartId))
@@ -695,13 +692,7 @@ export class CartsDatabaseRepository {
             conversations,
             eq(clients.contactPhone, conversations.contactPhone)
           )
-          .leftJoin(
-            conversations,
-            and(
-              eq(conversations.channel, carts.channel),
-              eq(conversations.contactPhone, carts.contactPhone)
-            )
-          )
+          .leftJoin(conversations, eq(conversations.id, carts.conversationId))
           .where(eq(carts.id, cart.id));
 
         if (!client) return null;

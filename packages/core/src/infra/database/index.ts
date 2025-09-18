@@ -10,6 +10,7 @@ export const createDatabaseConnection = () => {
     sql = postgres(process.env.DATABASE_URL!, {
       max: 10,
       idle_timeout: 30000,
+      ssl: true,
     });
     db = drizzle(sql);
     db.$client = sql;
