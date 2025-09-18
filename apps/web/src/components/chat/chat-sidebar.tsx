@@ -65,14 +65,7 @@ export const ChatSidebar: React.FC<Props> = (props) => {
     >
       <SidebarHeader className="gap-3.5 pt-4 pb-0 px-0">
         <div className="flex items-center justify-between px-4 pb-2">
-          <h1 className="text-xl font-bold text-[#171616]">Atendimentos</h1>
-          <div
-            data-connected={props.isConnected}
-            className="relative shadow rounded-full group flex justify-center items-center"
-          >
-            <div className="w-3 h-3 group-data-[connected=true]:bg-emerald-500 bg-rose-500 rounded-full" />
-            <div className="absolute group-data-[connected=true]:bg-emerald-500 opacity-10 w-5 h-5 bg-rose-600 rounded-full" />
-          </div>
+          <h1 className="text-xl font-semibold text-[#0A0A0A]">Atendimentos</h1>
         </div>
         <Tabs
           defaultValue={filter}

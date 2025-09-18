@@ -212,9 +212,12 @@ export function Chat(props: Props) {
       <ChatEmptyContainer hidden={!!conversation} />
       <div
         data-hidden={!conversation}
-        className="flex flex-col overflow-hidden bg-[#F5F1EB]/30 gap-0 w-full flex-1 relative"
+        className="background flex flex-col overflow-hidden bg-[#F5F1EB]/30 gap-0 w-full flex-1 relative"
       >
         <ChatHeader
+          isMyConversation={
+            conversation?.attendant?.id == props.userAuthenticated.id
+          }
           contact={conversation?.contact}
           userInfo={{
             id: props.userAuthenticated.id,

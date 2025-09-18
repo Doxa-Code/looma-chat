@@ -267,4 +267,20 @@
   [data-show="true"] {
     @apply !block;
   }
+  .background {
+    position: relative;
+    background-image: url("/background.png");
+    background-size: auto;
+    background-position: center;
+  }
+
+  .background::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #f5f1ebe0; /* branco com 50% de transparência */
+  }
 }

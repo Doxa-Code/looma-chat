@@ -71,7 +71,7 @@ export const ChatForm: React.FC<Props> = (props) => {
       /> */}
       <Textarea
         data-hidden={inRecording}
-        className="resize-none focus-visible:ring-0 border-0 shadow-none rounded-4xl flex-1 font-light max-h-[200px]"
+        className="resize-none placeholder:text-[#666666] focus-visible:ring-0 border-0 shadow-none rounded-4xl flex-1 font-light max-h-[200px]"
         rows={1}
         placeholder="Digite sua mensagem"
         name="message"

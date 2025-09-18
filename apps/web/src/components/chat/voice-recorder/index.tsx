@@ -198,7 +198,7 @@ export const VoiceRecorder: React.FC<Props> = (props) => {
         type="button"
         onClick={handleStart}
       >
-        <Mic className="size-5 stroke-[#171616]" />
+        <Mic className="size-5 stroke-[#0A0A0A]" />
       </Button>
     );
   }
@@ -211,7 +211,7 @@ export const VoiceRecorder: React.FC<Props> = (props) => {
         type="button"
         onClick={handleCancel}
       >
-        <Trash2 className="size-5 stroke-1 stroke-muted-foreground" />
+        <Trash2 className="size-5 stroke-1 stroke-[#0A0A0A]" />
       </Button>
       <div className="w-full h-screen max-h-10 border rounded-full pl-0 pr-4 flex gap-4">
         {recording && !stopped && (
@@ -226,7 +226,7 @@ export const VoiceRecorder: React.FC<Props> = (props) => {
         onClick={handleStop}
         data-hidden={stopped}
       >
-        <Pause className="size-5 stroke-1 fill-muted-foreground stroke-muted-foreground" />
+        <Pause className="size-5 stroke-1 fill-muted-foreground stroke-[#0A0A0A]" />
       </Button>
       <Button
         className="rounded-full w-10 h-10 p-2 bg-primary hover:bg-primary/90"

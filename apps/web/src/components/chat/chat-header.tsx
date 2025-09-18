@@ -11,13 +11,15 @@ import { SectorRaw } from "@looma/core/domain/value-objects/sector";
 
 type Props = {
   contact?: ContactRaw;
+  isMyConversation: boolean;
   userInfo: {
     id: string;
     sector: SectorRaw | null;
   };
 };
 
-export const ChatHeader: React.FC<Props> = ({ contact, userInfo }) => {
+export const ChatHeader: React.FC<Props> = (props) => {
+  const { contact, userInfo, isMyConversation } = props;
   const { openCart, setOpenCart, productsOnCart } = useCart();
   return (
     <div className="w-full z-50 justify-between items-center border-b flex top-0 bg-white h-screen max-h-[64px] py-6 px-4">
@@ -28,15 +30,18 @@ export const ChatHeader: React.FC<Props> = ({ contact, userInfo }) => {
           </AvatarFallback>
         </Avatar>
 
-        <div className="flex flex-col">
-          <span className="font-semibold text-[#171616]">{contact?.name}</span>
+        <div
+          onClick={() => setOpenCart(!openCart)}
+          className="flex flex-col cursor-pointer select-none"
+        >
+          <span className="font-normal text-[#0A0A0A]">{contact?.name}</span>
           <span className="font-normal text-xs text-muted-foreground">
             {contact?.phone}
           </span>
         </div>
       </div>
       <div className="flex gap-2 items-center">
-        <ModalTransfer userInfo={userInfo} />
+        {isMyConversation && <ModalTransfer userInfo={userInfo} />}
         <Button
           data-active={openCart}
           onClick={() => setOpenCart(!openCart)}
