@@ -172,6 +172,7 @@ export class Conversation {
 
   transferToSector(sector: Sector) {
     this.sector = sector;
+    this.attendant = null
   }
 
   transferToAttendant(attendant: Attendant) {

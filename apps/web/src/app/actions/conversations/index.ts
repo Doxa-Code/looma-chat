@@ -1,12 +1,59 @@
 "use server";
+import { UsersDatabaseRepository } from "@looma/core/infra/repositories/users-repository";
+import { SectorsDatabaseRepository } from "@looma/core/infra/repositories/sectors-respository";
 import { sseEmitter } from "@/lib/sse";
 import { CloseConversation } from "@looma/core/application/command/close-conversation";
 import { ConversationsDatabaseRepository } from "@looma/core/infra/repositories/conversations-repository";
 import z from "zod";
 import { securityProcedure } from "../procedure";
 import { Attendant } from "@looma/core/domain/value-objects/attendant";
+import { Sector } from "@looma/core/domain/value-objects/sector";
 
 const conversationsRepository = ConversationsDatabaseRepository.instance();
+const sectorsRepository = SectorsDatabaseRepository.instance();
+const usersRepository = UsersDatabaseRepository.instance();
+
+export const transferConversation = securityProcedure([
+  "view:conversations",
+  "view:conversation",
+])
+  .input(
+    z.object({
+      conversationId: z.string(),
+      sectorId: z.string(),
+      attendantId: z.string().optional(),
+    })
+  )
+  .handler(async ({ input, ctx }) => {
+    const conversation = await conversationsRepository.retrieve(
+      input.conversationId
+    );
+
+    if (!conversation) return;
+
+    const sector = await sectorsRepository.retrieve(input.sectorId);
+
+    if (!sector) return;
+
+    conversation.transferToSector(Sector.create(sector.name, input.sectorId));
+
+    if (input.attendantId) {
+      const attendant = await usersRepository.retrieve(input.attendantId);
+
+      if (!attendant) return;
+
+      conversation.transferToAttendant(
+        Attendant.create(attendant.name, input.attendantId)
+      );
+    }
+
+    await conversationsRepository.upsert(
+      conversation,
+      ctx.membership.workspaceId
+    );
+
+    sseEmitter.emit("conversation", conversation.raw());
+  });
 
 export const listAllConversations = securityProcedure([
   "view:conversations",
