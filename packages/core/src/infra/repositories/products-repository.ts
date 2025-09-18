@@ -1,6 +1,6 @@
 import { Product } from "../../domain/value-objects/product";
 import { and, asc, eq, ilike, inArray, isNotNull } from "drizzle-orm";
-import { createDatabaseConnection } from "../database";
+import { createDatabaseConnection, schema } from "../database";
 import { products } from "../database/schemas";
 import { count } from "drizzle-orm";
 
@@ -174,7 +174,7 @@ export class ProductsDatabaseRepository {
         promotion_start,  
         promotion_end, 
         workspace_id 
-      FROM products 
+      FROM ${schema}.products 
         WHERE workspace_id = '${workspaceId}' AND stock > 0 
         ORDER BY embedding <-> '${JSON.stringify(embedding)}' 
         LIMIT 5
@@ -211,12 +211,12 @@ export class ProductsDatabaseRepository {
         promotion_start,
         promotion_end,
         workspace_id
-      FROM products 
+      FROM ${schema}.products 
         WHERE 
           workspace_id = '${workspaceId}' AND 
           stock > 0 AND
           promotion_end IS NOT NULL
-        ORDER BY embedding <-> '${JSON.stringify(embedding)}' 
+        ORDER BY embedding <-> '${JSON.stringify(embedding)}'
         LIMIT 5
     `);
 

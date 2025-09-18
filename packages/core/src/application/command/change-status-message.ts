@@ -20,8 +20,6 @@ export class ChangeStatusMessage {
   async execute(input: InputDTO) {
     const message = await this.messagesRepository.retrieve(input.messageId);
 
-    console.log({ message, input });
-
     if (!message) return null;
 
     if (input.status === "sent") {

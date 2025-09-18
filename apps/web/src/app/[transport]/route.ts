@@ -49,7 +49,7 @@ const handler = async (req: NextRequest) => {
                     `
                     ${i.description} (ID: ${i.id})
                     Fabricante: ${i.manufactory}
-                    Preço: ${i.promotionEnd ? `de ${i.price.toLocaleString("pt-BR", { currency: "BRL", style: "currency" })} por ${i.promotionPrice?.toLocaleString("pt-BR", { currency: "BRL", style: "currency" })}` : i.price.toLocaleString("pt-BR", { currency: "BRL", style: "currency" })}
+                    Preço: ${i.promotionPrice ? `de ${i.price.toLocaleString("pt-BR", { currency: "BRL", style: "currency" })} por ${i.promotionPrice?.toLocaleString("pt-BR", { currency: "BRL", style: "currency" })}` : i.price.toLocaleString("pt-BR", { currency: "BRL", style: "currency" })}
                   `
                 )
                 .join("\n\n"),
@@ -84,7 +84,7 @@ const handler = async (req: NextRequest) => {
                     `
                     ${i.description} (ID: ${i.id})
                     Fabricante: ${i.manufactory}
-                    Preço: ${i.promotionEnd ? `de ${i.price.toLocaleString("pt-BR", { currency: "BRL", style: "currency" })} por ${i.promotionPrice?.toLocaleString("pt-BR", { currency: "BRL", style: "currency" })}` : i.price.toLocaleString("pt-BR", { currency: "BRL", style: "currency" })}
+                    Preço: ${i.promotionPrice ? `de ${i.price.toLocaleString("pt-BR", { currency: "BRL", style: "currency" })} por ${i.promotionPrice?.toLocaleString("pt-BR", { currency: "BRL", style: "currency" })}` : i.price.toLocaleString("pt-BR", { currency: "BRL", style: "currency" })}
                   `
                 )
                 .join("\n\n"),

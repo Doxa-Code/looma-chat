@@ -44,9 +44,6 @@ export const changeStatusMessage = securityProcedure([
       status: z.string(),
     })
   )
-  .onError(async (err) => {
-    console.log(err);
-  })
   .handler(async ({ input }) => {
     const changeStatusMessage = ChangeStatusMessage.instance();
     const conversation = await changeStatusMessage.execute({

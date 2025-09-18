@@ -16,3 +16,6 @@ export const createDatabaseConnection = () => {
   }
   return db!;
 };
+
+export const schema =
+  process.env.NODE_ENV === "production" ? "public" : "development";
