@@ -20,6 +20,8 @@ import { ChatSidebar } from "./chat-sidebar";
 import { ContainerMessages } from "./container-messages";
 import { ModalCart } from "./modal-cart";
 import { Attendant } from "@looma/core/domain/value-objects/attendant";
+import { Sector } from "@looma/core/domain/value-objects/sector";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Props = {
   conversations: Conversation.Raw[];
@@ -28,6 +30,7 @@ type Props = {
 };
 
 export function Chat(props: Props) {
+  const queryClient = useQueryClient();
   const [conversation, setConversation] = useState<Conversation.Raw | null>(
     null
   );
@@ -66,7 +69,10 @@ export function Chat(props: Props) {
         });
       }
     },
-    onMessage({ type, data: message }) {
+    async onMessage({ type, data: message }) {
+      await queryClient.invalidateQueries({
+        queryKey: ["list-conversations"],
+      });
       if (
         type === "typing" &&
         conversation?.messages.map((m) => m.id).includes(message.messageId)
@@ -172,7 +178,6 @@ export function Chat(props: Props) {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
-
   if (!connected) {
     return (
       <div className="fixed w-full h-screen top-0 left-0 flex justify-center items-center flex-col bg-white/80 z-50">
@@ -190,12 +195,19 @@ export function Chat(props: Props) {
         isConnected //={connected}
         selectConversation={setConversation}
         user={props.userAuthenticated}
-        registerMe={(conversationId) => {
+        registerMe={(conversationId, sector) => {
           const conversation = conversations.get(conversationId);
 
           if (!conversation) return;
 
           const lastConversation = Conversation.fromRaw(conversation);
+
+          if (sector && sector.id && sector.name) {
+            lastConversation.transferToSector(
+              Sector.create(sector.name, sector.id)
+            );
+          }
+
           lastConversation.attributeAttendant(
             Attendant.create(
               props.userAuthenticated.id,

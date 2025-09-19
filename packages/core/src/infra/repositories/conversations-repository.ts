@@ -4,7 +4,7 @@ import { Attendant } from "../../domain/value-objects/attendant";
 import { Contact } from "../../domain/value-objects/contact";
 import { Sector } from "../../domain/value-objects/sector";
 import { Sender } from "../../domain/value-objects/sender";
-import { and, eq, or, sql, ne } from "drizzle-orm";
+import { and, eq, or, sql, ne, isNull } from "drizzle-orm";
 import { createDatabaseConnection } from "../database";
 import {
   contacts,
@@ -206,6 +206,7 @@ export class ConversationsDatabaseRepository {
         ),
         sectorId
           ? or(
+              isNull(conversations.sectorId),
               eq(conversations.sectorId, sectorId),
               eq(conversations.attendantId, attendantId)
             )
@@ -254,7 +255,7 @@ export class ConversationsDatabaseRepository {
             : null,
           status: conversation.status,
           workspaceId,
-          attendantId: conversation.attendant?.id,
+          attendantId: conversation.attendant?.id || null,
           contactPhone: conversation.contact.phone,
           sectorId: conversation.sector?.id,
         })
@@ -273,7 +274,7 @@ export class ConversationsDatabaseRepository {
               : null,
             status: conversation.status,
             workspaceId,
-            attendantId: conversation.attendant?.id,
+            attendantId: conversation.attendant?.id || null,
             sectorId: conversation.sector?.id,
           },
         });

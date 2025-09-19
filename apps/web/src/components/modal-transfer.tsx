@@ -25,6 +25,7 @@ import {
 } from "@/hooks/server-action-hooks";
 import { SectorRaw } from "@looma/core/domain/value-objects/sector";
 import { toast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   conversationId?: string;
@@ -38,6 +39,7 @@ export const ModalTransfer: React.FC<Props> = ({
   conversationId,
   userInfo,
 }) => {
+  const queryClient = useQueryClient();
   const [sector, setSector] = useState("");
   const [attendant, setAttendant] = useState("");
   const [open, setOpen] = useState(false);
@@ -93,11 +95,16 @@ export const ModalTransfer: React.FC<Props> = ({
   const { mutate: transfer, isPending } = useServerActionMutation(
     transferConversation,
     {
-      onSuccess: () => {
+      onSuccess: async () => {
         setOpen(false);
         toast({
           variant: "success",
           title: "Transferência realizada com sucesso!",
+          duration: 3000
+        });
+        await queryClient.refetchQueries({
+          queryKey: ["list-conversations"],
+          exact: true
         });
       },
       onError: (err) => {

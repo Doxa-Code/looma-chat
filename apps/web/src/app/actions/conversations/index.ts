@@ -2,6 +2,7 @@
 import { sseEmitter } from "@/lib/sse";
 import { CloseConversation } from "@looma/core/application/command/close-conversation";
 import { TransferConversation } from "@looma/core/application/command/transfer-conversation";
+import { Sector } from "@looma/core/domain/value-objects/sector";
 import { Attendant } from "@looma/core/domain/value-objects/attendant";
 import { ConversationsDatabaseRepository } from "@looma/core/infra/repositories/conversations-repository";
 import z from "zod";
@@ -71,12 +72,28 @@ export const closeConversation = securityProcedure(["close:conversation"])
   });
 
 export const registerMeAttendant = securityProcedure(["view:conversation"])
-  .input(z.object({ conversationId: z.string() }))
+  .input(
+    z.object({
+      conversationId: z.string(),
+      sector: z.object({
+        id: z.string().nullish(),
+        name: z.string().nullish(),
+      }),
+    })
+  )
   .handler(async ({ ctx, input }) => {
     const conversation = await conversationsRepository.retrieve(
       input.conversationId
     );
+
     if (!conversation) return;
+
+    if (!!input.sector.id && !!input.sector.name) {
+      conversation.transferToSector(
+        Sector.create(input.sector.name, input.sector.id)
+      );
+    }
+
     conversation.attributeAttendant(
       Attendant.create(ctx.user.id, ctx.user.name)
     );

@@ -39,7 +39,7 @@ export class TransferConversation {
 
     conversation.transferToSector(Sector.create(sector.name, input.sectorId));
 
-    if (input.attendantId) {
+    if (!!input.attendantId) {
       const attendant = await this.usersRepository.retrieve(input.attendantId);
 
       if (!attendant) return;
@@ -48,7 +48,7 @@ export class TransferConversation {
         Attendant.create(input.attendantId, attendant.name)
       );
     }
-
+    
     await this.conversationsRepository.upsert(conversation, input.workspaceId);
 
     return conversation;

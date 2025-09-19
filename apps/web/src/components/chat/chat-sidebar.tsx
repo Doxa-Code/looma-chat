@@ -23,7 +23,10 @@ type Props = {
   isConnected: boolean;
   conversations: Conversation.Raw[];
   selectConversation(conversation: Conversation.Raw): void;
-  registerMe(conversationId: string): void;
+  registerMe(
+    conversationId: string,
+    sector: { id: string | undefined; name: string | undefined } | null
+  ): void;
   conversation: Conversation.Raw | null;
   user: User.Raw;
 };
@@ -152,9 +155,14 @@ export const ChatSidebar: React.FC<Props> = (props) => {
                     <TimeCounter startDate={c.lastMessage?.createdAt!} />
                     <Button
                       onClick={async () => {
-                        props.registerMe(c.id);
+                        const sector = {
+                          id: props.user.sector?.id,
+                          name: props.user.sector?.name,
+                        };
+                        props.registerMe(c.id, sector);
                         await registerMeAttendantAction.execute({
                           conversationId: c.id,
+                          sector,
                         });
                       }}
                       className="text-xs rounded gap-2 flex items-center justify-center"
