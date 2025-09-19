@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 
+let timer: NodeJS.Timeout;
+
 export const MessageLoading: React.FC<{ typing: boolean }> = ({ typing }) => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-
     if (typing) {
       setVisible(true);
       timer = setTimeout(() => {
