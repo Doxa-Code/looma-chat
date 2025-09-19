@@ -254,7 +254,7 @@ export class ConversationsDatabaseRepository {
             : null,
           status: conversation.status,
           workspaceId,
-          attendantId: conversation.attendant?.id || null,
+          attendantId: conversation.attendant?.id,
           contactPhone: conversation.contact.phone,
           sectorId: conversation.sector?.id,
         })
