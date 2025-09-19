@@ -7,8 +7,6 @@ export const sse = securityProcedure([
 ]).handler(async ({ request }) => {
   const encoder = new TextEncoder();
 
-  let isOpen = true;
-
   const stream = new ReadableStream({
     async start(controller) {
       const sendEvent = (data: any) => {
