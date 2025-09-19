@@ -10,6 +10,7 @@ interface MessagesRepository {
 
 interface ConversationsRepository {
   retrieve(id: string): Promise<Conversation | null>;
+  upsert(conversation: Conversation, workspaceId: string): Promise<void>;
 }
 
 export class ChangeStatusMessage {
@@ -39,7 +40,17 @@ export class ChangeStatusMessage {
     if (conversationId) {
       const conversation =
         await this.conversationsRepository.retrieve(conversationId);
+
       if (!conversation) return null;
+
+      if (input.status === "read") {
+        conversation.markAllMessageAsViewed();
+        await this.conversationsRepository.upsert(
+          conversation,
+          input.workspaceId
+        );
+      }
+
       return conversation;
     }
 
@@ -57,4 +68,5 @@ export class ChangeStatusMessage {
 type InputDTO = {
   messageId: string;
   status: string;
+  workspaceId: string;
 };

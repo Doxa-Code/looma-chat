@@ -44,11 +44,12 @@ export const changeStatusMessage = securityProcedure([
       status: z.string(),
     })
   )
-  .handler(async ({ input }) => {
+  .handler(async ({ input, ctx }) => {
     const changeStatusMessage = ChangeStatusMessage.instance();
     const conversation = await changeStatusMessage.execute({
       messageId: input.messageId,
       status: input.status,
+      workspaceId: ctx.membership.workspaceId,
     });
     if (conversation) {
       sseEmitter.emit("conversation", conversation.raw());
