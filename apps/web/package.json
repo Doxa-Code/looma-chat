@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "export NODE_ENV=development; next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "export NODE_ENV=production; next start",
     "lint": "next lint",
     "test": "vitest",
     "postinstall": "flowbite-react patch"
@@ -48,6 +48,7 @@
     "@react-aria/datepicker": "^3.14.5",
     "@react-stately/datepicker": "^3.14.2",
     "@remixicon/react": "^4.6.0",
+    "@sentry/nextjs": "^10",
     "@tailwindcss/typography": "^0.5.16",
     "@tanstack/react-query": "^5.81.5",
     "@tanstack/react-table": "^8.21.3",
@@ -101,6 +102,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/seamless-immutable": "^7.1.19",
+    "@types/ws": "^8.18.1",
     "tailwind-scrollbar": "^4.0.2",
     "tailwind-variants": "^1.0.0",
     "tailwindcss": "^4.1.13",

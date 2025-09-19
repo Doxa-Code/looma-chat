@@ -187,7 +187,7 @@ export function Chat(props: Props) {
       <ChatSidebar
         conversation={conversation}
         conversations={Array.from(conversations.values())}
-        isConnected={connected}
+        isConnected //={connected}
         selectConversation={setConversation}
         user={props.userAuthenticated}
         registerMe={(conversationId) => {

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Providers } from "./providers";
-import { Montserrat } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
+import { Providers } from "./providers";
+import "../../sentry.server.config";
 
 export const font = localFont({
   src: [

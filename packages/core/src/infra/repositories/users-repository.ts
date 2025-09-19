@@ -9,6 +9,8 @@ export class UsersDatabaseRepository {
   async retrieveUserByEmail(email: string): Promise<User | null> {
     const db = createDatabaseConnection();
 
+    console.log(process.env);
+
     const [user] = await db
       .select({
         id: users.id,
