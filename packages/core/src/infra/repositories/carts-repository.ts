@@ -617,6 +617,7 @@ export class CartsDatabaseRepository {
           country: addresses.country,
           note: addresses.note,
         },
+        conversationId: carts.conversationId,
         status: carts.status,
         createdAt: carts.createdAt,
         orderedAt: carts.orderedAt,
@@ -692,8 +693,7 @@ export class CartsDatabaseRepository {
             conversations,
             eq(clients.contactPhone, conversations.contactPhone)
           )
-          .leftJoin(conversations, eq(conversations.id, carts.conversationId))
-          .where(eq(carts.id, cart.id));
+          .where(eq(conversations.id, cart.conversationId!));
 
         if (!client) return null;
 
