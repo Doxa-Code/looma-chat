@@ -154,7 +154,7 @@ export class CartsDatabaseRepository {
       .from(carts)
       .where(eq(carts.id, cartId));
 
-    return cart || null;
+    return cart?.conversationId || null;
   }
 
   async retrieveOpenCartByConversationId(
