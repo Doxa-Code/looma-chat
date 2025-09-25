@@ -1,9 +1,7 @@
 "use client";
-import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -28,13 +26,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
+import { LoadingComponent } from "./loading";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "./ui/collapsible";
 import { WorkspaceDropdown } from "./workspace-dropdown";
-import { LoadingComponent } from "./loading";
 
 type Menu = {
   title: string;
@@ -245,9 +243,6 @@ export function AppSidebar(
             );
           })}
         </SidebarContent>
-        <SidebarFooter className="p-0">
-          <NavUser user={props.user} />
-        </SidebarFooter>
       </Sidebar>
     </>
   );

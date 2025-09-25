@@ -35,156 +35,145 @@ export function FormSetting(props: Props) {
       });
     },
   });
+
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        const form = new FormData(e.currentTarget);
-        const body = {
-          wabaId: form.get("wabaId")?.toString() ?? "",
-          phoneId: form.get("phoneId")?.toString() ?? "",
-          attendantName: form.get("attendantName")?.toString() ?? "",
-          businessName: form.get("businessName")?.toString() ?? "",
-          locationAvailable: form.get("locationAvailable")?.toString() ?? "",
-          paymentMethods: form.get("paymentMethods")?.toString() ?? "",
-          vectorNamespace: form.get("vectorNamespace")?.toString() ?? "",
-          knowledgeBase: form.get("knowledgeBase")?.toString() ?? "",
-          aiEnabled: form.get("aiEnabled")?.toString() === "on",
-          queueURL: form.get("queueURL")?.toString() ?? "",
-          openingHours: form.get("openingHours")?.toString() ?? "",
-        };
-        mutate(body);
-      }}
-      className="flex flex-wrap shadow rounded bg-white p-6 gap-4"
-    >
-      <div className="flex flex-col w-full max-w-[300px] gap-1">
-        <Label className="text-sm text-muted-foreground">
-          Nome da atendente
-        </Label>
-        <Input
-          defaultValue={props.setting?.attendantName}
-          name="attendantName"
-          className="w-full"
-          placeholder=""
-        />
-      </div>
+    <div className="flex shadow rounded bg-white p-6 gap-4">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const form = new FormData(e.currentTarget);
+          const body = {
+            wabaId: form.get("wabaId")?.toString() ?? "",
+            phoneId: form.get("phoneId")?.toString() ?? "",
+            attendantName: form.get("attendantName")?.toString() ?? "",
+            businessName: form.get("businessName")?.toString() ?? "",
+            locationAvailable: form.get("locationAvailable")?.toString() ?? "",
+            paymentMethods: form.get("paymentMethods")?.toString() ?? "",
+            knowledgeBase: form.get("knowledgeBase")?.toString() ?? "",
+            aiEnabled: form.get("aiEnabled")?.toString() === "on",
+            queueURL: form.get("queueURL")?.toString() ?? "",
+            openingHours: form.get("openingHours")?.toString() ?? "",
+          };
+          mutate(body);
+        }}
+        className="flex flex-wrap gap-4"
+      >
+        <div className="flex flex-col w-full max-w-[300px] gap-1">
+          <Label className="text-sm text-muted-foreground">
+            Nome da atendente
+          </Label>
+          <Input
+            defaultValue={props.setting?.attendantName}
+            name="attendantName"
+            className="w-full"
+            placeholder=""
+          />
+        </div>
 
-      <div className="flex flex-col w-full max-w-[300px] gap-1">
-        <Label className="text-sm text-muted-foreground">
-          Nome do estabelecimento
-        </Label>
-        <Input
-          defaultValue={props.setting?.businessName}
-          name="businessName"
-          className="w-full"
-          placeholder=""
-        />
-      </div>
+        <div className="flex flex-col w-full max-w-[300px] gap-1">
+          <Label className="text-sm text-muted-foreground">
+            Nome do estabelecimento
+          </Label>
+          <Input
+            defaultValue={props.setting?.businessName}
+            name="businessName"
+            className="w-full"
+            placeholder=""
+          />
+        </div>
 
-      <div className="flex flex-col w-full max-w-[300px] gap-1">
-        <Label className="text-sm text-muted-foreground">
-          ID do Whatsapp Bussiness
-        </Label>
-        <Input
-          defaultValue={props.setting?.wabaId}
-          maxLength={17}
-          name="wabaId"
-          className="w-full"
-          placeholder=""
-        />
-      </div>
+        <div className="flex flex-col w-full max-w-[300px] gap-1">
+          <Label className="text-sm text-muted-foreground">
+            ID do Whatsapp Bussiness
+          </Label>
+          <Input
+            defaultValue={props.setting?.wabaId}
+            maxLength={17}
+            name="wabaId"
+            className="w-full"
+            placeholder=""
+          />
+        </div>
 
-      <div className="flex flex-col w-full max-w-[300px] gap-1">
-        <Label className="text-sm text-muted-foreground">Telefone</Label>
-        <SelectNative defaultValue={props.setting?.phoneId} name="phoneId">
-          <option value="">Selecione</option>
-          {(props.phones ?? []).map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.phone}
-            </option>
-          ))}
-        </SelectNative>
-      </div>
+        <div className="flex flex-col gap-1">
+          <Label className="text-sm text-muted-foreground">Telefone</Label>
+          <SelectNative defaultValue={props.setting?.phoneId} name="phoneId">
+            <option value="">Selecione</option>
+            {(props.phones ?? []).map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.phone}
+              </option>
+            ))}
+          </SelectNative>
+        </div>
 
-      <div className="flex flex-col w-full max-w-[300px] gap-1">
-        <Label className="text-sm text-muted-foreground">
-          Vector namespace
-        </Label>
-        <Input
-          defaultValue={props.setting?.vectorNamespace}
-          name="vectorNamespace"
-          className="w-full"
-          placeholder=""
-        />
-      </div>
+        <div className="flex flex-col w-full max-w-[300px] gap-1">
+          <Label className="text-sm text-muted-foreground">URL da Fila</Label>
+          <Input
+            defaultValue={props.setting?.queueURL}
+            name="queueURL"
+            className="w-full"
+            placeholder=""
+            type="url"
+          />
+        </div>
 
-      <div className="flex flex-col w-full max-w-[300px] gap-1">
-        <Label className="text-sm text-muted-foreground">URL da Fila</Label>
-        <Input
-          defaultValue={props.setting?.queueURL}
-          name="queueURL"
-          className="w-full"
-          placeholder=""
-          type="url"
-        />
-      </div>
+        <div className="flex flex-col w-full max-w-[300px] gap-1">
+          <Label className="text-sm text-muted-foreground">Habilitar IA?</Label>
+          <Switch name="aiEnabled" defaultChecked={props.setting?.aiEnabled} />
+        </div>
 
-      <div className="flex flex-col w-full max-w-[300px] gap-1">
-        <Label className="text-sm text-muted-foreground">Habilitar IA?</Label>
-        <Switch name="aiEnabled" defaultChecked={props.setting?.aiEnabled} />
-      </div>
+        <div className="flex flex-col w-full gap-1">
+          <Label className="text-sm text-muted-foreground">
+            Horário de funcionamento
+          </Label>
+          <Textarea
+            defaultValue={props.setting?.openingHours}
+            name="openingHours"
+            className="w-full h-screen max-h-[100px]"
+            placeholder=""
+          />
+        </div>
 
-      <div className="flex flex-col w-full gap-1">
-        <Label className="text-sm text-muted-foreground">
-          Horário de funcionamento
-        </Label>
-        <Textarea
-          defaultValue={props.setting?.openingHours}
-          name="openingHours"
-          className="w-full h-screen max-h-[100px]"
-          placeholder=""
-        />
-      </div>
+        <div className="flex flex-col w-full gap-1">
+          <Label className="text-sm text-muted-foreground">
+            Localidades de entrega
+          </Label>
+          <Textarea
+            defaultValue={props.setting?.locationAvailable}
+            name="locationAvailable"
+            className="w-full h-screen max-h-[100px]"
+            placeholder=""
+          />
+        </div>
 
-      <div className="flex flex-col w-full gap-1">
-        <Label className="text-sm text-muted-foreground">
-          Localidades de entrega
-        </Label>
-        <Textarea
-          defaultValue={props.setting?.locationAvailable}
-          name="locationAvailable"
-          className="w-full h-screen max-h-[100px]"
-          placeholder=""
-        />
-      </div>
+        <div className="flex flex-col w-full gap-1">
+          <Label className="text-sm text-muted-foreground">
+            Métodos de pagamentos
+          </Label>
+          <Textarea
+            defaultValue={props.setting?.paymentMethods}
+            name="paymentMethods"
+            className="w-full h-screen max-h-[100px]"
+            placeholder=""
+          />
+        </div>
 
-      <div className="flex flex-col w-full gap-1">
-        <Label className="text-sm text-muted-foreground">
-          Métodos de pagamentos
-        </Label>
-        <Textarea
-          defaultValue={props.setting?.paymentMethods}
-          name="paymentMethods"
-          className="w-full h-screen max-h-[100px]"
-          placeholder=""
-        />
-      </div>
-
-      <div className="flex flex-col w-full gap-1">
-        <Label className="text-sm text-muted-foreground">
-          Base de conhecimento do estabelecimento
-        </Label>
-        <Textarea
-          defaultValue={props.setting?.knowledgeBase}
-          name="knowledgeBase"
-          className="w-full h-screen max-h-[100px]"
-          placeholder=""
-        />
-      </div>
-
-      <footer className="w-full flex justify-end items-center">
-        <Button className="bg-green-500">Salvar</Button>
-      </footer>
-    </form>
+        <div className="flex flex-col w-full gap-1">
+          <Label className="text-sm text-muted-foreground">
+            Base de conhecimento do estabelecimento
+          </Label>
+          <Textarea
+            defaultValue={props.setting?.knowledgeBase}
+            name="knowledgeBase"
+            className="w-full h-screen max-h-[100px]"
+            placeholder=""
+          />
+        </div>
+        <footer className="w-full gap-4 flex justify-end items-center">
+          <Button className="bg-green-500">Salvar</Button>
+        </footer>
+      </form>
+    </div>
   );
 }

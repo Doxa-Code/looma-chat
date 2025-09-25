@@ -18,7 +18,7 @@ import {
 import { listSectors } from "@/app/actions/sectors";
 import { listUsers, validateTransferPermission } from "@/app/actions/users";
 import { transferConversation } from "@/app/actions/conversations";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   useServerActionQuery,
   useServerActionMutation,
@@ -74,11 +74,19 @@ export const ModalTransfer: React.FC<Props> = ({
     if (!sector) return [];
 
     if (transferToUser) {
-      return attendantsList?.filter((a) => a?.sector?.id === sector) ?? [];
+      return (
+        attendantsList
+          ?.filter((a) => a.id !== userInfo.id)
+          ?.filter((a) => a?.sector?.id === sector) ?? []
+      );
     }
 
     if (sector === userInfo.sector?.id) {
-      return attendantsList?.filter((a) => a?.sector?.id === sector) ?? [];
+      return (
+        attendantsList
+          ?.filter((a) => a.id !== userInfo.id)
+          ?.filter((a) => a?.sector?.id === sector) ?? []
+      );
     }
 
     return [];
@@ -100,11 +108,11 @@ export const ModalTransfer: React.FC<Props> = ({
         toast({
           variant: "success",
           title: "Transferência realizada com sucesso!",
-          duration: 3000
+          duration: 3000,
         });
         await queryClient.refetchQueries({
           queryKey: ["list-conversations"],
-          exact: true
+          exact: true,
         });
       },
       onError: (err) => {
@@ -117,6 +125,13 @@ export const ModalTransfer: React.FC<Props> = ({
       },
     }
   );
+
+  useEffect(() => {
+    if (!open) {
+      setAttendant("");
+      setSector("");
+    }
+  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

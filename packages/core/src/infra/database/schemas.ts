@@ -37,6 +37,7 @@ export const workspaces = schemas.table("workspaces", {
 
 export const settings = schemas.table("settings", {
   id: uuid("id").primaryKey().notNull(),
+  accessToken: text("access_token").notNull().default(""),
   wabaId: text("waba_id").notNull().default(""),
   phoneId: text("phone_id").notNull().default(""),
   workspaceId: uuid("workspace_id")
@@ -45,11 +46,11 @@ export const settings = schemas.table("settings", {
       onDelete: "cascade",
     }),
   attendantName: text("attendant_name").notNull().default(""),
+  businessId: text("business_id").notNull().default(""),
   businessName: text("business_name").notNull().default(""),
   locationAvailable: text("location_available").notNull().default(""),
   openingHours: text("opening_hours").notNull().default(""),
   paymentMethods: text("payment_methods").notNull().default(""),
-  vectorNamespace: text("vector_namespace").notNull().default(""),
   knowledgeBase: text("knowledge_base").notNull().default(""),
   aiEnabled: boolean("ai_enabled").notNull().default(true),
   queueURL: text("queue_url").notNull().default(""),

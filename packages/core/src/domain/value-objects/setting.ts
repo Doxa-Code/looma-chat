@@ -5,7 +5,6 @@ export type SettingProps = {
   businessName: string;
   locationAvailable: string;
   paymentMethods: string;
-  vectorNamespace: string;
   knowledgeBase: string;
   aiEnabled: boolean;
   queueURL: string;
@@ -20,7 +19,6 @@ export class Setting {
     readonly businessName: string,
     readonly locationAvailable: string,
     readonly paymentMethods: string,
-    readonly vectorNamespace: string,
     readonly knowledgeBase: string,
     readonly aiEnabled: boolean,
     readonly queueURL: string,
@@ -35,7 +33,6 @@ export class Setting {
       businessName: this.businessName,
       locationAvailable: this.locationAvailable,
       paymentMethods: this.paymentMethods,
-      vectorNamespace: this.vectorNamespace,
       knowledgeBase: this.knowledgeBase,
       aiEnabled: this.aiEnabled,
       queueURL: this.queueURL,
@@ -51,7 +48,6 @@ export class Setting {
       props?.businessName ?? "",
       props?.locationAvailable ?? "",
       props?.paymentMethods ?? "",
-      props?.vectorNamespace ?? "",
       props?.knowledgeBase ?? "",
       props?.aiEnabled ?? true,
       props?.queueURL ?? "",

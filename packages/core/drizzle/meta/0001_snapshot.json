@@ -1,6 +1,6 @@
 {
-  "id": "5162620d-e5eb-407a-84b4-629367aa92a5",
-  "prevId": "0e520198-1d08-48a8-9c7e-50116e6ed05f",
+  "id": "670fe3ee-e1f9-4a07-892e-9f21514ceebd",
+  "prevId": "7ccb87d5-692b-4b43-a971-75cf08d97ea0",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -668,33 +668,25 @@
           "notNull": true,
           "default": false
         },
-        "contact_phone": {
-          "name": "contact_phone",
-          "type": "varchar(15)",
+        "conversation_id": {
+          "name": "conversation_id",
+          "type": "uuid",
           "primaryKey": false,
-          "notNull": true
-        },
-        "channel": {
-          "name": "channel",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
+          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "messages_conversation_fk": {
-          "name": "messages_conversation_fk",
+        "messages_conversation_id_conversations_id_fk": {
+          "name": "messages_conversation_id_conversations_id_fk",
           "tableFrom": "messages",
           "tableTo": "conversations",
           "schemaTo": "development",
           "columnsFrom": [
-            "contact_phone",
-            "channel"
+            "conversation_id"
           ],
           "columnsTo": [
-            "contact_phone",
-            "channel"
+            "id"
           ],
           "onDelete": "cascade",
           "onUpdate": "cascade"
@@ -941,6 +933,13 @@
           "primaryKey": true,
           "notNull": true
         },
+        "access_token": {
+          "name": "access_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
         "waba_id": {
           "name": "waba_id",
           "type": "text",
@@ -963,6 +962,13 @@
         },
         "attendant_name": {
           "name": "attendant_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "business_id": {
+          "name": "business_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -991,13 +997,6 @@
         },
         "payment_methods": {
           "name": "payment_methods",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "vector_namespace": {
-          "name": "vector_namespace",
           "type": "text",
           "primaryKey": false,
           "notNull": true,

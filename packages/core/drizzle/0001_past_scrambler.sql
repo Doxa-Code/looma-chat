@@ -1,0 +1,1 @@
+ALTER TABLE "development"."settings" ADD COLUMN "business_id" text DEFAULT '' NOT NULL;

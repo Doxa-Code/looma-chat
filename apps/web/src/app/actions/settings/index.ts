@@ -1,9 +1,10 @@
 "use server";
+import { SyncWaba } from "@looma/core/application/command/sync-waba";
 import { Setting } from "@looma/core/domain/value-objects/setting";
+import { MetaMessageDriver } from "@looma/core/infra/drivers/message-driver";
 import { SettingsDatabaseRepository } from "@looma/core/infra/repositories/settings-repository";
 import z from "zod";
 import { securityProcedure } from "../procedure";
-import { MetaMessageDriver } from "@looma/core/infra/drivers/message-driver";
 
 const settingsRepository = SettingsDatabaseRepository.instance();
 const messaging = MetaMessageDriver.instance();
@@ -11,18 +12,20 @@ const messaging = MetaMessageDriver.instance();
 export const retrieveSettings = securityProcedure([
   "manage:settings",
   "view:settings",
-]).handler(async ({ ctx }) => {
-  const settings = await settingsRepository.retrieveSettingsByWorkspaceId(
-    ctx.membership.workspaceId
-  );
+])
+  .input(z.object({ id: z.string().optional() }).optional())
+  .handler(async ({ ctx, input }) => {
+    const settings = await settingsRepository.retrieveSettingsByWorkspaceId(
+      input?.id || ctx.membership.workspaceId
+    );
 
-  if (!settings) {
-    const newSettings = Setting.create();
-    return newSettings.raw();
-  }
+    if (!settings) {
+      const newSettings = Setting.create();
+      return newSettings.raw();
+    }
 
-  return settings.raw();
-});
+    return settings.raw();
+  });
 
 export const listPhonesId = securityProcedure([
   "manage:settings",
@@ -34,6 +37,25 @@ export const listPhonesId = securityProcedure([
   if (!setting || !setting.wabaId) return [];
   return await messaging.listPhonesId(setting.wabaId);
 });
+
+export const syncWaba = securityProcedure([
+  "manage:settings",
+  "update:settings",
+])
+  .input(
+    z.object({
+      code: z.string(),
+    })
+  )
+  .onError(async (err) => {
+    console.log(err);
+  })
+  .handler(async ({ ctx, input }) => {
+    await SyncWaba.instance().execute({
+      code: input.code,
+      workspaceId: ctx.membership.workspaceId,
+    });
+  });
 
 export const updateSettings = securityProcedure([
   "manage:settings",
@@ -47,7 +69,6 @@ export const updateSettings = securityProcedure([
       businessName: z.string(),
       locationAvailable: z.string(),
       paymentMethods: z.string(),
-      vectorNamespace: z.string(),
       knowledgeBase: z.string(),
       aiEnabled: z.boolean(),
       queueURL: z.string(),
@@ -64,7 +85,6 @@ export const updateSettings = securityProcedure([
         businessName: input.businessName,
         locationAvailable: input.locationAvailable,
         paymentMethods: input.paymentMethods,
-        vectorNamespace: input.vectorNamespace,
         knowledgeBase: input.knowledgeBase,
         aiEnabled: input.aiEnabled,
         queueURL: input.queueURL,

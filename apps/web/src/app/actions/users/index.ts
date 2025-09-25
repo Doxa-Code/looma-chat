@@ -90,13 +90,13 @@ export const authenticate = createServerAction()
   .handler(async ({ input }) => {
     const user = await usersRepository.retrieveUserByEmail(input.email);
 
-    if (!user) throw NotAuthorized.throw();
+    if (!user) throw NotAuthorized.throw(["Usuário ou senha incorreta"]);
 
     const membership = await membershipRepository.retrieveFirstByUserId(
       user.id
     );
 
-    if (!membership) throw NotAuthorized.throw();
+    if (!membership) throw NotAuthorized.throw(["Usuário ou senha incorreta"]);
 
     const isAllowed = authorizationService.can(
       "start:session",
@@ -104,15 +104,16 @@ export const authenticate = createServerAction()
       membership
     );
 
-    if (!isAllowed) throw NotAuthorized.throw();
+    if (!isAllowed) throw NotAuthorized.throw(["Usuário ou senha incorreta"]);
 
     const password = await usersRepository.retrievePassword(user.id);
 
-    if (!password) throw NotAuthorized.throw();
+    if (!password) throw NotAuthorized.throw(["Usuário ou senha incorreta"]);
 
     const passIsCorrect = passwordDriver.compare(input.password, password);
 
-    if (!passIsCorrect) throw NotAuthorized.throw();
+    if (!passIsCorrect)
+      throw NotAuthorized.throw(["Usuário ou senha incorreta"]);
 
     const workspace = await workspacesRepository.retrieveFirstWorkspaceByUserId(
       user.id
@@ -243,7 +244,8 @@ export const validateTransferPermission = securityProcedure([
       );
     if (!membership) return;
 
-    const canTransferToUser = membership.permissions.includes("view:conversations");
+    const canTransferToUser =
+      membership.permissions.includes("view:conversations");
 
     return canTransferToUser;
   });
