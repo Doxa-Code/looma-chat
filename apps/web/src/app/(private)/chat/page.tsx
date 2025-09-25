@@ -8,7 +8,7 @@ export const revalidate = 0;
 export default async function Page() {
   const [conversations] = await listAllConversations();
   const [userAuthenticated] = await getUserAuthenticate();
-  const [settings] = await retrieveSettings();
+  const [settings] = await retrieveSettings({});
 
   return (
     <main className="w-full !overflow-y-hidden flex p-0 flex-1">
